@@ -8,5 +8,6 @@
   "releaseNotes": "Small → Medium/Large library reorganization. Added README.md",
   "projectUrl": "https://evaluationcontext.github.io/evaluationcontext.colour/",
   "repositoryUrl": "https://github.com/EvaluationContext/evaluationcontext.colour",
-  "icon": "/icon.png"
+  "icon": "/icon.png",
+  "readme": "/README.md"
 }
