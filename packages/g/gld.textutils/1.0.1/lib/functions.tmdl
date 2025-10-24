@@ -1,0 +1,179 @@
+/// WordWrap(texttosplice: string, Chunk: int64)
+/// Purpose: Wrap input text into lines whose length is at most `Chunk` characters,
+///          without breaking words. Returns a single-column, single-row table
+///          containing the wrapped text joined by LF (UNICHAR(10)).
+FUNCTION WordWrap =
+		(texttosplice: string, Chunk: int64) =>
+		// 1) Clean the text (normalize spaces, punctuation, and hyphens)
+		VAR CleanText =
+		TRIM(SUBSTITUTE(
+			SUBSTITUTE(
+				SUBSTITUTE(
+					SUBSTITUTE(
+						SUBSTITUTE(
+							texttosplice,
+							"-",
+							"- " // hyphen → space-hyphen-space
+						),
+						UNICHAR(13),
+						" "
+					),
+					UNICHAR(10),
+					" "
+				),
+				";",
+				" "
+			),
+			",",
+			" "
+		)
+		)
+
+		// 2) Convert to delimited path string
+		VAR Delim = "|"
+		VAR PathText = SUBSTITUTE(
+			CleanText,
+			" ",
+			Delim
+		)
+
+		// 3) Count words
+		VAR WordCount = 1 + LEN(PathText) - LEN(SUBSTITUTE(
+			PathText,
+			Delim,
+			""
+		))
+
+		// 4) Build word table
+		VAR Words =
+		ADDCOLUMNS(
+			GENERATESERIES(
+				1,
+				WordCount,
+				1
+			),
+			"Word", PATHITEM(
+				PathText,
+				[Value],
+				TEXT
+			),
+			"Len", LEN(PATHITEM(
+				PathText,
+				[Value],
+				TEXT
+			))
+		)
+
+		// 5) For each word, compute cumulative length
+		VAR WordsWithCumulative =
+		ADDCOLUMNS(
+			Words,
+			"Cumulative", VAR currentPos = [Value]
+			RETURN
+				SUMX(
+					FILTER(
+						Words,
+						[Value] <= currentPos
+					),
+					[Len] + IF(
+						[Value] = 1,
+						0,
+						1
+					)
+				)
+		)
+
+		// 6) Detect line breaks with strict pre-check
+		VAR WordsWithBreaks =
+		ADDCOLUMNS(
+			WordsWithCumulative,
+			"WouldExceed", VAR currentPos = [Value]
+			VAR currentLen = [Len]
+			VAR prevCumulative =
+			SUMX(
+				FILTER(
+					Words,
+					[Value] < currentPos
+				),
+				[Len] + IF(
+					[Value] = 1,
+					0,
+					1
+				)
+			)
+			VAR newLength = prevCumulative + IF(
+				currentPos = 1,
+				0,
+				1
+			) + currentLen
+			RETURN
+				IF(
+					currentPos = 1,
+					FALSE(),
+					newLength > Chunk
+				)
+		)
+
+		// 7) Assign groups based on breaks
+		VAR WordsWithGroup =
+		ADDCOLUMNS(
+			WordsWithBreaks,
+			"GroupId", VAR currentPos = [Value]
+			VAR exceeds = [WouldExceed]
+			VAR breaksBefore =
+			COUNTROWS(FILTER(
+				WordsWithBreaks,
+				[Value] < currentPos && [WouldExceed] = TRUE()
+			)
+			)
+			RETURN
+				IF(
+					currentPos = 1,
+					0,
+					breaksBefore + IF(
+						exceeds,
+						1,
+						0
+					)
+				)
+		)
+
+		// 8) Group and concatenate
+		VAR Lines =
+		ADDCOLUMNS(
+			SUMMARIZE(
+				WordsWithGroup,
+				[GroupId]
+			),
+			"Line", VAR g = [GroupId]
+			RETURN
+				TRIM(CONCATENATEX(
+					FILTER(
+						WordsWithGroup,
+						[GroupId] = g
+					),
+					[Word],
+					" ",
+					[Value],
+					ASC
+				)
+				)
+		)
+
+		// 9) Return final result with hyphens restored
+		RETURN
+			{
+				SUBSTITUTE(
+					CONCATENATEX(
+						Lines,
+						[Line],
+						UNICHAR(10),
+						[GroupId],
+						ASC
+					),
+					"- ",
+					"-"
+				)
+			}
+	annotation DAXLIB_PackageId = Gld.TextUtils
+	annotation DAXLIB_PackageVersion = 1.0.1
