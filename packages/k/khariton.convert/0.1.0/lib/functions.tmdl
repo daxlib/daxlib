@@ -1,0 +1,30 @@
+/// Creates a formatted time string of 'XX Days YY Hours ZZ Minutes' from a provided input in seconds.
+/// Requires integer inputs for seconds you are looking to convert, and your desired hours in a day.
+function 'Khariton.Convert.DayHourMinute' = 
+                (seconds: INT64 VAL,hoursInDay: INT64 VAL) =>
+		        var hoursInDay = hoursInDay*3600
+		        var days = ROUNDDOWN(divide(seconds,hoursInDay),0)
+		        var hours = rounddown(divide(seconds-(days*hoursInDay),3600),0)
+		        var minutes = rounddown(divide(seconds-(days*hoursInDay)-(hours*3600),60),0)
+		        var seconds = rounddown(seconds-(days*hoursInDay)-(hours*3600)-(minutes*60),0)
+
+		        var days_final = SWITCH(TRUE(),
+                        days>0 && days<10,"0" & CONVERT(days,string),
+                        days>0,CONVERT(days,string),
+                        "00")
+
+		        var hours_final = SWITCH(TRUE(),
+                        hours>0 && hours<10,"0" & CONVERT(hours,string),
+                        hours>0,CONVERT(hours,string),
+                        "00")
+
+		        var minutes_final = SWITCH(TRUE(),
+                        minutes>0 && minutes<10,"0" & CONVERT(minutes,string),
+                        minutes>0,CONVERT(minutes,string),
+                        "00")
+
+		        return days_final & " Days " & hours_final &  " Hours " & minutes_final & " Minutes"
+
+        annotation DAXLIB_PackageId = Khariton.Convert
+
+        annotation DAXLIB_PackageVersion = 0.1.0

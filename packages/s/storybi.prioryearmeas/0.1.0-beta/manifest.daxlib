@@ -1,0 +1,11 @@
+{
+  "id": "StoryBi.PriorYearMeas",
+  "version": "0.1.0-beta",
+  "authors": "Mark Walter",
+  "description": "Evaluates prior year measure results",
+  "tags": "DAX,UDF",
+  "releaseNotes": "DaxLib release 0.1.0-beta",
+  "projectUrl": "https://github.com/sql-bi/daxlib",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/s/storybi.prioryearmeas",
+  "icon": ""
+}

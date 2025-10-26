@@ -7,18 +7,31 @@
       "type": "string",
       "pattern": "^\\w+([.-]\\w+)*$",
       "maxLength": 128,
-      "description": "The package unique identifier."
+      "description": "The package unique identifier, also known as the package name or library name.",
+      "examples": [
+        "JohnDoe.Finance",
+        "Contoso.Conversion"
+      ]
     },
     "version": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9]+)?$",
       "maxLength": 64,
-      "description": "The package version, following the semantic versioning pattern. Version numbers may include a pre-release suffix."
+      "description": "The package version, following the semantic versioning pattern. Version numbers may include a pre-release suffix.",
+      "examples": [
+        "0.1.0-beta",
+        "1.0.0",
+        "1.3.0",
+        "2.1.0-alpha.1"
+      ]
     },
     "authors": {
       "type": "string",
       "maxLength": 128,
-      "description": "A comma-separated list of package authors."
+      "description": "A comma-separated list of package authors. This can include individual names or organization names",
+      "examples": [
+        "John Doe,Jane Smith"
+      ]
     },
     "description": {
       "type": "string",
@@ -28,7 +41,11 @@
     "tags": {
       "type": "string",
       "maxLength": 128,
-      "description": "A comma-separated list of tags and keywords that describe the package and aid discoverability of packages through search and filtering."
+      "description": "A comma-separated list of tags and keywords that describe the package and aid discoverability of packages through search and filtering.",      
+      "examples": [
+        "CONVERSION,LENGTH,AREA,VOLUME,WEIGHT,DATE,TIME,CURRENCY",
+        "KPI,REVENUE,EXPENSES,BUDGETING,PROFIT,LOSS"
+      ]
     },
     "releaseNotes": {
       "type": "string",
@@ -39,18 +56,31 @@
       "type": "string",
       "format": "uri",
       "maxLength": 256,
-      "description": "A URL to the project homepage."
+      "description": "A URL to the project homepage. This can point to the author's website or to the DaxLib library page if no homepage is available for the project.",
+      "examples": [
+        "https://example.com/my-dax-library-project",
+        "https://daxlib.org/package/DaxLib.Sample/"
+      ]
     },
     "repositoryUrl": {
       "type": "string",
       "format": "uri",
       "maxLength": 256,
-      "description": "A URL to the source code repository for the package."
+      "description": "A URL to the source code repository for the package. This can point to the author's public repository where users can submit issues and contribute or to the DaxLib repository if no public repository is available."
     },
     "icon": {
       "type": "string",
+      "pattern": "^/.+\\.png$",
       "maxLength": 64,
-      "description": "A path to a PNG image file within the package used as the package icon."
+      "description": "A path to a PNG image file within the package used as the package icon. Must start with '/'.",
+      "default": "/icon.png"
+    },
+    "readme": {
+      "type": "string",
+      "pattern": "^/.+\\.md$",
+      "maxLength": 64,
+      "description": "A path to a Markdown file within the package used as the package README. Must start with '/'",
+      "default": "/readme.md"
     }
   },
   "type": "object",
@@ -84,6 +114,9 @@
     },
     "icon": {
       "$ref": "#/definitions/icon"
+    },
+    "readme": {
+      "$ref": "#/definitions/readme"
     }
   },
   "required": [

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "PiotrBartela.TitleContext",
+  "version": "0.2.0",
+  "authors": "Piotr Bartela",
+  "description": "Two functions for enhanced business context display: a title with a presentation-style date interpretation and a subtitle showing dynamic filter context.",
+  "tags": "DATE,TITLE,FILTER,CONTEXT",
+  "releaseNotes": "Added: function for filter display (2 functions total), README. Changed: description, tags",
+  "projectUrl": "https://github.com/sql-bi/daxlib",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/p/piotrbartela.titlecontext",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}

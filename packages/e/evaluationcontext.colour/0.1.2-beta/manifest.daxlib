@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EvaluationContext.Colour",
+  "version": "0.1.2-beta",
+  "authors": "Jake Duddy",
+  "description": "A comprehensive set of User-Defined Functions designed to enable easy manipulation of hex colours",
+  "tags": "DAX,UDF,colour",
+  "releaseNotes": "Added Documentation page and `EvaluationContext.Colour.Hex.Interpolate` function",
+  "projectUrl": "https://evaluationcontext.github.io/EvaluationContext.Colour/",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/e/evaluationcontext.colour",
+  "icon": "/icon.png"
+}

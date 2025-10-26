@@ -1,0 +1,531 @@
+/// Width for all progress indicators
+function 'XU.SVG.Progress.Config.BoxWidth' = () => 140 
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// Height for all progress indicators
+function 'XU.SVG.Progress.Config.BoxHeight' = () => 20
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// Font for all progress indicators
+function 'XU.SVG.Progress.Config.FontFamily' = () => "Arial"
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// 💎 Description: Creates a horizontal progress bar as an SVG image
+/// ⚠️ Warning: Any measures that use this function must have the "DataCategory" property = "ImageUrl"
+/// ℹ️ Note: Enter "" to skip any optional parameter
+/// 📌 Example: XU.SVG.Progress.SimpleBar(0.3, "#E6E6E6", "#235EB5", 0, TRUE(), "", "#000000")
+function 'XU.SVG.Progress.SimpleBar' =
+		(
+			ProgressRatio : DECIMAL VAL,
+			BarBackgroundColor : STRING VAL,
+			BarFillColor : STRING VAL,
+			BarCornerRadius : DECIMAL VAL,
+			IfShowLabel : BOOLEAN VAL,
+			// 💡 Optional
+			LabelContent : STRING VAL,
+			// 💡 Optional
+			LabelTextColor : STRING VAL
+		) =>
+			// === Bar Config ===
+			VAR BoxWidth = XU.SVG.Progress.Config.BoxWidth()
+			VAR BoxHeight = XU.SVG.Progress.Config.BoxHeight()
+			VAR FinalBarCornerRadius = 
+				IF(
+					BarCornerRadius=BLANK(),
+					0,
+					BarCornerRadius
+				)
+
+			// === Label Config ===
+			VAR Label = 
+				SWITCH(
+					TRUE(),
+					NOT IfShowLabel ,
+					BLANK(),
+					LabelContent = "",
+					FORMAT(ProgressRatio, "0%"),
+					LabelContent
+				)
+			// === Label Config - Font ===
+			VAR LabelTextAnchor = "end" // "start" | "middle" | "end" 		
+			VAR LabelFontFamily = XU.SVG.Progress.Config.FontFamily()
+			VAR LabelFontSize = BoxHeight * 0.6
+			VAR FinalLabelFontColor = IF(LabelTextColor = "","#000000",LabelTextColor)
+			// === Label Config - Position ===
+			VAR LabelXOffset = - BoxWidth * 0.04
+			VAR LabelX = BoxWidth + LabelXOffset
+			VAR LabelY = BoxHeight / 2 + LabelFontSize * 0.35
+
+			// === Fill Calculation ===
+			VAR FillWidth = MIN(ProgressRatio * BoxWidth,BoxWidth)
+
+			// === Build SVG string ===
+			VAR SvgStart =
+				"data:image/svg+xml;utf8," & 
+				"<svg xmlns='http://www.w3.org/2000/svg' " &
+				"width='" & BoxWidth & "' " & 
+				"height='" & BoxHeight & "' " & 
+				">"
+
+			VAR BackgroundRect =
+				"<rect x='0' y='0' " &
+				"width='" & BoxWidth & "' " &
+				"height='" & BoxHeight & "' " &
+				"rx='" & FinalBarCornerRadius & "' " & 
+				"ry='" & FinalBarCornerRadius & "' " &
+				"fill='" & BarBackgroundColor & "' " &
+				"/>"
+
+			VAR FillRect =
+				IF(
+					FillWidth > 0,
+					"<rect x='0' y='0' " &
+					"width='" & FillWidth & "' " &
+					"height='" & BoxHeight & "' " &
+					"rx='" & FinalBarCornerRadius & "' " &
+					"ry='" & FinalBarCornerRadius & "' " & 
+					"fill='" & BarFillColor & "' " &
+					"/>",
+					""
+				)
+
+			VAR LabelSvg =
+				IF(
+					NOT ISBLANK(Label),
+					"<text x='" & LabelX & "' " &
+					"y='" & LabelY & "' " &
+					"fill='" & FinalLabelFontColor & "' " &
+					"font-family='" & LabelFontFamily & "' " &
+					"font-size='" & LabelFontSize & "' " &
+					"text-anchor='" & LabelTextAnchor & "' " & 
+					">" &
+					Label &
+					"</text>",
+					""
+				)
+
+			VAR SvgEnd = "</svg>"
+
+			RETURN
+			IF(
+				NOT ISBLANK(ProgressRatio),
+				SvgStart & BackgroundRect & FillRect & LabelSvg & SvgEnd,
+				BLANK()
+			)
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// 💎 Description: Creates a capsule-style horizontal progress bar as an SVG image
+/// ⚠️ Warning: Any measures that use this function must have the "DataCategory" property = "ImageUrl"
+/// ℹ️ Note: Enter "" to skip any optional parameter
+/// 📌 Example: XU.SVG.Progress.Capsule(0.3, "#E6E6E6", "#235EB5", TRUE(), "", "#000000")
+function 'XU.SVG.Progress.Capsule' =
+		(
+			ProgressRatio : DECIMAL VAL,
+			BarBackgroundColor : STRING VAL,
+			BarFillColor : STRING VAL,
+			IfShowLabel : BOOLEAN VAL,
+			// 💡 Optional
+			LabelContent : STRING VAL,
+			// 💡 Optional
+			LabelTextColor : STRING VAL
+		) =>
+			VAR BarCornerRadius = XU.SVG.Progress.Config.BoxHeight() / 2 
+
+			RETURN
+
+			XU.SVG.Progress.SimpleBar(ProgressRatio, BarBackgroundColor, BarFillColor, BarCornerRadius, IfShowLabel, LabelContent, LabelTextColor)
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+
+/// 💎 Description: Creates a horizontal dashed-line progress indicator as an SVG image
+/// ⚠️ Warning: Any measures that use this function must have the "DataCategory" property = "ImageUrl"
+/// ℹ️ Note: Enter "" to skip any optional parameter
+/// 📌 Example: XU.SVG.Progress.Dashed(0.3, "#235EB5", TRUE(), "", "#000000")
+function 'XU.SVG.Progress.Dashed' =
+		(
+			ProgressRatio : DECIMAL VAL,
+			LineColor : STRING VAL,
+			IfShowLabel : BOOLEAN VAL,
+			// 💡 Optional
+			LabelContent : STRING VAL,
+			// 💡 Optional
+			LabelTextColor : STRING VAL
+		) =>
+			// === Dash Config ===
+			VAR BoxWidth = XU.SVG.Progress.Config.BoxWidth()
+			VAR BoxHeight = XU.SVG.Progress.Config.BoxHeight()
+			VAR CenterY = BoxHeight / 2
+			VAR BackgroundOpacity = 0.3
+			VAR DashSize = 2
+
+			// === Label Config ===
+			VAR Label = 
+				SWITCH(
+					TRUE(),
+					NOT IfShowLabel ,
+					BLANK(),
+					LabelContent = "",
+					FORMAT(ProgressRatio, "0%"),
+					LabelContent
+				)
+			// === Label Config - Font ===
+			VAR LabelTextAnchor = "end" // "start" | "middle" | "end" 		
+			VAR LabelFontFamily = XU.SVG.Progress.Config.FontFamily()
+			VAR LabelFontSize = BoxHeight * 0.6
+			VAR FinalLabelFontColor = IF(LabelTextColor = "","#000000",LabelTextColor)
+			// === Label Config - Position ===
+			VAR LabelXOffset = - BoxWidth * 0.03
+			VAR LabelX = BoxWidth + LabelXOffset
+			VAR LabelY = BoxHeight / 2 + LabelFontSize * 0.35
+
+			// === Fill Calculation ===
+			VAR FillWidth = MIN(ProgressRatio * BoxWidth,BoxWidth)
+
+			// === Build SVG string ===
+			VAR SvgStart =
+				"data:image/svg+xml;utf8," &
+				"<svg xmlns='http://www.w3.org/2000/svg' width='" & BoxWidth & "' height='" & BoxHeight & "'>"
+
+			VAR BackgroundPath =
+				"<path d='M0 " & CenterY & " L" & BoxWidth & " " & CenterY & "' " &
+				"stroke='" & LineColor & "' " &
+				"stroke-opacity='" & BackgroundOpacity & "' " &
+				"stroke-width='" & BoxHeight & "' " &
+				"stroke-dasharray='" & DashSize & "' " &
+				"/>"
+
+			VAR FillPath =
+				IF(
+					FillWidth > 0,
+					"<path d='M0 " & CenterY & " L" & FillWidth & " " & CenterY & "' " &
+					"stroke='" & LineColor & "' " &
+					"stroke-width='" & BoxHeight & "' " &
+					"/>",
+					""
+				)
+
+			VAR LabelSvg =
+				IF(
+					NOT ISBLANK(Label),
+					"<text x='" & LabelX & "' " &
+					"y='" & LabelY & "' " &
+					"fill='" & FinalLabelFontColor & "' " &
+					"font-family='" & LabelFontFamily & "' " &
+					"font-size='" & LabelFontSize & "' " &
+					"text-anchor='" & LabelTextAnchor & "' " & 
+					">" &
+					Label &
+					"</text>",
+					""
+				)
+
+			VAR SvgEnd = "</svg>"
+
+			RETURN
+				IF(
+					NOT ISBLANK(ProgressRatio),
+					SvgStart & BackgroundPath & FillPath  & LabelSvg & SvgEnd,
+					BLANK()
+				)
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// 💎 Description: Creates a horizontal bar with a label displayed above it as an SVG image (two-line layout)
+/// ⚠️ Warning: Any measure that uses this function must have the "DataCategory" property = "ImageUrl"
+/// ℹ️ Note: Enter "" for LabelContent to automatically display the percentage of ProgressRatio
+/// 📌 Example: XU.SVG.Progress.LabeledBar(0.75, "#CCCCCC", "#235EB5", 2, TRUE(), "", "#000000")
+function 'XU.SVG.Progress.LabeledBar' =
+		(
+			ProgressRatio : DECIMAL VAL,
+			BarBackgroundColor : STRING VAL,
+			BarFillColor : STRING VAL,
+			BarCornerRadius : DECIMAL VAL,
+			IfShowLabel : BOOLEAN VAL,
+			// 💡 Optional
+			LabelContent : STRING VAL,
+			// 💡 Optional
+			LabelTextColor : STRING VAL
+		) =>
+			// === Bar Config ===
+			VAR BoxWidth = XU.SVG.Progress.Config.BoxWidth() * 0.7
+			VAR BoxHeight = XU.SVG.Progress.Config.BoxHeight()
+			VAR BarHeight = BoxHeight * 0.3
+			VAR BarPositionX = 0
+			VAR BarPositionY = BoxHeight * 0.6
+			VAR CornerRadius = BarCornerRadius
+
+			// === Label Config===
+			VAR FinalLabel =
+				SWITCH(
+					TRUE(),
+					NOT IfShowLabel, BLANK(),
+					LabelContent = "", FORMAT(ProgressRatio, "#,0%"),
+					LabelContent
+				)
+			// === Label Config - Font ===
+			VAR LabelFontFamily = XU.SVG.Progress.Config.FontFamily()
+			VAR LabelFontSize = BoxHeight * 0.45
+			VAR FinalLabelFontColor = IF(LabelTextColor = "","#000000",LabelTextColor)
+			// === Label Position ===
+			VAR LabelXOffset = 0
+			VAR LabelYOffset = - BoxHeight * 0.15
+
+			// === Fill Calculation ===
+			VAR FillWidth = MAX(0, MIN(ProgressRatio, 1)) * BoxWidth
+
+			// === Build SVG string ===
+			VAR SvgStart =
+				"data:image/svg+xml;utf8," &
+				"<svg xmlns='http://www.w3.org/2000/svg' " &
+				"width='" & BoxWidth & "' " &
+				"height='" & BoxHeight & "'>"
+
+			VAR BackgroundRect =
+				"<rect x='" & BarPositionX & "' y='" & BarPositionY & "' " &
+				"width='" & BoxWidth & "' height='" & BarHeight & "' " &
+				"rx='" & CornerRadius & "' ry='" & CornerRadius & "' " &
+				"fill='" & BarBackgroundColor & "' />"
+
+			VAR FillRect =
+				IF(
+					FillWidth > 0,
+					"<rect x='" & BarPositionX & "' y='" & BarPositionY & "' " &
+					"width='" & FillWidth & "' height='" & BarHeight & "' " &
+					"rx='" & CornerRadius & "' ry='" & CornerRadius & "' " &
+					"fill='" & BarFillColor & "' />",
+					""
+				)
+
+			VAR LabelText =
+				IF(
+					NOT ISBLANK(FinalLabel),
+					"<text x='" & BarPositionX + LabelXOffset & "' " &
+					"y='" & BarPositionY + LabelYOffset & "' " &
+					"fill='" & FinalLabelFontColor & "' " &
+					"font-family='" & LabelFontFamily & "' " &
+					"font-size='" & LabelFontSize & "' " &
+					"text-anchor='start'>" &
+					FinalLabel &
+					"</text>",
+					""
+				)
+
+			VAR SvgEnd = "</svg>"
+
+			RETURN
+				IF(
+					ISBLANK(ProgressRatio),
+					BLANK(),
+					SvgStart & BackgroundRect & FillRect & LabelText & SvgEnd
+				)
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// 💎 Description: Creates a circular pie-style progress indicator as an SVG image.
+/// ⚠️ Warning: Any measures that use this function must have the "DataCategory" property = "ImageUrl"
+/// 📌 Example: XU.SVG.Progress.Pie(0.65, "#E6E6E6", "#235EB5", "#000000")
+function 'XU.SVG.Progress.Pie' =
+		(
+			ProgressRatio : DECIMAL VAL,
+			BackgroundColor : STRING VAL,
+			FillColor : STRING VAL,
+			StrokeColor : STRING VAL
+		) =>
+			// === Pie Config===
+			VAR BoxSize = XU.SVG.Progress.Config.BoxHeight()
+			VAR PieSize = BoxSize * 0.94                    
+			VAR PieX = BoxSize * 0.03      
+			VAR PieY = BoxSize * 0.03                                
+			VAR FinalStrokeColor = StrokeColor
+			VAR StrokeWidth = 0.2
+			VAR FinalBackgroundColor = IF(ProgressRatio >= 1, FillColor, BackgroundColor)
+
+			// === Logic ===
+			VAR ClampedVal = MAX(0, MIN(ProgressRatio, 1))
+			VAR Radius = PieSize / 2
+			VAR CX = PieX + Radius
+			VAR CY = PieY + Radius
+			// Start at 12 o'clock (top)
+			VAR StartX = CX
+			VAR StartY = CY - Radius
+			// End angle
+			VAR EndAngleDeg = ClampedVal * 360
+			VAR EndAngleRad = EndAngleDeg * 2 * PI() / 360
+			// End point
+			VAR EndX = CX + Radius * SIN(EndAngleRad)
+			VAR EndY = CY - Radius * COS(EndAngleRad)
+			// Arc flags
+			VAR LargeArcFlag = IF(EndAngleDeg > 180, 1, 0)
+			VAR SweepFlag = 1  // Clockwise
+
+			// === Build SVG ===
+			VAR SvgStart =
+				"data:image/svg+xml;utf8," &
+				"<svg xmlns='http://www.w3.org/2000/svg' " &
+				"width='" & BoxSize & "' " &
+				"height='" & BoxSize & "'>"
+
+			VAR PathBackground =
+				"<circle cx='" & CX & "' cy='" & CY & "' r='" & Radius & "' " &
+				"fill='" & FinalBackgroundColor & "' " &
+				"stroke='" & FinalStrokeColor & "' " &
+				"stroke-width='" & StrokeWidth & "' />"
+
+			VAR PathFill =
+				IF(
+					ClampedVal > 0 && ClampedVal <1,
+					"<path d='M " & CX & " " & CY &
+					" L " & StartX & " " & StartY &
+					" A " & Radius & " " & Radius & " 0 " & LargeArcFlag & " " & SweepFlag & " " & EndX & " " & EndY &
+					" Z' fill='" & FillColor & "' />",
+					""
+				)
+
+			VAR SvgEnd = "</svg>"
+
+			RETURN
+				IF(
+					ISBLANK(ProgressRatio),
+					BLANK(),
+					SvgStart & PathBackground & PathFill & SvgEnd
+				)
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0
+
+/// 💎 Description: Creates a donut-style progress indicator with a label displayed in the center as an SVG image
+/// ⚠️ Warning: Any measures that use this function must have the "DataCategory" property = "ImageUrl"
+/// 📌 Example: XU.SVG.Progress.Donut(0.75, "#E6E6E6", "#FFFFFF", 0.6, "#235EB5", "#000000", TRUE(), "#000000")
+function 'XU.SVG.Progress.Donut' =
+		(
+			ProgressRatio : DECIMAL VAL,
+			BackgroundColor : STRING VAL,
+			InnerBackgroundColor : STRING VAL,
+			// ℹ️ Scope [0-1]
+			InnerRadiusPCT : DECIMAL VAL,
+			FillColor : STRING VAL,
+			StrokeColor : STRING VAL,
+			IfShowLabel : BOOLEAN VAL,
+			// 💡 Optional
+			LabelTextColor : STRING VAL
+		) =>
+			// === Pie Config ===
+			VAR BoxSize = XU.SVG.Progress.Config.BoxHeight()
+			VAR PieSize = BoxSize * 0.94                    
+			VAR PieX = BoxSize * 0.03      
+			VAR PieY = BoxSize * 0.03                                
+			VAR FinalStrokeColor = StrokeColor
+			VAR StrokeWidth = 0.2
+			VAR Radius = PieSize / 2
+			VAR FinalBackgroundColor = IF(ProgressRatio >= 1, FillColor, BackgroundColor)
+
+			// === Inner Circle Config ===
+			VAR InnerRadius = Radius * MAX(0, MIN(InnerRadiusPCT, 1))
+
+			// === Label Config===
+			VAR FinalLabel =
+				SWITCH(
+					TRUE(),
+					NOT IfShowLabel, BLANK(),
+					ProgressRatio >= 10, "999%+",
+					FORMAT(ProgressRatio, "0%")
+				)
+			// === Label Config - Font ===
+			VAR LabelFontFamily = XU.SVG.Progress.Config.FontFamily()
+			VAR FinalLabelFontColor = IF(LabelTextColor = "", "#000000", LabelTextColor)
+			VAR LabelLen = Len(FinalLabel)
+			VAR LabelFontSize = SWITCH(LabelLen, 5, InnerRadius * 0.55, 4, InnerRadius * 0.6, InnerRadius * 0.8)
+			// === Label Position ===
+			VAR LabelXOffset = 0 //SWITCH(LabelLen, 5, - InnerRadius * 0.85, 4, - InnerRadius * 0.76, 3, - InnerRadius * 0.76)
+			VAR LabelYOffset =  SWITCH(LabelLen, 5, InnerRadius * 0.2, 4, InnerRadius * 0.22, InnerRadius * 0.28)
+
+			// === Logic ===
+			VAR ClampedVal = MAX(0, MIN(ProgressRatio, 1))
+			VAR CX = PieX + Radius
+			VAR CY = PieY + Radius
+			// Start at 12 o'clock (top)
+			VAR StartX = CX
+			VAR StartY = CY - Radius
+			// End angle
+			VAR EndAngleDeg = ClampedVal * 360
+			VAR EndAngleRad = EndAngleDeg * 2 * PI() / 360
+			// End point
+			VAR EndX = CX + Radius * SIN(EndAngleRad)
+			VAR EndY = CY - Radius * COS(EndAngleRad)
+			// Arc flags
+			VAR LargeArcFlag = IF(EndAngleDeg > 180, 1, 0)
+			VAR SweepFlag = 1  // Clockwise
+
+			// === Build SVG ===
+			VAR SvgStart =
+				"data:image/svg+xml;utf8," &
+				"<svg xmlns='http://www.w3.org/2000/svg' " &
+				"width='" & BoxSize & "' " &
+				"height='" & BoxSize & "'>"
+
+			VAR PathBackground =
+				"<circle cx='" & CX & "' cy='" & CY & "' r='" & Radius & "' " &
+				"fill='" & FinalBackgroundColor & "' " &
+				"stroke='" & FinalStrokeColor & "' " &
+				"stroke-width='" & StrokeWidth & "' />"
+
+			VAR PathFill =
+				IF(
+					ClampedVal > 0 && ClampedVal <1,
+					"<path d='M " & CX & " " & CY &
+					" L " & StartX & " " & StartY &
+					" A " & Radius & " " & Radius & " 0 " & LargeArcFlag & " " & SweepFlag & " " & EndX & " " & EndY &
+					" Z' fill='" & FillColor & "' />",
+					""
+				)
+
+			VAR CenterCircle = 
+				"<circle cx='" & CX & "' cy='" & CY & "' r='" & InnerRadius & "' " &
+				"fill='" & InnerBackgroundColor & "' stroke='" & StrokeColor & "' stroke-width='" & StrokeWidth & "' />"
+
+			VAR LabelText =
+				IF(
+					NOT ISBLANK(FinalLabel),
+					"<text x='" & CX + LabelXOffset & "' " &
+					"y='" & CY + LabelYOffset & "' " &
+					"fill='" & FinalLabelFontColor & "' " &
+					"font-family='" & LabelFontFamily & "' " &
+					"font-size='" & LabelFontSize & "' " &
+					"text-anchor='middle'>" &
+					FinalLabel &
+					"</text>",
+					""
+				)
+
+			VAR SvgEnd = "</svg>"
+
+			RETURN
+				IF(
+					ISBLANK(ProgressRatio),
+					BLANK(),
+					SvgStart & PathBackground & PathFill & CenterCircle & LabelText & SvgEnd
+				)
+
+	annotation DAXLIB_PackageId = XU.SVG.Progress
+
+	annotation DAXLIB_PackageVersion = 0.2.0

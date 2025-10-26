@@ -1,0 +1,32 @@
+/// MyFunc1 description
+function 'DaxLib.Sample.MyFunc1' = () => 1
+
+	annotation DAXLIB_PackageId = DaxLib.Sample
+
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// MyFunc2 description
+function 'DaxLib.Sample.MyFunc2' =
+		(
+		    // Argument description
+		    param1: DOUBLE
+		) =>
+		    param1
+
+	annotation DAXLIB_PackageId = DaxLib.Sample
+
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// MyFunc3 description
+function 'DaxLib.Sample.MyFunc3' =
+		(
+		    // Parameter description
+		    param1: INT64,
+		    // Parameter description
+		    param2: INT64
+		) =>
+		    param1 + param2
+
+	annotation DAXLIB_PackageId = DaxLib.Sample
+
+	annotation DAXLIB_PackageVersion = 0.1.6

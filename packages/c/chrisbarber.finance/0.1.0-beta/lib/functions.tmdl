@@ -1,0 +1,35 @@
+/// Creates the P&L Lines ||| amount = credit less debit amount ||| layoutTable = table containing the P&L layout |||layoutKey = column containing the primary key for the layout table ||| layoutCalculationType = column containing the type of calculation on the line ||| layoutFromColumn = column for subtotals containing the primary key from ||| layoutToColumn = column for subtotals containing the primary key t||| accountIndicator = indicator for "Revenue" (1) or "Expense" (-1) for the account
+function 'ChrisBarber.Finance.ProfitAndLoss.Basic' =
+		(
+		    amount: EXPR,
+			layoutTable: anyref EXPR, 
+			layoutKey: anyref EXPR,
+			layoutCalculationType: anyref EXPR,
+			layoutFromColumn: anyref EXPR,
+			layoutToColumn: anyref EXPR,
+			accountTable: anyref EXPR,
+			accountIndicatorColumn: anyref EXPR
+		) =>
+		VAR accountinscope = ISFILTERED( accountTable )
+		VAR NCLD_filter_context_calculated_table =
+		    CALCULATETABLE(
+		        layoutTable,
+		        REMOVEFILTERS( layoutTable ),
+		        layoutKey >= MIN( layoutFromColumn ),
+		        layoutKey <= MIN( layoutToColumn)
+		    )
+		VAR step1_lineitem = amount * MAX( accountIndicatorColumn)
+		VAR step2_subtotal =
+		    CALCULATE( amount * MAX( accountIndicatorColumn ), NCLD_filter_context_calculated_table )
+		VAR step3_addblanks = SWITCH(
+		        TRUE( ),
+		        accountinscope, BLANK( ),
+		        SELECTEDVALUE( layoutCalculationType ) = "Blank", 0
+		    )
+		VAR step3_add_zero = COALESCE( step1_lineitem, step2_subtotal, step3_addblanks )
+		RETURN
+		    step3_add_zero
+
+	annotation DAXLIB_PackageId = ChrisBarber.Finance
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta

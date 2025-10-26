@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Khariton.Convert",
+  "version": "0.1.0",
+  "authors": "Allan Khariton",
+  "description": "Functions to convert duration to formatted string",
+  "tags": "function, duration, conversion",
+  "projectUrl": "https://github.com/sql-bi/daxlib",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/k/khariton.convert"
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Arekchr.Tokens",
+  "version": "0.1.0",
+  "authors": "Arek Chrosciewicz",
+  "description": "A set of functions that can be used in calculated tables to generate random sample data for experimentation, prototypes, and testing. During beta, functions and parameters are likely to evolve and change dramatically.",
+  "tags": "CF, Colour",
+  "releaseNotes": "A set of 3 UDFs to function as tokens bases for measures that can switch between light and dark mode for use in conditional formatting fields.",
+  "projectUrl": "https://github.com/arekchr1/Arekchr.Tokens",
+  "repositoryUrl": "https://github.com/arekchr1/Arekchr.Tokens",
+  "icon": "/icon.png"
+}

@@ -1,0 +1,95 @@
+/// Returns token based on function input.
+function 'Arekchr.Tokens.ColumnBased' = ```
+        (
+        
+                -- Theme table column reference to [Theme] column from Arekchr.Theme function.
+                themeColumn : anyref,
+        
+                -- Light Value (in HEX) column.
+                lightColumn : anyref,
+        
+                -- Dark Value (in HEX) column.
+                darkColumn  : anyref,
+        
+        
+                -- Token table name column.
+                tokenColumn : anyref,
+        
+                -- Token name value from tokenColumn.
+                tokenName : string
+        
+            ) =>
+        
+                VAR __token = tokenName
+                VAR __light = LOOKUPVALUE(lightColumn, tokenColumn, __token)
+                VAR __dark = LOOKUPVALUE(darkColumn, tokenColumn, __token)
+        
+        
+                VAR __selectedTheme = SELECTEDVALUE(themeColumn)
+                
+                VAR __result = SWITCH(
+                    __selectedTheme,
+                    "Dark", __dark,
+                    __light
+                )
+        
+        
+                RETURN
+                __result
+        ```
+
+    annotation DAXLIB_PackageId = Arekchr.Tokens
+	annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Returns a ready to use token value tied to Arekchr.Theme function.
+function 'Arekchr.Tokens.Default' = ```
+        (
+            
+                -- light theme value in HEX
+                lightValue : scalar,
+        
+                -- dark theme value in HEX
+                darkValue : scalar,
+        
+                -- Theme table column reference to [Theme] column from Arekchr.Theme function.
+                themeColumn : anyref
+        
+            ) =>
+        
+        
+                VAR __lightValue = lightValue
+                VAR __darkValue = darkValue
+        
+                VAR __selectedTheme = SELECTEDVALUE(themeColumn)
+                VAR __switch = 
+                            SWITCH(
+                                __selectedTheme,
+                                "Dark", __darkValue,
+                                __lightValue
+                                )
+        
+            
+                
+                RETURN
+                CONCATENATE(__switch,"")
+        ```
+
+    annotation DAXLIB_PackageId = Arekchr.Tokens
+	annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Doesn't take a parameter, returns a theme table.
+function 'Arekchr.Tokens.ThemeSwitch' =
+        (
+            ) =>
+        
+                    DATATABLE(
+                        "Theme", STRING,
+                        "Icon", STRING,
+                        {
+                            {"Light", "○"},
+                            {"Dark", "◐"}
+                        }
+                    )
+
+    annotation DAXLIB_PackageId = Arekchr.Tokens
+	annotation DAXLIB_PackageVersion = 0.1.0

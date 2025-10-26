@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Panoramasoft.UI",
+  "version": "0.1.0",
+  "authors": "Gerson Aguilar - panoramasoft.com",
+  "description": "A DAX function (UDF) for generating dynamic SVG-based UI elements in Power BI. Create dynamic templates with configurable positions, sizes, and colors. Perfect for dashboards, layout visualizations, and custom visual components.",
+  "tags": "DAX,UDF,FUNCTION,LIB,SVG,UI,VISUALIZATION,CANVAS,RECTANGLES,LAYOUT,DASHBOARD",
+  "releaseNotes": "Initial v0.1.0 release of PANORAMASOFT.UI library. Features WindowCanvas function for generating dynamic SVG template with size and position from table data. Supports: configurable canvas dimensions, multiple rectangles with custom positions/sizes/colors, rounded corners, optional dimension info labels (height, width, x, y coordinates), and generates data URI compatible with Power BI ImageUrl data category. Ideal for creating interactive dashboards, space planning visualizations, component layout diagrams, and custom UI elements.",
+  "projectUrl": "https://github.com/sql-bi/daxlib",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/p/panoramasoft.ui",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}

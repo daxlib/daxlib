@@ -1,0 +1,152 @@
+/// Converts a numeric value to a gradient color between three colors (bad, neutral, good). The colors should be provided as HEX codes (e.g., "#FF0000" for red). The function calculates the color based on the position of the current value between the min, neutral, and max values.If the current value is below the neutral value, it interpolates between the bad and neutral colors. If the current value is above the neutral value, it interpolates between the neutral and good colors.
+function 'Formatting.Color.ValueToGradientColor' =
+		
+		(
+			// HEX code for the color representing bad values (e.g., "#FF0000" for red)
+			badColor: SCALAR STRING,
+			// HEX code for the color representing neutral values (e.g., "#FFFF00" for yellow)
+			neutralColor: SCALAR STRING,
+			// HEX code for the color representing good values (e.g., "#00FF00" for green)
+			goodColor: SCALAR STRING,
+			// The minimum value of the range (currentValue <= minValue will return badColor)
+			minValue: SCALAR,
+			// The neutral value of the range (currentValue == neutralValue will return neutralColor)
+			neutralValue: SCALAR,
+			// The maximum value of the range (currentValue >= maxValue will return goodColor)
+			maxValue: SCALAR,
+			// The current value to evaluate and convert to a color
+			currentValue: SCALAR
+		) =>
+		SWITCH(
+			TRUE( ),
+			LEN( badColor ) < 7,
+				ERROR( "badColor argument should be a HEX code" ),
+			LEN( neutralColor ) < 7,
+				ERROR( "neutralColor argument should be a HEX code" ),
+			LEN( goodColor ) < 7,
+				ERROR( "goodColor argument should be a HEX code" ),
+			VAR pct =
+				IF(
+					currentValue > neutralValue,
+					DIVIDE(
+						currentValue - neutralValue,
+						maxValue - neutralValue
+					),
+					DIVIDE(
+						currentValue - neutralValue,
+						minValue - neutralValue
+					)
+				)
+			VAR Base = 16
+			VAR BitTable =
+				SELECTCOLUMNS( GENERATESERIES( 1, 2 ), "bitNum", [Value] )
+			VAR t =
+				GENERATE(
+					GENERATESERIES( 2, 6, 2 ),
+					VAR badHex = MID( badColor, [Value], 2 )
+					VAR neutralHex = MID( neutralColor, [Value], 2 )
+					VAR goodHex = MID( goodColor, [Value], 2 )
+					VAR badNum =
+						SUMX(
+							// Loop control
+							GENERATESERIES( 0, LEN( badHex ) - 1 ),
+							// Inner Calc
+							VAR c = MID( badHex, LEN( badHex ) - [Value], 1 )
+							VAR d =
+								SWITCH(
+									c,
+									"A", 10,
+									"B", 11,
+									"C", 12,
+									"D", 13,
+									"E", 14,
+									"F", 15,
+									INT( c )
+								)
+							RETURN
+								d * POWER( 16, [Value] )
+						)
+					VAR neutralNum =
+						SUMX(
+							// Loop control
+							GENERATESERIES( 0, LEN( neutralHex ) - 1 ),
+							// Inner Calc
+							VAR c = MID( neutralHex, LEN( neutralHex ) - [Value], 1 )
+							VAR d =
+								SWITCH(
+									c,
+									"A", 10,
+									"B", 11,
+									"C", 12,
+									"D", 13,
+									"E", 14,
+									"F", 15,
+									INT( c )
+								)
+							RETURN
+								d * POWER( 16, [Value] )
+						)
+					VAR goodNum =
+						SUMX(
+							// Loop control
+							GENERATESERIES( 0, LEN( goodHex ) - 1 ),
+							// Inner Calc
+							VAR c = MID( goodHex, LEN( goodHex ) - [Value], 1 )
+							VAR d =
+								SWITCH(
+									c,
+									"A", 10,
+									"B", 11,
+									"C", 12,
+									"D", 13,
+									"E", 14,
+									"F", 15,
+									INT( c )
+								)
+							RETURN
+								d * POWER( 16, [Value] )
+						)
+					VAR myNum =
+						IF(
+							pct >= 0,
+							ROUND( neutralNum + pct * ( goodNum - neutralNum ), 0 ),
+							ROUND( neutralNum + pct * ( neutralNum - badNum ), 0 )
+						)
+					VAR myHex =
+						CONCATENATEX(
+							BitTable,
+							VAR c =
+								MOD( TRUNC( myNum / POWER( Base, [bitNum] - 1 ) ), Base )
+							RETURN
+								SWITCH(
+									c,
+									10, "A",
+									11, "B",
+									12, "C",
+									13, "D",
+									14, "E",
+									15, "F",
+									c
+								),
+							,
+							[bitNum], DESC
+						)
+					RETURN
+						ROW(
+							"BadHex", badHex,
+							"NeutralHex", neutralHex,
+							"GoodHEx", goodHex,
+							"badnum", badNum,
+							"neutralNum", neutralNum,
+							"goodNum", goodNum,
+							"myNum", myNum,
+							"myHex", myHex
+						)
+				)
+			VAR myHex = "#" & CONCATENATEX( t, [myHex], , [Value], ASC )
+			RETURN
+				myHex
+		)
+
+	annotation DAXLIB_PackageId = Formatting.Color
+	annotation DAXLIB_PackageVersion = 0.1.1-beta

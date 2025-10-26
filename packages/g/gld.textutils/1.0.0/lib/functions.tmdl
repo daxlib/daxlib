@@ -1,0 +1,140 @@
+/// WordWrap(texttosplice: string, Chunk: int64)
+/// Purpose: Wrap input text into lines whose length is at most `Chunk` characters,
+///          without breaking words. Returns a single-column, single-row table
+///          containing the wrapped text joined by LF (UNICHAR(10)).
+function 'Gld.TextUtils.WordWrap' =
+			(texttosplice: string, Chunk: int64) =>
+			        // 1) Clean the text: replace CR/LF with spaces, then trim/collapse spaces
+			        VAR CleanText =
+			            TRIM(
+			                SUBSTITUTE(
+			                    SUBSTITUTE(
+			                        texttosplice,
+			                        UNICHAR(13),   // CR -> space
+			                        " "
+			                    ),
+			                    UNICHAR(10),      // LF -> space
+			                    " "
+			                )
+			            )
+			
+			        // 2) Choose a delimiter to emulate a PATH for PATHITEM
+			        VAR Delim = "|"
+			
+			        // 3) Convert the (space-separated) text into a "path" string using Delim
+			        VAR PathText =
+			            SUBSTITUTE(
+			                CleanText,
+			                " ",
+			                Delim
+			            )
+			
+			        // 4) Count words by counting delimiters + 1
+			        VAR WordCount =
+			            1 + LEN(PathText) - LEN(
+			                SUBSTITUTE(
+			                    PathText,
+			                    Delim,
+			                    ""
+			                )
+			            )
+			
+			        // 5) Build a base table with positions 1..WordCount and the corresponding word at each position
+			        VAR WordsBase =
+			            ADDCOLUMNS(
+			                GENERATESERIES(
+			                    1,         // start index
+			                    WordCount, // end index
+			                    1          // step
+			                ),
+			                "Word",
+			                    PATHITEM(  // get the Nth item from the path string (1-based)
+			                        PathText,
+			                        [Value],
+			                        TEXT
+			                    )
+			            )
+			
+			        // 6) Add word lengths and length-with-preceding-space (except for the very first word)
+			        VAR WordsWithLen =
+			            ADDCOLUMNS(
+			                WordsBase,
+			                "Len", LEN([Word]),
+			                "LenWithSpace",
+			                    LEN([Word]) +
+			                    IF([Value] = 1, 0, 1) // include one preceding space for words after the first
+			            )
+			
+			        // 7) Compute cumulative length up to each word (includes preceding spaces)
+			        VAR WordsWithCum =
+			            ADDCOLUMNS(
+			                WordsWithLen,
+			                "Cum",
+			                    VAR currentValue = [Value]
+			                    RETURN
+			                        // running total of LenWithSpace from word 1 to current word
+			                        SUMX(
+			                            FILTER(
+			                                WordsWithLen,
+			                                [Value] <= currentValue
+			                            ),
+			                            [LenWithSpace]
+			                        )
+			            )
+			
+			        // 8) Assign each word to a group (line) based on cumulative length and Chunk
+			        //    INT(DIVIDE([Cum] - 1, Chunk)) is effectively FLOOR((Cum-1)/Chunk)
+			        //    so words that land exactly on a multiple of Chunk remain in the current line
+			        VAR WordsWithCumAndGroup =
+			            ADDCOLUMNS(
+			                WordsWithCum,
+			                "GroupId",
+			                    INT(
+			                        DIVIDE(
+			                            [Cum] - 1,
+			                            Chunk
+			                        )
+			                    )
+			            )
+			
+			        // 9) Get distinct group ids (one per line)
+			        VAR GroupIds =
+			            SUMMARIZE(
+			                WordsWithCumAndGroup,
+			                [GroupId]
+			            )
+			
+			        // 10) For each group, concatenate its words back into a line (original order), with single spaces
+			        VAR Lines =
+			            ADDCOLUMNS(
+			                GroupIds,
+			                "Line",
+			                    VAR g = [GroupId]
+			                    RETURN
+			                        TRIM( // safety: remove any accidental leading/trailing spaces
+			                            CONCATENATEX(
+			                                FILTER(
+			                                    WordsWithCumAndGroup,
+			                                    [GroupId] = g
+			                                ),
+			                                [Word],  // text to concatenate
+			                                " ",     // separator
+			                                [Value], // order by original position
+			                                ASC
+			                            )
+			                        )
+			            )
+			
+			        // 11) Return a single value (wrapped text with LF separators) inside a one-cell table
+			        RETURN
+			        {
+			            CONCATENATEX(
+			                Lines,
+			                [Line],
+			                UNICHAR(10), // LF between lines
+			                [GroupId],
+			                ASC
+			            )
+			        }
+	annotation DAXLIB_PackageId = Gld.TextUtils
+	annotation DAXLIB_PackageVersion = 1.0.0

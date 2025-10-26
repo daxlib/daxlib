@@ -1,0 +1,323 @@
+/// Area: convert acres(ac) to square meters(m²)
+function 'DaxLib.Convert.AcresToSquareMeters' =
+		(
+		    // The area in acres
+		    area: DOUBLE
+		) =>
+		    area * 4046.8564224
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Temperature: convert Celsius(°C) to Fahrenheit(°F)
+function 'DaxLib.Convert.CelsiusToFahrenheit' =
+		(
+		    // The temperature in Celsius
+		    temperature: DOUBLE
+		) =>
+		    ( temperature * ( 9 / 5 ) ) + 32
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Temperature: convert Celsius(°C) to Kelvin(K)
+function 'DaxLib.Convert.CelsiusToKelvin' =
+		(
+		    // The temperature in Celsius
+		    temperature: DOUBLE
+		) =>
+		    temperature + 273.15
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Volume: convert cubic feet(ft³) to cubic meters(m³)
+function 'DaxLib.Convert.CubicFeetToCubicMeters' =
+		(
+		    // The volume in cubic feet
+		    volume: DOUBLE
+		) =>
+		    volume / 35.31466672148859
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Flow: convert cubic meters per hour (m³/h) to liters per second (L/s)
+function 'DaxLib.Convert.CubicMetersPerHourToLitersPerSecond' =
+		(
+		    // The flow rate in cubic meters per hour
+		    flow: DOUBLE
+		) =>
+		    flow / 3.6
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Volume: convert cubic meters(m³) to cubic feet(ft³)
+function 'DaxLib.Convert.CubicMetersToCubicFeet' =
+		(
+		    // The volume in cubic meters
+		    volume: DOUBLE
+		) =>
+		    volume * 35.31466672148859
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Time: convert human-readable time to epoch(Unix time)
+function 'DaxLib.Convert.DateToEpoch' =
+		(
+		    // The date to convert
+		    dateTime : DATETIME
+		) =>
+		    DATEDIFF ( DATE ( 1970, 1, 1 ), dateTime, SECOND )
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Time: convert epoch(Unix time) to human-readable time
+function 'DaxLib.Convert.EpochToDate' =
+		(
+		    // The epoch to convert
+		    epoch: INT64
+		) =>
+		    DATE ( 1970, 1, 1 ) + ( epoch / 86400 )
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Temperature: convert Fahrenheit(°F) to Celsius(°C)
+function 'DaxLib.Convert.FahrenheitToCelsius' =
+		(
+		    // The temperature in Fahrenheit
+		    temperature: DOUBLE
+		) =>
+		    ( temperature - 32 ) / ( 9 / 5 )
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Temperature: convert Fahrenheit(°F) to Kelvin(K)
+function 'DaxLib.Convert.FahrenheitToKelvin' =
+		(
+		    // The temperature in Fahrenheit
+		    temperature: DOUBLE
+		) =>
+		    ( temperature + 459.67 ) * ( 5 / 9 )
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Distance: convert feet(ft) to meters(m)
+function 'DaxLib.Convert.FeetToMeters' =
+		(
+		    // The distance in feet
+		    distance: DOUBLE
+		) =>
+		    distance / 3.28084
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Volume: convert gallons(gal:US-fluid) to liters(L)
+function 'DaxLib.Convert.GallonsToLiters' =
+		(
+		    // The volume in gallons
+		    volume: DOUBLE
+		) =>
+		    volume * 3.785411784
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Weight: convert kilograms(kg) to pounds(lb:avdp)
+function 'DaxLib.Convert.KilogramsToPounds' =
+		(
+		    // The weight in kilograms
+		    kilograms: DOUBLE
+		) =>
+		    kilograms * 2.2046226218487757
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Temperature: convert Kelvin(K) to Celsius(°C)
+function 'DaxLib.Convert.KelvinToCelsius' =
+		(
+		    // The temperature in Kelvin
+		    temperature: DOUBLE
+		) =>
+		    temperature - 273.15
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Temperature: convert Kelvin(K) to Fahrenheit(°F)
+function 'DaxLib.Convert.KelvinToFahrenheit' =
+		(
+		    // The temperature in Kelvin
+		    temperature: DOUBLE
+		) =>
+		    ( temperature * ( 9 / 5 ) ) - 459.67
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Distance: convert kilometers(km) to miles(mi)
+function 'DaxLib.Convert.KilometersToMiles' =
+		(
+		    // The distance in kilometers
+		    distance: DOUBLE
+		) =>
+		    distance / 1.609344
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Flow: convert liters per second (L/s) to cubic meters per hour (m³/h)
+function 'DaxLib.Convert.LitersPerSecondToCubicMetersPerHour' =
+		(
+		    // The flow rate in liters per second
+		    flow: DOUBLE
+		) =>
+		    flow * 3.6
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Volume: convert liters(L) to gallons(US fluid)
+function 'DaxLib.Convert.LitersToGallons' =
+		(
+		    // The volume in liters
+		    volume: DOUBLE
+		) =>
+		    volume / 3.785411784
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Distance: convert meters(m) to feet(ft)
+function 'DaxLib.Convert.MetersToFeet' =
+		(
+		    // The distance in meters
+		    distance: DOUBLE
+		) =>
+		    distance * 3.28084
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Speed: convert miles per hour (mph) to kilometers per hour (km/h)
+function 'DaxLib.Convert.MilesPerHourToKilometersPerHour' =
+		(
+		    // The speed in miles per hour
+		    speed: DOUBLE
+		) =>
+		    speed * 1.609344
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Distance: convert miles(mi) to kilometers(km)
+function 'DaxLib.Convert.MilesToKilometers' =
+		(
+		    // The distance in miles
+		    distance: DOUBLE
+		) =>
+		    distance * 1.609344
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Weight: convert pounds(lb:avdp) to kilograms(kg)
+function 'DaxLib.Convert.PoundsToKilograms' =
+		(
+		    // The weight in pounds
+		    pounds: DOUBLE
+		) =>
+		    pounds / 2.2046226218487757
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Weight: convert pounds(lb:avdp) to stones(st)
+function 'DaxLib.Convert.PoundsToStones' =
+		(
+		    // The weight in pounds
+		    pounds: DOUBLE
+		) =>
+		    pounds / 14
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Area: convert square feet(ft²) to square meters(m²)
+function 'DaxLib.Convert.SquareFeetToSquareMeters' =
+		(
+		    // The area in square feet
+		    area: DOUBLE
+		) =>
+		    area / 10.763910416709722
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Area: convert square meters(m²) to acres(ac)
+function 'DaxLib.Convert.SquareMetersToAcres' =
+		(
+		    // The area in square meters
+		    area: DOUBLE
+		) =>
+		    area / 4046.8564224
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Area: convert square meters(m²) to square feet(ft²)
+function 'DaxLib.Convert.SquareMetersToSquareFeet' =
+		(
+		    // The area in square meters
+		    area: DOUBLE
+		) =>
+		    area * 10.763910416709722
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Weight: convert stones(st) to pounds(lb:avdp)
+function 'DaxLib.Convert.StonesToPounds' =
+		(
+		    // The weight in stones
+		    stones: DOUBLE
+		) =>
+		    stones * 14
+
+	annotation DAXLIB_PackageId = DaxLib.Convert
+
+	annotation DAXLIB_PackageVersion = 0.1.2

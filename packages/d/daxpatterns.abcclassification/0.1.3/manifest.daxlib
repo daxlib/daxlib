@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DaxPatterns.AbcClassification",
+  "version": "0.1.3",
+  "authors": "SQLBI",
+  "description": "Implementation of ABC Classification patterns using User Defined Functions.",
+  "tags": "DAX,UDF,FUNCTION,LIB,PATTERN,ABC",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}

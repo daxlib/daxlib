@@ -1,0 +1,597 @@
+/// Int to Hex conversion
+/// number	INT64	The integer to convert
+/// padTo	INT64	Optional: Minimum number of characters in result
+function 'EvaluationContext.Colour.Int.ToHex' =
+		(
+			number: INT64,
+			padTo: INT64
+		) =>
+		
+			VAR MinPadding = IF( number = 0, 1, CEILING( LOG( number + 1, 16 ), 1 ) )
+			VAR ActualPadding = MAX( MinPadding, IF( ISBLANK( padTo ), MinPadding, padTo ) )
+			VAR BitTable = GENERATESERIES( 1, ActualPadding )
+			VAR Hex =
+				CONCATENATEX(
+					BitTable,
+					VAR c = MOD( TRUNC( number / POWER( 16, [Value] - 1 ) ), 16 )
+					RETURN
+						SWITCH( c, 10, "A", 11, "B", 12, "C", 13, "D", 14, "E", 15, "F", c ),
+					"",
+					[Value],
+					DESC
+				)
+		
+			RETURN Hex
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Hex to Int conversion
+/// hex		STRING	The hex value to convert i.e "1A"
+function 'EvaluationContext.Colour.Hex.ToInt' =
+		(
+			hex: STRING
+		) =>
+		
+			VAR CleanHex = IF( LEFT( hex, 1 ) = "#", MID( hex, 2, LEN( hex ) - 1), hex )
+			VAR Result =
+				SUMX(
+					GENERATESERIES( 1, LEN( CleanHex ) ),
+					VAR Pos = [Value]
+					VAR c = MID( CleanHex, Pos, 1 )
+					VAR DigitValue = SWITCH( UPPER( c ), "A", 10, "B", 11, "C", 12, "D", 13, "E", 14, "F", 15, VALUE( c ) )
+					RETURN
+						DigitValue * POWER( 16, LEN( hex ) - Pos )
+				)
+		
+			RETURN Result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// RGB to Hex conversion
+/// red		INT64	The red value (0-255)
+/// green	INT64	The green value (0-255)
+/// blue	INT64	The blue value (0-255)
+/// alpha	DOUBLE	Optional: The alpha value (0-1)
+function 'EvaluationContext.Colour.RGB.ToHex' =
+		(
+			red: INT64,
+			green: INT64,
+			blue: INT64,
+			alpha: DOUBLE
+		) =>
+		
+			"#" &
+			EvaluationContext.Colour.Int.ToHex( red, 2 ) &
+			EvaluationContext.Colour.Int.ToHex( green, 2 ) &
+			EvaluationContext.Colour.Int.ToHex( blue, 2 ) &
+			IF( NOT ISBLANK( alpha ), EvaluationContext.Colour.Int.ToHex( alpha * 255, 2 ) )
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// HSL to Hex conversion
+/// h		INT64	Hue (0-360)
+/// s		DOUBLE	Saturation (0-1)
+/// l		DOUBLE	Lightness (0-1)
+/// alpha	DOUBLE	Optional: The alpha value (0-1)
+function 'EvaluationContext.Colour.HSL.ToHex' =
+		(
+			h: INT64,
+			s: DOUBLE,
+			l: DOUBLE,
+			alpha: DOUBLE
+		) =>
+		
+			VAR C = ( 1 - ABS(2 * l - 1 ) ) * s
+			VAR X = C * ( 1 - ABS( MOD( H / 60, 2 ) - 1 ) )
+			VAR M = l - C / 2
+		
+			VAR RGB1 = SWITCH(
+				true,
+				h < 60, C & "," & X & ",0",
+				h < 120, X & "," & C & ",0",
+				h < 180, "0," & C & "," & X,
+				h < 240, "0," & X & "," & C,
+				h < 300, X & ",0," & C,
+				C & ",0," & X
+			)
+		
+			VAR RPrime = 		VALUE( LEFT( RGB1, SEARCH(",", RGB1 ) - 1 ) )
+			VAR Remaining = 	RIGHT( RGB1, LEN( RGB1 ) - SEARCH( ",", RGB1 ) )
+			VAR GPrime = 		VALUE( LEFT( Remaining, SEARCH( ",", Remaining ) - 1) )
+			VAR BPrime = 		VALUE( RIGHT( Remaining, LEN( Remaining ) - SEARCH( ",", Remaining ) ) )
+		
+			VAR FinalR = 		ROUND( ( RPrime + M) * 255, 0)
+			VAR FinalG = 		ROUND( ( GPrime + M) * 255, 0)
+			VAR FinalB = 		ROUND( ( BPrime + M) * 255, 0)
+		
+			VAR result =
+				"#" &
+				EvaluationContext.Colour.Int.ToHex(FinalR, 2) &
+				EvaluationContext.Colour.Int.ToHex(FinalG, 2) &
+				EvaluationContext.Colour.Int.ToHex(FinalB, 2) &
+				IF( NOT ISBLANK( alpha ), EvaluationContext.Colour.Int.ToHex( alpha * 255, 2 ) )
+		
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Hue of Hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+function 'EvaluationContext.Colour.Hex.Hue' =
+		(
+			hexColor: STRING
+		) =>
+		
+			VAR CleanHex = IF( LEFT( hexColor, 1) = "#", MID(hexColor, 2, 6), MID( hexColor, 1, 6 ) )
+			VAR R = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 1, 2 ) )
+			VAR G = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 3, 2 ) )
+			VAR B = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 5, 2 ) )
+		
+			VAR Mx = MAX( MAX( R, G ), B)
+			VAR Mn = MIN( MIN( R, G ), B)
+			VAR Delta = Mx - Mn
+		
+			VAR H =
+				SWITCH(
+					true,
+					Delta = 0, 0,
+					Mx = R, MOD( ( G - B ) / Delta, 6),
+					Mx = G, ( ( B - R ) / Delta ) + 2,
+					Mx = B, ( ( R - G ) / Delta ) + 4
+				) * 60
+		
+			VAR result = ROUND(H, 0)
+		
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Saturation of Hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+function 'EvaluationContext.Colour.Hex.Saturation' =
+		(
+			hexColor: STRING
+		) =>
+		
+			VAR CleanHex = IF( LEFT( hexColor , 1) = "#", MID( hexColor, 2, 6), MID( hexColor, 1, 6 ) )
+			VAR R = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 1, 2 ) )
+			VAR G = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 3, 2 ) )
+			VAR B = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 5, 2 ) )
+		
+			VAR Mx = MAX( MAX( R, G ), B)
+			VAR Mn = MIN( MIN( R, G ), B)
+			VAR Delta = Mx - Mn
+		
+			VAR L = ( Mx + Mn ) / 2
+			VAR S =
+				SWITCH(
+					true,
+					Delta = 0, 0,
+					L <= 127.5, Delta / (Mx + Mn),
+					L > 127.5, Delta / (510 - Mx - Mn)
+				)
+		
+			RETURN S
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Luminance of Hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+function 'EvaluationContext.Colour.Hex.Luminance' =
+		(
+			hexColor: STRING
+		) =>
+		
+			VAR CleanHex = IF( LEFT( hexColor, 1) = "#", MID( hexColor, 2, 6), MID( hexColor, 1, 6 ) )
+			VAR R = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 1, 2 ) )
+			VAR G = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 3, 2 ) )
+			VAR B = EvaluationContext.Colour.Hex.ToInt( MID( CleanHex, 5, 2 ) )
+		
+			VAR Mx = MAX( MAX( R, G ), B)
+			VAR Mn = MIN( MIN( R, G ), B)
+			VAR Delta = Mx - Mn
+		
+			VAR L = ( Mx + Mn ) / 2
+			VAR result = ROUND( L, 4 ) / 255
+		
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Alpha of Hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+function 'EvaluationContext.Colour.Hex.Alpha' =
+		(
+			hexColor: STRING
+		) =>
+		
+			VAR CleanHex = IF( LEFT( hexColor, 1) = "#", MID( hexColor, 2, 8), MID( hexColor, 1, 8 ) )
+			VAR AlphaHex = IF( LEN( CleanHex ) = 8, MID( CleanHex, 7, 2 ), "FF" )
+			VAR Alpha = EvaluationContext.Colour.Hex.ToInt( AlphaHex )
+			VAR result = ROUND( Alpha / 255, 4 )
+		
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Adjust Hue of a hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+/// hueChange	DOUBLE	The hue adjustment in degrees (-360 to 360)
+function 'EvaluationContext.Colour.Hex.AdjustHue' =
+		(
+			hexColor: STRING,
+			hueChange: DOUBLE
+		) =>
+		
+			VAR H = EvaluationContext.Colour.Hex.Hue( hexColor )
+			VAR S = EvaluationContext.Colour.Hex.Saturation( hexColor )
+			VAR L = EvaluationContext.Colour.Hex.Luminance( hexColor )
+			VAR A = EvaluationContext.Colour.Hex.Alpha( hexColor )
+		
+			VAR NewH = MOD( H + hueChange + 360, 360 )  // Wrap around 0-360
+		
+			RETURN
+				EvaluationContext.Colour.HSL.ToHex( NewH, S, L, A )
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Adjust Saturation of a hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+/// saturationChange	DOUBLE	The saturation adjustment (-1 to 1)
+function 'EvaluationContext.Colour.Hex.AdjustSaturation' =
+		(
+			hexColor: STRING,
+			saturationChange: DOUBLE
+		) =>
+		
+			VAR H = EvaluationContext.Colour.Hex.Hue( hexColor )
+			VAR S = EvaluationContext.Colour.Hex.Saturation( hexColor )
+			VAR L = EvaluationContext.Colour.Hex.Luminance( hexColor )
+			VAR A = EvaluationContext.Colour.Hex.Alpha( hexColor )
+		
+			VAR NewS = MIN( MAX( S + saturationChange, 0 ), 1 )
+		
+			RETURN
+				EvaluationContext.Colour.HSL.ToHex( H, NewS, L, A )
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Adjust Luminance of a hex color
+/// hexColor		STRING	The hex color to evaluate i.e "#01B8AA"
+/// luminanceChange	DOUBLE	The luminance adjustment (-1 to 1)
+function 'EvaluationContext.Colour.Hex.AdjustLuminance' =
+		(
+			hexColor: STRING,
+			luminanceChange: DOUBLE
+		) =>
+		
+			VAR H = EvaluationContext.Colour.Hex.Hue( hexColor )
+			VAR S = EvaluationContext.Colour.Hex.Saturation( hexColor )
+			VAR L = EvaluationContext.Colour.Hex.Luminance( hexColor )
+			VAR A = EvaluationContext.Colour.Hex.Alpha( hexColor )
+		
+			VAR NewL = MIN( MAX( L + luminanceChange, 0 ), 1 )
+		
+			RETURN
+				EvaluationContext.Colour.HSL.ToHex( H, S, NewL, A )
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Adjust Alpha of a Hex color
+/// hexColor	STRING	The hex color to evaluate i.e "#01B8AA"
+/// alphaChange	DOUBLE	The alpha adjustment (-1 to 1)
+function 'EvaluationContext.Colour.Hex.AdjustAlpha' =
+		(
+			hexColor: STRING,
+			alphaChange: DOUBLE
+		) =>
+		
+			VAR CleanHex = IF( LEFT( hexColor, 1) = "#", MID( hexColor, 2, 6), MID( hexColor, 1, 6 ) )
+			VAR A = EvaluationContext.Colour.Hex.Alpha( hexColor )
+		
+			VAR NewA = EvaluationContext.Colour.Int.ToHex( MIN( MAX( A + alphaChange, 0 ), 1 ) * 255, 2 )
+		
+			VAR result = "#" & CleanHex & NewA
+		
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Adjust Hue, Saturation, Luminance and Alpha of a hex color
+/// hexColor			STRING	The hex color to evaluate i.e "#01B8AA"
+/// hueChange			DOUBLE	The hue adjustment in degrees (-360 to 360), 0 for no change
+/// saturationChange	DOUBLE	The saturation adjustment (-1 to 1), 0 for no change
+/// luminanceChange		DOUBLE	The luminance adjustment (-1 to 1), 0 for no change
+/// alphaChange			DOUBLE	The alpha adjustment (-1 to 1), 0 for no change
+function 'EvaluationContext.Colour.Hex.AdjustColour' =
+		(
+			hexColor: STRING,
+			hueChange: INT64,
+			saturationChange: DOUBLE,
+			luminanceChange: DOUBLE,
+			alphaChange: DOUBLE
+		) =>
+		
+			VAR Step1 = IF( HueChange = 0, hexColor, EvaluationContext.Colour.Hex.AdjustHue( hexColor, hueChange ) )
+			VAR Step2 = IF( saturationChange = 0, Step1, EvaluationContext.Colour.Hex.AdjustSaturation( Step1, saturationChange ) )
+			VAR Step3 = IF( luminanceChange = 0, Step2, EvaluationContext.Colour.Hex.AdjustLuminance( Step2, luminanceChange ) )
+			VAR Step4 = IF( alphaChange = 0, Step3, EvaluationContext.Colour.Hex.AdjustAlpha( Step3, alphaChange ) )
+		
+			RETURN Step4
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Interpolate between two Hex colors by a given percentage
+/// startHexColour	STRING	The starting Hex colour (e.g., "#FF0000")
+/// endHexColour	STRING	The ending Hex colour (e.g., "#0000FF")  
+/// percentage		DOUBLE	The interpolation percentage (0.0 = startColor, 1.0 = endColor)
+function 'EvaluationContext.Colour.Hex.Interpolate' = 
+		(
+			startHexColour: STRING,
+			endHexColour: STRING,
+			percentage: DOUBLE
+		) =>
+
+			// Clamp percentage between 0 and 1
+			VAR _ClampedPercentage = MIN( MAX( percentage, 0 ), 1 )
+
+			// Clean Hex codes
+			VAR _StartHex = SUBSTITUTE( startHexColour, "#", "" )
+			VAR _EndHex = 	SUBSTITUTE( endHexColour, "#", "" )
+
+			// Extract and convert RGB components using your existing Hex.ToInt function
+			VAR _StartR = 	EvaluationContext.Colour.Hex.ToInt( MID( _StartHex, 1, 2 ) )
+			VAR _StartG = 	EvaluationContext.Colour.Hex.ToInt( MID( _StartHex, 3, 2 ) )
+			VAR _StartB = 	EvaluationContext.Colour.Hex.ToInt( MID( _StartHex, 5, 2 ) )
+
+			VAR _EndR = 	EvaluationContext.Colour.Hex.ToInt( MID( _EndHex, 1, 2 ) )
+			VAR _EndG = 	EvaluationContext.Colour.Hex.ToInt( MID( _EndHex, 3, 2 ) )
+			VAR _EndB = 	EvaluationContext.Colour.Hex.ToInt( MID( _EndHex, 5, 2 ) )
+
+			// Interpolate RGB values
+			VAR _InterpolatedR = ROUND( _StartR + ( _EndR - _StartR ) * _ClampedPercentage, 0 )
+			VAR _InterpolatedG = ROUND( _StartG + ( _EndG - _StartG ) * _ClampedPercentage, 0 )
+			VAR _InterpolatedB = ROUND( _StartB + ( _EndB - _StartB ) * _ClampedPercentage, 0 )
+
+			// Convert back to hex using your existing RGB.ToHex function
+			VAR result = 
+				EvaluationContext.Colour.RGB.ToHex(
+					_InterpolatedR,
+					_InterpolatedG, 
+					_InterpolatedB,
+					BLANK()  // No alpha
+				)
+
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Select theme colour, wrapping around to the start if variant exceeds available options
+/// themeName	STRING	The theme name e.g. "Office", "Power BI"
+/// variant		INT64	The variant index (1-N, wraps around if exceeds available variants)
+function 'EvaluationContext.Colour.Hex.Theme' =
+		(
+			themeName: STRING,
+			variant: INT64
+		) =>
+		
+			VAR Themes =
+				DATATABLE(
+				"ThemeName", STRING,
+				"Variant", INTEGER,
+				"Colour", STRING,
+				{
+					// Power BI Default
+					{"Power BI", 1, "#118DFF"},
+					{"Power BI", 2, "#12239E"},
+					{"Power BI", 3, "#E66C37"},
+					{"Power BI", 4, "#6B007B"},
+					{"Power BI", 5, "#E044A7"},
+					{"Power BI", 6, "#744EC2"},
+					{"Power BI", 7, "#D9B300"},
+					{"Power BI", 8, "#D64550"},
+					{"Power BI", 9, "#197278"},
+					{"Power BI", 10, "#1AAB40"},
+					{"Power BI", 11, "#15C6F4"},
+					{"Power BI", 12, "#4092FF"},
+					{"Power BI", 13, "#FFA058"},
+					{"Power BI", 14, "#BE5DC9"},
+					{"Power BI", 15, "#F472D0"},
+					{"Power BI", 16, "#B5A1FF"},
+					{"Power BI", 17, "#C4A200"},
+					{"Power BI", 18, "#FF8080"},
+					{"Power BI", 19, "#00DBBC"},
+					{"Power BI", 20, "#5BD667"},
+					{"Power BI", 21, "#0091D5"},
+					{"Power BI", 22, "#4668C5"},
+					{"Power BI", 23, "#FF6300"},
+					{"Power BI", 24, "#99008A"},
+					{"Power BI", 25, "#EC008C"},
+					{"Power BI", 26, "#533285"},
+					{"Power BI", 27, "#99700A"},
+					{"Power BI", 28, "#FF4141"},
+					{"Power BI", 29, "#1F9A85"},
+					{"Power BI", 30, "#25891C"},
+					{"Power BI", 31, "#0057A2"},
+					{"Power BI", 32, "#002050"},
+					{"Power BI", 33, "#C94F0F"},
+					{"Power BI", 34, "#450F54"},
+					{"Power BI", 35, "#B60064"},
+					{"Power BI", 36, "#34124F"},
+					{"Power BI", 37, "#6A5A29"},
+					{"Power BI", 38, "#1AAB40"},
+					{"Power BI", 39, "#BA141A"},
+					{"Power BI", 40, "#0C3D37"},
+					{"Power BI", 41, "#0B511F"},
+		
+					// Modern Corporate - Professional blues and grays
+					{"Modern Corporate", 1, "#2E3440"},
+					{"Modern Corporate", 2, "#3B4252"},
+					{"Modern Corporate", 3, "#434C5E"},
+					{"Modern Corporate", 4, "#4C566A"},
+					{"Modern Corporate", 5, "#5E81AC"},
+					{"Modern Corporate", 6, "#81A1C1"},
+		
+					// Ocean Breeze - Cool blues and teals
+					{"Ocean Breeze", 1, "#0077BE"},
+					{"Ocean Breeze", 2, "#00A8CC"},
+					{"Ocean Breeze", 3, "#40E0D0"},
+					{"Ocean Breeze", 4, "#87CEEB"},
+					{"Ocean Breeze", 5, "#B0E0E6"},
+					{"Ocean Breeze", 6, "#E0F6FF"},
+		
+					// Sunset Vibes - Warm oranges and reds
+					{"Sunset Vibes", 1, "#FF6B35"},
+					{"Sunset Vibes", 2, "#F7931E"},
+					{"Sunset Vibes", 3, "#FFD23F"},
+					{"Sunset Vibes", 4, "#EE4B2B"},
+					{"Sunset Vibes", 5, "#C04000"},
+					{"Sunset Vibes", 6, "#FFCBA4"},
+		
+					// Forest Green - Natural greens
+					{"Forest Green", 1, "#355E3B"},
+					{"Forest Green", 2, "#228B22"},
+					{"Forest Green", 3, "#32CD32"},
+					{"Forest Green", 4, "#90EE90"},
+					{"Forest Green", 5, "#98FB98"},
+					{"Forest Green", 6, "#F0FFF0"},
+		
+					// Purple Rain - Rich purples
+					{"Purple Rain", 1, "#301934"},
+					{"Purple Rain", 2, "#663399"},
+					{"Purple Rain", 3, "#9966CC"},
+					{"Purple Rain", 4, "#BA55D3"},
+					{"Purple Rain", 5, "#DDA0DD"},
+					{"Purple Rain", 6, "#E6E6FA"},
+		
+					// Monochrome - Sophisticated grays
+					{"Monochrome", 1, "#1C1C1C"},
+					{"Monochrome", 2, "#333333"},
+					{"Monochrome", 3, "#666666"},
+					{"Monochrome", 4, "#999999"},
+					{"Monochrome", 5, "#CCCCCC"},
+					{"Monochrome", 6, "#F5F5F5"},
+		
+					// Vibrant Tech - Bold and energetic
+					{"Vibrant Tech", 1, "#FF0080"},
+					{"Vibrant Tech", 2, "#00FFFF"},
+					{"Vibrant Tech", 3, "#FFFF00"},
+					{"Vibrant Tech", 4, "#FF8000"},
+					{"Vibrant Tech", 5, "#8000FF"},
+					{"Vibrant Tech", 6, "#00FF80"},
+		
+					// Earth Tones - Natural browns and beiges
+					{"Earth Tones", 1, "#8B4513"},
+					{"Earth Tones", 2, "#A0522D"},
+					{"Earth Tones", 3, "#CD853F"},
+					{"Earth Tones", 4, "#DEB887"},
+					{"Earth Tones", 5, "#F4A460"},
+					{"Earth Tones", 6, "#FFF8DC"},
+		
+					// Pastel Dreams - Soft and gentle
+					{"Pastel Dreams", 1, "#FFB3BA"},
+					{"Pastel Dreams", 2, "#FFDFBA"},
+					{"Pastel Dreams", 3, "#FFFFBA"},
+					{"Pastel Dreams", 4, "#BAFFC9"},
+					{"Pastel Dreams", 5, "#BAE1FF"},
+					// {"Pastel Dreams", 6, "#E1BAFF"},
+		
+					// Midnight Blue - Deep blues and navy
+					{"Midnight Blue", 1, "#191970"},
+					{"Midnight Blue", 2, "#000080"},
+					{"Midnight Blue", 3, "#0000CD"},
+					{"Midnight Blue", 4, "#4169E1"},
+					{"Midnight Blue", 5, "#6495ED"},
+					{"Midnight Blue", 6, "#B0C4DE"}
+				}
+			)
+		
+			VAR ThemeColors = FILTER(Themes, [ThemeName] = themeName)
+			VAR MaxVariant = MAXX(ThemeColors, [Variant])
+			VAR AdjustedVariant = IF(
+				MaxVariant > 0,
+				MOD( variant - 1, MaxVariant ) + 1,
+				variant
+			)
+			VAR SelectedColor =
+				MAXX(
+					FILTER( ThemeColors, [Variant] = AdjustedVariant),
+					[Colour]
+				)
+		
+			RETURN SelectedColor
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Linear gradient of a hex colour
+/// hexColor		STRING	The base hex color e.g. "#01B8AA"
+/// variant			INT64	The variant index (1-N, wraps around if exceeds steps)
+/// steps			INT64	The number of steps in the gradient (minimum = 2)
+/// linearRange		DOUBLE	The range of luminance adjustment for linear theme (e.g. 0.6 for a range of -0.3 to +0.3)
+function 'EvaluationContext.Colour.Hex.LinearTheme' =
+		(
+			hexColor: STRING,
+			variant: INT64,
+			steps: INT64,
+			linearRange: DOUBLE
+		) =>
+		
+			VAR StepSize = linearRange / ( steps - 1 )
+			VAR AdjustedVariant = MOD( variant - 1, steps ) + 1
+			VAR Hex =
+				EvaluationContext.Colour.Hex.AdjustLuminance(
+					hexColor,
+					( (AdjustedVariant - 1) * StepSize ) - ( linearRange / 2 )
+				)
+		
+			RETURN Hex
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// Select a text color (black or white) based on background hex color for contrast
+/// backgroundHex	STRING	The background hex color to evaluate i.e "#01B8AA"
+function 'EvaluationContext.Colour.Hex.TextColour' =
+		(
+			backgroundHex: STRING
+		) =>
+		
+			VAR L = EvaluationContext.Colour.Hex.Luminance( backgroundHex )
+			VAR result = IF( L > 0.5, "#000000", "#FFFFFF")  // dark text for light backgrounds, light text for dark backgrounds
+		
+			RETURN result
+
+	annotation DAXLIB_PackageId = EvaluationContext.Colour
+
+	annotation DAXLIB_PackageVersion = 0.1.2-beta

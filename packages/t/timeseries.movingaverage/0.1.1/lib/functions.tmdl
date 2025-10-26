@@ -1,0 +1,154 @@
+/// Returns a simple moving average (SMA) of the expression calculated along N number of periods.
+function 'TimeSeries.MovingAverage.Simple' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR ) =>
+        VAR _Window = 
+            CALCULATETABLE( 
+                WINDOW( -(lookbackPeriods - 1), REL, 0, REL, SUMMARIZE ( ALL ( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ), 
+                LASTNONBLANK( dateColumn, expression )
+            )
+        RETURN
+            AVERAGEX( _Window, expression )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1
+
+/// Returns a weighted moving average (WMA) of the weighted expression calculated along N number of periods.
+function 'TimeSeries.MovingAverage.Weighted' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR,
+            weightExpression: NUMERIC EXPR ) =>
+        VAR _Window = 
+            CALCULATETABLE(
+                WINDOW( -(lookbackPeriods - 1), REL, 0, REL, SUMMARIZE ( ALL ( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ),
+                LASTNONBLANK( dateColumn, expression )
+            )
+        VAR _Numerator = SUMX( _Window, expression * weightExpression )
+        VAR _Denominator = SUMX( _Window, weightExpression )
+        RETURN
+            DIVIDE( _Numerator, _Denominator )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1
+
+function 'TimeSeries.MovingAverage.LinearWeighted' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR ) =>
+        VAR _Window = CALCULATETABLE( WINDOW( -(lookbackPeriods - 1), REL, 0, REL, SUMMARIZE( ALL( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ), LASTNONBLANK( dateColumn, expression ) )
+        VAR _IndexedWindow = ADDCOLUMNS( _Window, "@Index", ROWNUMBER( _Window, ORDERBY( dateColumn, ASC ) ) )
+        RETURN 
+            DIVIDE( 
+                SUMX( _IndexedWindow, expression * [@Index] ),
+                SUMX( _IndexedWindow, [@Index] )
+            )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1
+
+/// Returns an exponentially weighted moving average (EMA or EWMA) of the expression calculated along N number of periods.
+function 'TimeSeries.MovingAverage.Exponential' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR ) =>
+        VAR _NewLookback = lookbackPeriods * 12 // Increase the lookback for the exponential weighting enough so that the decimals become irrelevant.
+        VAR _Window = 
+            CALCULATETABLE( 
+                WINDOW( -_NewLookback, REL, 0, REL, SUMMARIZE ( ALL ( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ),
+                LASTNONBLANK( dateColumn, expression )
+            )
+        VAR _IndexedWindow = ADDCOLUMNS( _Window, "@Index", ROWNUMBER( _Window, ORDERBY( dateColumn, DESC ) ) - 1 )
+        VAR _SmoothingFactor = DIVIDE ( 2, lookbackPeriods + 1 )
+        RETURN
+            // Exponentially weight expression
+            SUMX( _IndexedWindow, expression * _SmoothingFactor * POWER( 1 - _SmoothingFactor, [@Index] ) ) + 
+            // Fix beginning of time series due to exponential weighting.
+            SUMX( INDEX( 1, _IndexedWindow), expression * _SmoothingFactor * POWER( 1 - _SmoothingFactor, [@Index] ) * DIVIDE(lookbackPeriods - 1, 2) )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1
+
+/// Returns a double exponential moving average (DEMA) of the expression calculated along N number of periods.
+function 'TimeSeries.MovingAverage.DoubleExponential' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR ) =>
+        VAR _NewLookback = lookbackPeriods * 12 // Increase the lookback for the exponential weighting enough so that the decimals become irrelevant. A multiplier of 12 corrects out to 10 decimal places.
+        VAR _Window = 
+            CALCULATETABLE(
+                WINDOW( -_NewLookback, REL, 0, REL, SUMMARIZE ( ALL ( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ),
+                LASTNONBLANK( dateColumn, expression )
+            )
+        VAR _IndexedWindow = ADDCOLUMNS( _Window, "@Index", ROWNUMBER( _Window, ORDERBY( dateColumn, DESC ) ) - 1 )
+        VAR _SmoothingFactor =
+            DIVIDE ( 2, lookbackPeriods + 1 )
+        VAR _EWMAWindow = ADDCOLUMNS( _IndexedWindow, "EWMA", TimeSeries.MovingAverage.Exponential( dateColumn, timeSeriesTable, lookbackPeriods, expression ) )
+        RETURN
+            ( 2 * TimeSeries.MovingAverage.Exponential( dateColumn, timeSeriesTable, lookbackPeriods, expression ) ) -
+            ( SUMX( _EWMAWindow, [EWMA] * _SmoothingFactor * POWER( 1 - _SmoothingFactor, [@Index] ) ) +
+            SUMX( INDEX( 1, _EWMAWindow), [EWMA] * _SmoothingFactor * POWER( 1 - _SmoothingFactor, [@Index] ) * DIVIDE(lookbackPeriods - 1, 2) ) )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1
+
+/// Returns a triangularly weighted moving average (TWMA) of the weighted expression calculated along N number of periods.
+function 'TimeSeries.MovingAverage.Triangular' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR ) =>
+        VAR _Window = 
+            CALCULATETABLE(
+                WINDOW( -(lookbackPeriods - 1), REL, 0, REL, SUMMARIZE( ALL( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ),
+                LASTNONBLANK( dateColumn, expression )
+            )
+        RETURN 
+            AVERAGEX( ADDCOLUMNS( _Window, "SMA", TimeSeries.MovingAverage.Simple( dateColumn, timeSeriesTable, lookbackPeriods, expression )), [SMA] )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1
+
+/// Returns a geometric moving average (GMA) of the expression calculated along N number of periods.
+function 'TimeSeries.MovingAverage.Geometric' = ```
+        ( 
+            dateColumn : ANYREF EXPR, 
+            timeSeriesTable: ANYREF EXPR,
+            lookbackPeriods : SCALAR INT64, 
+            expression : NUMERIC EXPR ) =>
+        VAR _Window = 
+            CALCULATETABLE( 
+                WINDOW( -(lookbackPeriods - 1), REL, 0, REL, SUMMARIZE ( ALL ( timeSeriesTable ), dateColumn ), ORDERBY( dateColumn, ASC ) ),
+                LASTNONBLANK( dateColumn, expression )
+            )
+        RETURN
+            GEOMEANX( _Window, expression )
+        ```
+
+    annotation DAXLIB_PackageId = TimeSeries.MovingAverage
+
+    annotation DAXLIB_PackageVersion = 0.1.1

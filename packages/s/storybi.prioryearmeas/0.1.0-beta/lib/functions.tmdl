@@ -1,0 +1,22 @@
+/// This function evaluates a prior year result base on the measure parameter.
+function 'StoryBi.PriorYearMeas.PriorYearMeasure' =
+			(
+			expMeasure : ANYREF EXPR,
+			dateTable : ANYREF EXPR,
+			yearColumn : ANYREF EXPR,
+			offsetValue : VAL
+		    ) =>
+		    VAR __CurrYear =  MAX(yearColumn)
+
+		    VAR Result =
+			CALCULATE(
+				expMeasure,
+				REMOVEFILTERS(dateTable),
+					yearColumn=__CurrYear-offsetValue
+					)
+				RETURN
+					Result
+
+	annotation DAXLIB_PackageId = StoryBi.PriorYearMeas
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+

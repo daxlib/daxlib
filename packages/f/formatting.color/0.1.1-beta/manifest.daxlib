@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Formatting.Color",
+  "version": "0.1.1-beta",
+  "authors": "Bernat Agulló",
+  "description": "Functions to help formatting, with modification of colors, calculations for axis max and min values and more",
+  "tags": "DAX,UDF,FUNCTION,LIB,FORMATTING",
+  "icon": "/icon.png"
+}

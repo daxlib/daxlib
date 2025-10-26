@@ -1,0 +1,290 @@
+/// Dynamic DAX function that converts a filtered date range into a clear, presentation-style title.
+/// Example: 10/1/2023–6/30/2024 -> "Revenue Qtr 4'23 – Qtr 2'24 (3 Qtrs)"
+/// or 1/1/2024–12/31/2024 -> "Revenue Last Year (2024)".
+/// Parameters: prefix (e.g. "Revenue"), date column (e.g. 'Calendar'[Date]).
+function 'PiotrBartela.TitleContext.Period' = ```
+		(
+			Title : STRING,
+			DateCol : ANYREF
+		) =>
+				
+				
+		-- Date Definitions --
+		VAR _Td =
+			TODAY()
+		VAR _MinDate =
+			MIN ( DateCol )
+		VAR _MaxDate =
+			MAX ( DateCol )
+		VAR _MinDateDay =
+			DAY ( _MinDate )
+		VAR _MinDateMonth =
+			MONTH ( _MinDate )
+		VAR _MinDateQuarter =
+			QUARTER ( _MinDate )
+		VAR _MinDateYear =
+			YEAR ( _MinDate )
+		VAR _MaxDateDay =
+			DAY ( _MaxDate )
+		VAR _MaxDateMonth =
+			MONTH ( _MaxDate )
+		VAR _MaxDateQuarter =
+			QUARTER ( _MaxDate )
+		VAR _MaxDateYear =
+			YEAR ( _MaxDate )
+		VAR _TdDay =
+			DAY ( _Td )
+		VAR _TdMonth =
+			MONTH ( _Td )
+		VAR _TdQuarter =
+			QUARTER ( _Td )
+		VAR _TdYear =
+			YEAR ( _Td ) 
+					
+					
+		-- Counts for text display --
+		VAR _CountDays =
+			COUNTROWS ( VALUES ( DateCol ) )
+		VAR _Ydiff = 1 + _MaxDateYear - _MinDateYear
+		VAR _Qdiff = 1 + ( _MaxDateQuarter - _MinDateQuarter ) + ( ( _MaxDateYear - _MinDateYear ) * 4 )
+		VAR _Mdiff = 1 + ( _MaxDateMonth - _MinDateMonth ) + ( ( _MaxDateYear - _MinDateYear ) * 12 )
+
+
+		-- Logic Checks --
+		VAR _IsNotCorrect =
+			_MinDate = BLANK ()
+		VAR _IsContinuous =
+			VAR _FullSpan =
+				DATEDIFF ( _MinDate, _MaxDate, DAY ) + 1
+			RETURN
+				_CountDays = _FullSpan
+		VAR _IsOneCalYear = _MinDateDay = 1
+			&& _MinDateMonth = 1
+			&& _MaxDateDay = 31
+			&& _MaxDateMonth = 12
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulCalYear = _MinDateDay = 1
+			&& _MinDateMonth = 1
+			&& _MaxDateDay = 31
+			&& _MaxDateMonth = 12
+		VAR _IsOneCalQuarter = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& ( ( _MaxDateDay = 31
+			&& _MaxDateMonth = 3 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 6 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 9 )
+			|| ( _MaxDateDay = 31
+			&& _MaxDateMonth = 12 ) )
+			&& _MinDateQuarter = _MaxDateQuarter
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulQuarters_SameYear = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& ( ( _MaxDateDay = 31
+			&& _MaxDateMonth = 3 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 6 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 9 )
+			|| ( _MaxDateDay = 31
+			&& _MaxDateMonth = 12 ) )
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulQuarters_DiffYear = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& ( ( _MaxDateDay = 31
+			&& _MaxDateMonth = 3 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 6 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 9 )
+			|| ( _MaxDateDay = 31
+			&& _MaxDateMonth = 12 ) )
+		VAR _IsOneCalMonth =
+			_MinDateDay = 1
+			&& _MaxDate = EOMONTH ( _MinDate, 0 )
+		VAR _IsMulCalMonth_SameYear =
+			_MinDateDay = 1
+			&& _MaxDate = EOMONTH ( _MaxDate, 0 )
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulCalMonth_MultYear =
+			_MinDateDay = 1
+			&& _MaxDate = EOMONTH ( _MaxDate, 0 )
+		VAR _IsYTD = _MinDateDay = 1
+			&& _MinDateMonth = 1
+			&& _MinDateYear = _MaxDateYear
+			&& _MinDate <> _MaxDate
+			&& _MaxDateQuarter <> 1
+		VAR _IsQTD = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& _MinDateQuarter = _MaxDateQuarter
+			&& _MinDateYear = _MaxDateYear
+			&& _MinDateMonth <> _MaxDateMonth
+			&& _MinDate <> _MaxDate
+		VAR _IsMTD = _MinDateDay = 1
+			&& _MinDateMonth = _MaxDateMonth
+			&& _MinDateYear = _MaxDateYear
+			&& _MinDate <> _MaxDate
+		VAR _IsOneDay = _CountDays = 1
+		VAR _IsMulDays_SameMonth = _MinDateMonth = _MaxDateMonth
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulDays_SameYear = _MinDateYear = _MaxDateYear 
+		
+		-- Relative check --
+		VAR _Is_L_Y = _TdYear - 1 = _MaxDateYear
+		VAR _Is_T_Y = _TdYear = _MaxDateYear
+		VAR _Is_L_Q =
+			IF (
+				_TdYear = _MaxDateYear,
+				_TdQuarter - 1 = _MaxDateQuarter,
+				( _TdQuarter = 1
+					&& _MaxDateQuarter = 4 )
+			)
+		VAR _Is_T_Q = ( _TdQuarter = _MaxDateQuarter )
+			&& ( _TdYear = _MaxDateYear )
+		VAR _Is_L_M =
+			IF (
+				_TdYear = _MaxDateYear,
+				_TdMonth - 1 = _MaxDateMonth,
+				( _TdMonth = 1
+					&& _MaxDateMonth = 12 )
+			)
+		VAR _Is_T_M = ( _TdMonth = _MaxDateMonth )
+			&& ( _TdYear = _MaxDateYear )
+		VAR _Is_L_D = _Td - 1 = _MaxDate
+		VAR _Is_T_D = _Td = _MaxDate
+		
+		
+		-- Text strings --
+		VAR _OneY = _MinDateYear
+		VAR _MulY = _MinDateYear & " - " & _MaxDateYear & " (" & _Ydiff & " Years)"
+		VAR _OneQ = _MinDateYear & " Qtr " & _MinDateQuarter
+		VAR _MulQ_SY = _MinDateYear & " Qtr " & _MinDateQuarter & " - Qtr " & _MaxDateQuarter & " (" & _Qdiff & " Qtrs)"
+		VAR _MulQ_DY =
+			"Qtr " & _MinDateQuarter & "'"
+				& RIGHT ( _MinDateYear, 2 ) & " - Qtr " & _MaxDateQuarter & "'"
+				& RIGHT ( _MaxDateYear, 2 ) & " (" & _Qdiff & " Qtrs)"
+		VAR _OneM =
+			FORMAT ( _MinDate, "yyyy MMMM" )
+		VAR _MulM_SY =
+			_MinDateYear & " "
+				& FORMAT ( _MinDate, "MMMM" ) & " - "
+				& FORMAT ( _MaxDate, "MMMM" ) & " (" & _Mdiff & " Mts)"
+		VAR _MulM_DY =
+			_MinDateYear & " "
+				& FORMAT ( _MinDate, "MMM" ) & " - " & _MaxDateYear & " "
+				& FORMAT ( _MaxDate, "MMM" ) & " (" & _Mdiff & " Mts)"
+		VAR _YTD =
+			"YTD " & _MinDateYear & " up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _QTD =
+			"QTD " & FORMAT ( _MinDate, "Q'yy" ) & " up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _MTD =
+			"MTD " & FORMAT ( _MaxDate, "yyyy MMMM d" )
+		VAR _OneD =
+			FORMAT ( _MinDate, "yyyy MMMM dd" )
+		VAR _MulD_SM =
+			FORMAT ( _MinDate, "yyyy MMMM d" ) & " - " & _MaxDateDay & " (" & _CountDays & " Days)"
+		VAR _MulD_SY =
+			FORMAT ( _MinDate, "yyyy MMM d" ) & " - "
+				& FORMAT ( _MaxDate, "MMM d" ) & " (" & _CountDays & " Days)"
+		VAR _MulD_DY = _MinDate & " - " & _MaxDate & " (" & _CountDays & " Days)" 
+		
+		
+		-- Rel Strings --
+		VAR _L_OneY = "Last Year (" & _MinDateYear & ")"
+		VAR _YTD_R =
+			"Current YTD (" & _MinDateYear & ")" & " up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _L_MulY = "Last " & _Ydiff & " Years (" & _MinDateYear & " - " & _MaxDateYear & ")"
+		VAR _L_OneQ = "Last Quarter (" & _MinDateYear & " Qtr " & _MinDateQuarter & ")"
+		VAR _QTD_R =
+			"Current QTD (" & FORMAT ( _MinDate, "Q'yy" ) & ") up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _L_MulQ_SY = "Last " & _Qdiff & "Q (" & _MinDateYear & " Qtr " & _MinDateQuarter & " - Qtr " & _MaxDateQuarter & ")"
+		VAR _L_MulQ_DY =
+			"Last " & _Qdiff & "Q (Qtr " & _MinDateQuarter & "'"
+				& RIGHT ( _MinDateYear, 2 ) & " - Qtr " & _MaxDateQuarter & "'"
+				& RIGHT ( _MaxDateYear, 2 ) & ")"
+		VAR _L_OneM =
+			"Last Month (" & FORMAT ( _MinDate, "yyyy MMMM" ) & ")"
+		VAR _T_OneM =
+			"This Month (" & _MinDateYear & " "
+				& FORMAT ( _MinDate, "MMMM" ) & ")"
+		VAR _MTD_R =
+			"Current MTD " & FORMAT ( _MaxDate, "yyyy MMMM d" )
+		VAR _L_MulM_SY =
+			"Last " & _Mdiff & " Mts (" & _MinDateYear & " "
+				& FORMAT ( _MinDate, "MMMM" ) & " - "
+				& FORMAT ( _MaxDate, "MMMM" ) & ")"
+		VAR _L_MulM_DY =
+			"Last " & _Mdiff & " Mts ("
+				& FORMAT ( _MinDate, "MMM'yy" ) & " - "
+				& FORMAT ( _MaxDate, "MMM'yy" ) & ")"
+		VAR _Yesterday =
+			"Yesterday (" & FORMAT ( _MinDate, "yyyy MMMM dd" ) & ")"
+		VAR _Today =
+			"Today (" & FORMAT ( _MinDate, "yyyy MMMM dd" ) & ")"
+		VAR _L_MulD_SM =
+			"Last " & _CountDays & " Days ("
+				& FORMAT ( _MinDate, "yyyy MMMM d" ) & " - " & _MaxDateDay & ")"
+		VAR _L_MulD_SY =
+			"Last " & _CountDays & " Days ("
+				& FORMAT ( _MinDate, "yyyy MMM d" ) & " - "
+				& FORMAT ( _MaxDate, "MMM d" ) & ")"
+		VAR _L_MulD_DY = "Last " & _CountDays & " Days (" & _MinDate & " - " & _MaxDate & ")"
+		VAR _DateResult =
+			SWITCH (
+				TRUE (),
+				_IsOneCalYear, IF ( _Is_L_Y, _L_OneY, _OneY ),
+				_IsMulCalYear, IF ( _Is_L_Y, _L_MulY, _MulY ),
+				_IsOneCalQuarter, IF ( _Is_L_Q, _L_OneQ, _OneQ ),
+				_IsMulQuarters_SameYear, IF ( _Is_L_Q, _L_MulQ_SY, _MulQ_SY ),
+				_IsMulQuarters_DiffYear, IF ( _Is_L_Q, _L_MulQ_DY, _MulQ_DY ),
+				_IsOneCalMonth, IF ( _Is_L_M, _L_OneM, _OneM ),
+				_IsMulCalMonth_SameYear, IF ( _Is_L_M, _L_MulM_SY, _MulM_SY ),
+				_IsMulCalMonth_MultYear, IF ( _Is_L_M, _L_MulM_DY, _MulM_DY ),
+				_IsYTD, IF ( _Is_T_Y, _YTD_R, _YTD ),
+				_IsQTD, IF ( _Is_T_Q, _QTD_R, _QTD ),
+				_IsMTD, IF ( _Is_T_M, _MTD_R, _MTD ),
+				_IsOneDay, IF ( _Is_T_D, _Today, IF ( _Is_L_D, _Yesterday, _OneD ) ),
+				_IsMulDays_SameMonth, IF ( _Is_L_D, _L_MulD_SM, _MulD_SM ),
+				_IsMulDays_SameYear, IF ( _Is_L_D, _L_MulD_SY, _MulD_SY ),
+				IF ( _Is_L_D, _L_MulD_DY, _MulD_DY )
+			) 
+			
+		
+		-- Final Result Variables --
+		VAR _NcSum = "(" & _CountDays & " days total)"
+		VAR _NotContinuousText = Title & " " & "in multiple periods " & _NcSum
+		VAR _NotCorrectTimeframe = "Choose correct timeframe"
+		VAR _ResultText = Title & " " & _DateResult 
+		
+		
+		-- Result --
+		VAR _Result =
+			SWITCH (
+				TRUE (),
+				_IsNotCorrect, _NotCorrectTimeframe,
+				NOT _IsContinuous, _NotContinuousText,
+				_ResultText
+			)
+		RETURN
+			_Result
+		```
+
+	annotation DAXLIB_PackageId = PiotrBartela.TitleContext
+	annotation DAXLIB_PackageVersion = 0.1.0

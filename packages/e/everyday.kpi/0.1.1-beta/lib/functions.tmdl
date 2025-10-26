@@ -1,0 +1,64 @@
+/// This function returns the percentual difference between two values. Using a macro it will automatically create the measure with the correct naming, display folder and table. https://github.com/bernatagulloesbrina/TabularEditor-Scripts/blob/main/Advanced/DaxUDF%20Macros/create%20measures%20from%20daxudfs.csx
+function 'EveryDay.Kpi.Variance.Pct' =
+		
+		(
+			mainValueMeasure,
+			referenceValueMeasure
+		) =>
+		IF(
+			ISBLANK( mainValueMeasure )
+				|| ISBLANK( referenceValueMeasure ),
+			BLANK( ),
+			DIVIDE(
+				mainValueMeasure
+					- referenceValueMeasure,
+				referenceValueMeasure
+			)
+		)
+	
+
+	annotation outputType = Measure
+
+	annotation nameTemplate = mainValueMeasureName vs referenceValueMeasureName %
+
+	annotation formatString = +0.0%;-0.0%;-
+
+	annotation displayFolder = mainValueMeasureDisplayFolder/mainValueMeasureName Variance
+
+	annotation outputDestination = mainValueMeasureTable
+
+	annotation DAXLIB_PackageVersion = 0.1.1-beta
+
+	annotation DAXLIB_PackageId = EveryDay.Kpi
+
+/// This function returns the difference between two values. Using a macro it will automatically create the measure with the correct naming, display folder and table. https://github.com/bernatagulloesbrina/TabularEditor-Scripts/blob/main/Advanced/DaxUDF%20Macros/create%20measures%20from%20daxudfs.csx 
+function 'EveryDay.Kpi.Variance.Abs' =
+		
+		(
+			mainValueMeasure,
+			referenceValueMeasure
+		) =>
+		IF(
+			ISBLANK( mainValueMeasure )
+				|| ISBLANK(
+					referenceValueMeasure
+				),
+			BLANK( ),
+			mainValueMeasure
+				- referenceValueMeasure
+		)
+	
+	annotation outputType = Measure
+
+	annotation nameTemplate = mainValueMeasureName vs referenceValueMeasureName
+
+	annotation formatString = +mainValueMeasureFormatStringRoot;-mainValueMeasureFormatStringRoot;-
+
+	annotation displayFolder = mainValueMeasureDisplayFolder/mainValueMeasureName Variance
+
+	annotation outputDestination = mainValueMeasureTable
+
+	annotation DAXLIB_PackageId = EveryDay.Kpi
+
+	annotation DAXLIB_PackageVersion = 0.1.1-beta
+

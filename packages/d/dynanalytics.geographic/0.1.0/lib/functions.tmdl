@@ -1,0 +1,47 @@
+/// Checks whether a point is within a polygon. The point is defined by the parameters longitude and latitude.
+/// The polygon is provided as series of points in a table. The table has columns for the longitude (or x value) and for the latitude (or y value).
+/// The order of the points matter, that is why this table uses an index column.
+/// The geometrical background and the DAX code is detailed in the article: https://www.dynAnalytics.com/2024/11/03/Geoanalysis-with-Power-BI.html.
+/// @param longitude - longitude (or x value) of the point to be checked
+/// @param latitude - latitude (or y value) of the point to be checked
+/// @param pointsTable - table with all the points of the polygon, one point per line
+/// @param indexColumn - column in the pointsTable which describes the order of the points of the polygon
+/// @param longitudeColum - column in the pointsTable with the longitude (or x value) of the points of the polygon
+/// @param latitudeColum - column in the pointsTable with the latitude (or y value) of the points of the polygon
+/// @return - true if the point is inside of the polygon, false if it is outside of the polygon.
+function 'DynAnalytics.Geographic.PointInPolygon' = ```
+		(
+		    longitude : double val, 
+		    latitude : double val, 
+		    pointsTable : anyref expr, 
+		    indexColumn : anyref expr, 
+		    longitudeColumn : anyref expr, 
+		    latitudeColumn : anyref expr
+		) =>
+		    VAR MinIdx = MINX(pointsTable,indexColumn)
+		    VAR MaxIdx = MAXX(pointsTable,indexColumn)
+		    VAR EdgePoint1 = SELECTCOLUMNS(pointsTable,"Index",indexColumn&"","Longitude1",longitudeColumn,"Latitude1",latitudeColumn)
+		    VAR EdgePoint2 = SELECTCOLUMNS(pointsTable,"Index",IF(indexColumn>MinIdx,VAR IDX=indexColumn RETURN MAXX(FILTER(pointsTable,indexColumn<IDX),indexColumn),MaxIdx)&"","Longitude2",longitudeColumn,"Latitude2",latitudeColumn)
+		    VAR EdgesTable = NATURALINNERJOIN(EdgePoint1,EdgePoint2)
+		    VAR EdgesUnique = DISTINCT(SELECTCOLUMNS(EdgesTable,[Longitude1],[Latitude1],[Longitude2],[Latitude2]))
+		    VAR X = longitude
+		    VAR Y = latitude
+		    VAR Inside =  
+		        ISODD(COUNTROWS(
+		            FILTER(EdgesUnique,
+		                VAR X0 = [Longitude1]
+		                VAR Y0 = [Latitude1]
+		                VAR X1 = [Longitude2]
+		                VAR Y1 = [Latitude2]
+		                RETURN 
+		                    ((Y1 > Y && Y >= Y0) || (Y0 > Y && Y >= Y1))  
+		                    && 
+		                    (X < (X0-X1)*(Y-Y1)/(Y0-Y1) + X1)
+		            )
+		        ))
+		    RETURN Inside
+		```
+
+	annotation DAXLIB_PackageId = DynAnalytics.Geographic
+
+	annotation DAXLIB_PackageVersion = 0.1.0

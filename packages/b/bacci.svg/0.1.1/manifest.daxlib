@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Bacci.SVG",
+  "version": "0.1.1",
+  "authors": "David Bacci",
+  "description": "A simple SVG UDF to create colourful chips",
+  "tags": "SVG, Chip, Colour",
+  "projectUrl": "https://github.com/PBI-David/PBI-Core-Visuals-SVG-HTML",
+  "repositoryUrl": "https://github.com/PBI-David/PBI-Core-Visuals-SVG-HTML",
+  "readme": "/README.md"
+}

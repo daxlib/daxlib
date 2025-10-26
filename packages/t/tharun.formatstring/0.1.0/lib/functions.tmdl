@@ -1,0 +1,58 @@
+function 'Tharun.FormatString.GetDynamicFormatString' =
+		(
+			Val: anyref, numberOfDecimalPlaces: numeric, 
+			thousandSeperator: boolean, 
+			multiplesOfThousand: boolean, 
+			negativeNumbersBracket: boolean, 
+			truncateZero:boolean, deltaIcon: boolean
+		) =>
+			VAR __AbsVal = ABS(Val)
+			VAR __decimalPart = IF(
+				numberOfDecimalPlaces > 0,
+				"." & REPT(
+					"0",
+					numberOfDecimalPlaces
+				),
+				""
+			)
+			VAR __MultiplesOfThousand = IF(
+				multiplesOfThousand,
+				SWITCH(
+					TRUE(),
+					__AbsVal >= 1e12, ",,,," & __decimalPart & "T",
+					__AbsVal >= 1e9, ",,," & __decimalPart & "B",
+					__AbsVal >= 1e6, ",," & __decimalPart & "M",
+					__AbsVal >= 1e3, "," & __decimalPart & "K",
+					"" & __decimalPart
+				),
+				"" & __decimalPart
+			)
+			VAR __DigitWithThousandSeperator = "#,0"
+			VAR __DigitWithoutThousandSeperator = "0"
+			VAR __NumericFormatString = IF(
+				thousandSeperator,
+				__DigitWithThousandSeperator & __MultiplesOfThousand,
+				__DigitWithoutThousandSeperator & __MultiplesOfThousand
+			)
+			VAR __PositiveFormatString = __NumericFormatString & IF(
+				deltaIcon,
+				"▲",
+				""
+			)
+	
+			VAR __NegativeFormatString = IF(
+				negativeNumbersBracket,
+				";(" & __NumericFormatString & ")",
+				";-" & __NumericFormatString
+			) & IF(
+				deltaIcon,
+				"▼"
+			)
+			VAR __FormatString = __PositiveFormatString & __NegativeFormatString & IF(truncateZero, ";0","")
+			RETURN
+				__FormatString
+
+	annotation DAXLIB_PackageId = Tharun.FormatString
+	annotation DAXLIB_PackageVersion = 0.1.0
+
+

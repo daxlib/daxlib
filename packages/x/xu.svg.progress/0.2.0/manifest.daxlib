@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "XU.SVG.Progress",
+  "version": "0.2.0",
+  "authors": "HD XU",
+  "description": "A DAX UDF library for SVG-based progress indicators in Power BI, including SimpleBar, Capsule, Dashed, LabeledBar, Pie, Donut, and more.",
+  "tags": "SVG, Progress Indicator, XU, Visualization",
+  "releaseNotes": "Added SimpleBar, LabeledBar, Pie, and Donut functions, Capsule now reuse SimpleBar for consistency.",
+  "icon": "/icon.png"
+}

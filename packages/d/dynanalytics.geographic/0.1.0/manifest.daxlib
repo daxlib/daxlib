@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DynAnalytics.Geographic",
+  "version": "0.1.0",
+  "authors": "Markus Böhm",
+  "description": "DAX User-defined function checks whether a point is within a polygon",
+  "tags": "Geometric,Geographic,PointInPolygon",
+  "releaseNotes": "Initial release",
+  "projectUrl": "https://www.dynAnalytics.com/2024/11/03/Geoanalysis-with-Power-BI.html",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/d/dynanalytics.geographic",
+  "icon": "/icon.png"
+}

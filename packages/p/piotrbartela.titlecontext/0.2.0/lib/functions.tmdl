@@ -1,0 +1,550 @@
+/// Function that converts a filtered date range into a clear, presentation-style title.
+/// Example: 10/1/2023–6/30/2024 -> "Revenue Qtr 4'23 – Qtr 2'24 (3 Qtrs)"
+/// Parameters: prefix (e.g. "Revenue"), date column (e.g. 'Calendar'[Date]).
+function 'PiotrBartela.TitleContext.Period' =
+		(
+			Title : STRING,
+			DateCol : ANYREF
+		) =>
+				
+				
+		-- Date Definitions --
+		VAR _Td =
+			TODAY()
+		VAR _MinDate =
+			MIN ( DateCol )
+		VAR _MaxDate =
+			MAX ( DateCol )
+		VAR _MinDateDay =
+			DAY ( _MinDate )
+		VAR _MinDateMonth =
+			MONTH ( _MinDate )
+		VAR _MinDateQuarter =
+			QUARTER ( _MinDate )
+		VAR _MinDateYear =
+			YEAR ( _MinDate )
+		VAR _MaxDateDay =
+			DAY ( _MaxDate )
+		VAR _MaxDateMonth =
+			MONTH ( _MaxDate )
+		VAR _MaxDateQuarter =
+			QUARTER ( _MaxDate )
+		VAR _MaxDateYear =
+			YEAR ( _MaxDate )
+		VAR _TdDay =
+			DAY ( _Td )
+		VAR _TdMonth =
+			MONTH ( _Td )
+		VAR _TdQuarter =
+			QUARTER ( _Td )
+		VAR _TdYear =
+			YEAR ( _Td ) 
+					
+					
+		-- Counts for text display --
+		VAR _CountDays =
+			COUNTROWS ( VALUES ( DateCol ) )
+		VAR _Ydiff = 1 + _MaxDateYear - _MinDateYear
+		VAR _Qdiff = 1 + ( _MaxDateQuarter - _MinDateQuarter ) + ( ( _MaxDateYear - _MinDateYear ) * 4 )
+		VAR _Mdiff = 1 + ( _MaxDateMonth - _MinDateMonth ) + ( ( _MaxDateYear - _MinDateYear ) * 12 )
+
+
+		-- Logic Checks --
+		VAR _IsNotCorrect =
+			_MinDate = BLANK ()
+		VAR _IsContinuous =
+			VAR _FullSpan =
+				DATEDIFF ( _MinDate, _MaxDate, DAY ) + 1
+			RETURN
+				_CountDays = _FullSpan
+		VAR _IsOneCalYear = _MinDateDay = 1
+			&& _MinDateMonth = 1
+			&& _MaxDateDay = 31
+			&& _MaxDateMonth = 12
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulCalYear = _MinDateDay = 1
+			&& _MinDateMonth = 1
+			&& _MaxDateDay = 31
+			&& _MaxDateMonth = 12
+		VAR _IsOneCalQuarter = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& ( ( _MaxDateDay = 31
+			&& _MaxDateMonth = 3 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 6 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 9 )
+			|| ( _MaxDateDay = 31
+			&& _MaxDateMonth = 12 ) )
+			&& _MinDateQuarter = _MaxDateQuarter
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulQuarters_SameYear = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& ( ( _MaxDateDay = 31
+			&& _MaxDateMonth = 3 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 6 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 9 )
+			|| ( _MaxDateDay = 31
+			&& _MaxDateMonth = 12 ) )
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulQuarters_DiffYear = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& ( ( _MaxDateDay = 31
+			&& _MaxDateMonth = 3 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 6 )
+			|| ( _MaxDateDay = 30
+			&& _MaxDateMonth = 9 )
+			|| ( _MaxDateDay = 31
+			&& _MaxDateMonth = 12 ) )
+		VAR _IsOneCalMonth =
+			_MinDateDay = 1
+			&& _MaxDate = EOMONTH ( _MinDate, 0 )
+		VAR _IsMulCalMonth_SameYear =
+			_MinDateDay = 1
+			&& _MaxDate = EOMONTH ( _MaxDate, 0 )
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulCalMonth_MultYear =
+			_MinDateDay = 1
+			&& _MaxDate = EOMONTH ( _MaxDate, 0 )
+		VAR _IsYTD = _MinDateDay = 1
+			&& _MinDateMonth = 1
+			&& _MinDateYear = _MaxDateYear
+			&& _MinDate <> _MaxDate
+			&& _MaxDateQuarter <> 1
+		VAR _IsQTD = _MinDateDay = 1
+			&& ( _MinDateMonth = 1
+			|| _MinDateMonth = 4
+			|| _MinDateMonth = 7
+			|| _MinDateMonth = 10 )
+			&& _MinDateQuarter = _MaxDateQuarter
+			&& _MinDateYear = _MaxDateYear
+			&& _MinDateMonth <> _MaxDateMonth
+			&& _MinDate <> _MaxDate
+		VAR _IsMTD = _MinDateDay = 1
+			&& _MinDateMonth = _MaxDateMonth
+			&& _MinDateYear = _MaxDateYear
+			&& _MinDate <> _MaxDate
+		VAR _IsOneDay = _CountDays = 1
+		VAR _IsMulDays_SameMonth = _MinDateMonth = _MaxDateMonth
+			&& _MinDateYear = _MaxDateYear
+		VAR _IsMulDays_SameYear = _MinDateYear = _MaxDateYear 
+		
+		-- Relative check --
+		VAR _Is_L_Y = _TdYear - 1 = _MaxDateYear
+		VAR _Is_T_Y = _TdYear = _MaxDateYear
+		VAR _Is_L_Q =
+			IF (
+				_TdYear = _MaxDateYear,
+				_TdQuarter - 1 = _MaxDateQuarter,
+				( _TdQuarter = 1
+					&& _MaxDateQuarter = 4 )
+			)
+		VAR _Is_T_Q = ( _TdQuarter = _MaxDateQuarter )
+			&& ( _TdYear = _MaxDateYear )
+		VAR _Is_L_M =
+			IF (
+				_TdYear = _MaxDateYear,
+				_TdMonth - 1 = _MaxDateMonth,
+				( _TdMonth = 1
+					&& _MaxDateMonth = 12 )
+			)
+		VAR _Is_T_M = ( _TdMonth = _MaxDateMonth )
+			&& ( _TdYear = _MaxDateYear )
+		VAR _Is_L_D = _Td - 1 = _MaxDate
+		VAR _Is_T_D = _Td = _MaxDate
+		
+		
+		-- Text strings --
+		VAR _OneY = _MinDateYear
+		VAR _MulY = _MinDateYear & " - " & _MaxDateYear & " (" & _Ydiff & " Years)"
+		VAR _OneQ = _MinDateYear & " Qtr " & _MinDateQuarter
+		VAR _MulQ_SY = _MinDateYear & " Qtr " & _MinDateQuarter & " - Qtr " & _MaxDateQuarter & " (" & _Qdiff & " Qtrs)"
+		VAR _MulQ_DY =
+			"Qtr " & _MinDateQuarter & "'"
+				& RIGHT ( _MinDateYear, 2 ) & " - Qtr " & _MaxDateQuarter & "'"
+				& RIGHT ( _MaxDateYear, 2 ) & " (" & _Qdiff & " Qtrs)"
+		VAR _OneM =
+			FORMAT ( _MinDate, "yyyy MMMM" )
+		VAR _MulM_SY =
+			_MinDateYear & " "
+				& FORMAT ( _MinDate, "MMMM" ) & " - "
+				& FORMAT ( _MaxDate, "MMMM" ) & " (" & _Mdiff & " Mts)"
+		VAR _MulM_DY =
+			_MinDateYear & " "
+				& FORMAT ( _MinDate, "MMM" ) & " - " & _MaxDateYear & " "
+				& FORMAT ( _MaxDate, "MMM" ) & " (" & _Mdiff & " Mts)"
+		VAR _YTD =
+			"YTD " & _MinDateYear & " up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _QTD =
+			"QTD " & FORMAT ( _MinDate, "Q'yy" ) & " up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _MTD =
+			"MTD " & FORMAT ( _MaxDate, "yyyy MMMM d" )
+		VAR _OneD =
+			FORMAT ( _MinDate, "yyyy MMMM dd" )
+		VAR _MulD_SM =
+			FORMAT ( _MinDate, "yyyy MMMM d" ) & " - " & _MaxDateDay & " (" & _CountDays & " Days)"
+		VAR _MulD_SY =
+			FORMAT ( _MinDate, "yyyy MMM d" ) & " - "
+				& FORMAT ( _MaxDate, "MMM d" ) & " (" & _CountDays & " Days)"
+		VAR _MulD_DY = _MinDate & " - " & _MaxDate & " (" & _CountDays & " Days)" 
+		
+		
+		-- Rel Strings --
+		VAR _L_OneY = "Last Year (" & _MinDateYear & ")"
+		VAR _YTD_R =
+			"Current YTD (" & _MinDateYear & ")" & " up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _L_MulY = "Last " & _Ydiff & " Years (" & _MinDateYear & " - " & _MaxDateYear & ")"
+		VAR _L_OneQ = "Last Quarter (" & _MinDateYear & " Qtr " & _MinDateQuarter & ")"
+		VAR _QTD_R =
+			"Current QTD (" & FORMAT ( _MinDate, "Q'yy" ) & ") up to "
+				& FORMAT ( _MaxDate, "MMMM d" )
+		VAR _L_MulQ_SY = "Last " & _Qdiff & "Q (" & _MinDateYear & " Qtr " & _MinDateQuarter & " - Qtr " & _MaxDateQuarter & ")"
+		VAR _L_MulQ_DY =
+			"Last " & _Qdiff & "Q (Qtr " & _MinDateQuarter & "'"
+				& RIGHT ( _MinDateYear, 2 ) & " - Qtr " & _MaxDateQuarter & "'"
+				& RIGHT ( _MaxDateYear, 2 ) & ")"
+		VAR _L_OneM =
+			"Last Month (" & FORMAT ( _MinDate, "yyyy MMMM" ) & ")"
+		VAR _T_OneM =
+			"This Month (" & _MinDateYear & " "
+				& FORMAT ( _MinDate, "MMMM" ) & ")"
+		VAR _MTD_R =
+			"Current MTD " & FORMAT ( _MaxDate, "yyyy MMMM d" )
+		VAR _L_MulM_SY =
+			"Last " & _Mdiff & " Mts (" & _MinDateYear & " "
+				& FORMAT ( _MinDate, "MMMM" ) & " - "
+				& FORMAT ( _MaxDate, "MMMM" ) & ")"
+		VAR _L_MulM_DY =
+			"Last " & _Mdiff & " Mts ("
+				& FORMAT ( _MinDate, "MMM'yy" ) & " - "
+				& FORMAT ( _MaxDate, "MMM'yy" ) & ")"
+		VAR _Yesterday =
+			"Yesterday (" & FORMAT ( _MinDate, "yyyy MMMM dd" ) & ")"
+		VAR _Today =
+			"Today (" & FORMAT ( _MinDate, "yyyy MMMM dd" ) & ")"
+		VAR _L_MulD_SM =
+			"Last " & _CountDays & " Days ("
+				& FORMAT ( _MinDate, "yyyy MMMM d" ) & " - " & _MaxDateDay & ")"
+		VAR _L_MulD_SY =
+			"Last " & _CountDays & " Days ("
+				& FORMAT ( _MinDate, "yyyy MMM d" ) & " - "
+				& FORMAT ( _MaxDate, "MMM d" ) & ")"
+		VAR _L_MulD_DY = "Last " & _CountDays & " Days (" & _MinDate & " - " & _MaxDate & ")"
+		VAR _DateResult =
+			SWITCH (
+				TRUE (),
+				_IsOneCalYear, IF ( _Is_L_Y, _L_OneY, _OneY ),
+				_IsMulCalYear, IF ( _Is_L_Y, _L_MulY, _MulY ),
+				_IsOneCalQuarter, IF ( _Is_L_Q, _L_OneQ, _OneQ ),
+				_IsMulQuarters_SameYear, IF ( _Is_L_Q, _L_MulQ_SY, _MulQ_SY ),
+				_IsMulQuarters_DiffYear, IF ( _Is_L_Q, _L_MulQ_DY, _MulQ_DY ),
+				_IsOneCalMonth, IF ( _Is_L_M, _L_OneM, _OneM ),
+				_IsMulCalMonth_SameYear, IF ( _Is_L_M, _L_MulM_SY, _MulM_SY ),
+				_IsMulCalMonth_MultYear, IF ( _Is_L_M, _L_MulM_DY, _MulM_DY ),
+				_IsYTD, IF ( _Is_T_Y, _YTD_R, _YTD ),
+				_IsQTD, IF ( _Is_T_Q, _QTD_R, _QTD ),
+				_IsMTD, IF ( _Is_T_M, _MTD_R, _MTD ),
+				_IsOneDay, IF ( _Is_T_D, _Today, IF ( _Is_L_D, _Yesterday, _OneD ) ),
+				_IsMulDays_SameMonth, IF ( _Is_L_D, _L_MulD_SM, _MulD_SM ),
+				_IsMulDays_SameYear, IF ( _Is_L_D, _L_MulD_SY, _MulD_SY ),
+				IF ( _Is_L_D, _L_MulD_DY, _MulD_DY )
+			) 
+			
+		
+		-- Final Result Variables --
+		VAR _NcSum = "(" & _CountDays & " days total)"
+		VAR _NotContinuousText = Title & " " & "in multiple periods " & _NcSum
+		VAR _NotCorrectTimeframe = "Choose correct timeframe"
+		VAR _ResultText = Title & " " & _DateResult 
+		
+		
+		-- Result --
+		VAR _Result =
+			SWITCH (
+				TRUE (),
+				_IsNotCorrect, _NotCorrectTimeframe,
+				NOT _IsContinuous, _NotContinuousText,
+				_ResultText
+			)
+		RETURN
+			_Result
+
+	annotation DAXLIB_PackageId = PiotrBartela.TitleContext
+	
+    annotation DAXLIB_PackageVersion = 0.2.0
+
+/// Description: Function that will display in one string current filters.
+/// Prerequisit: You have to create dummy column first eg. 'Dummy'[Dummy] (anyref can't be BLANK as for now)
+/// Tip: set TestMode parameter to 1 to adjust maximum length of a final string.
+/// Example: PiotrBartela.TitleContext.Filtered(70,0,"First filter name",'Table1'[Column1],"",'Dummy'[Dummy],"",'Dummy'[Dummy],"",'Dummy'[Dummy],"",'Dummy'[Dummy])
+function 'PiotrBartela.TitleContext.Filtered' =
+		(
+            MaxLength:int64,
+            TestMode:boolean,
+            Name1:string,
+            Col1:anyref,
+            Name2:string,
+            Col2:anyref,
+            Name3:string,
+            Col3:anyref,
+            Name4:string,
+            Col4:anyref,
+            Name5:string,
+            Col5:anyref
+		)  =>
+
+			VAR _testing_numbers = "111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000"
+
+			VAR _test_text = LEFT(_testing_numbers,MaxLength)
+
+			VAR _no_filters = "All Sales, Globally" // adjust if needed
+
+			VAR _1_is = ISFILTERED(Col1)
+			VAR _1 = CONCATENATEX(VALUES(Col1),Col1,", ")
+			VAR _1_num = COUNTROWS(VALUES(Col1))
+
+			VAR _1_len = LEN(_1)
+			VAR _1_first = MINX(
+				TOPN(1,VALUES(Col1),Col1),Col1)
+			VAR _1_second = MINX(
+				TOPN(2,VALUES(Col1),Col1),Col1)
+			VAR _1_third = MINX(
+				TOPN(3,VALUES(Col1),Col1),Col1)
+
+			VAR _1_text_v1 = IF(_1_is,"" & Name1 & ": " & _1 & " | ","")
+			VAR _1_text_v2 = IF(
+				_1_is,
+				SWITCH(TRUE(),
+					_1_num = 1,"" & Name1 & ": " & _1_first & " | ",
+					_1_num = 2,"" & Name1 & ": " & _1_first & ", "& _1_second & " | ",
+					_1_num = 3,"" & Name1 & ": " & _1_first & ", " & _1_second & ", " & _1_third & " | ",
+					"" &Name1 & ": " & _1_first & ", " & _1_second & ", " & _1_third & " (+" & _1_num - 3 & ")" & " | "),
+				"")
+			VAR _1_text_v3 = IF(
+				_1_is,
+				SWITCH(TRUE(),
+					_1_num = 1,"" & Name1 & ": " & _1_first & " | ",
+					_1_num = 2,"" & Name1 & ": " & _1_first & ", "& _1_second & " | ",
+					"" &Name1 & ": " & _1_first & ", " & _1_second & " (+" & _1_num - 2 & ")" & " | "),
+				"")
+			VAR _1_text_v4 = IF(
+				_1_is,
+				SWITCH(TRUE(),
+					_1_num = 1,"" & Name1 & ": " & _1_first & " | ",
+					"" &Name1 & ": " & _1_first & " (+" & _1_num - 1 & ")" & " | "),
+				"")
+			VAR _1_text_v5 = IF(
+				_1_is, 
+				"" & Name1 & " (" & _1_num & ")" & " | ",
+				"")
+
+
+			VAR _2_is = ISFILTERED(Col2)
+			VAR _2 = CONCATENATEX(VALUES(Col2),Col2,", ")
+			VAR _2_num = COUNTROWS(VALUES(Col2))
+
+			VAR _2_len = LEN(_2)
+			VAR _2_first = MINX(
+				TOPN(1,VALUES(Col2),Col2),Col2)
+			VAR _2_second = MINX(
+				TOPN(2,VALUES(Col2),Col2),Col2)
+			VAR _2_third = MINX(
+				TOPN(3,VALUES(Col2),Col2),Col2)
+
+			VAR _2_text_v1 = IF(_2_is,"" & Name2 & ": " & _2 & " | ","")
+			VAR _2_text_v2 = IF(
+				_2_is,
+				SWITCH(TRUE(),
+					_2_num = 1,"" & Name2 & ": " & _2_first & " | ",
+					_2_num = 2,"" & Name2 & ": " & _2_first & ", "& _2_second & " | ",
+					_2_num = 3,"" & Name2 & ": " & _2_first & ", " & _2_second & ", " & _2_third & " | ",
+					"" &Name2 & ": " & _2_first & ", " & _2_second & ", " & _2_third & " (+" & _2_num - 3 & ")" & " | "),
+				"")
+			VAR _2_text_v3 = IF(
+				_2_is,
+				SWITCH(TRUE(),
+					_2_num = 1,"" & Name2 & ": " & _2_first & " | ",
+					_2_num = 2,"" & Name2 & ": " & _2_first & ", "& _2_second & " | ",
+					"" &Name2 & ": " & _2_first & ", " & _2_second & " (+" & _2_num - 2 & ")" & " | "),
+				"")
+			VAR _2_text_v4 = IF(
+				_2_is,
+				SWITCH(TRUE(),
+					_2_num = 1,"" & Name2 & ": " & _2_first & " | ",
+					"" &Name2 & ": " & _2_first & " (+" & _2_num - 1 & ")" & " | "),
+				"")
+			VAR _2_text_v5 = IF(
+				_2_is, 
+				"" & Name2 & " (" & _2_num & ")" & " | ",
+				"")
+
+
+			VAR _3_is = ISFILTERED(Col3)
+			VAR _3 = CONCATENATEX(VALUES(Col3),Col3,", ")
+			VAR _3_num = COUNTROWS(VALUES(Col3))
+
+			VAR _3_len = LEN(_3)
+			VAR _3_first = MINX(
+				TOPN(1,VALUES(Col3),Col3),Col3)
+			VAR _3_second = MINX(
+				TOPN(2,VALUES(Col3),Col3),Col3)
+			VAR _3_third = MINX(
+				TOPN(3,VALUES(Col3),Col3),Col3)
+
+			VAR _3_text_v1 = IF(_3_is,"" & Name3 & ": " & _3 & " | ","")
+			VAR _3_text_v2 = IF(
+				_3_is,
+				SWITCH(TRUE(),
+					_3_num = 1,"" & Name3 & ": " & _3_first & " | ",
+					_3_num = 2,"" & Name3 & ": " & _3_first & ", "& _3_second & " | ",
+					_3_num = 3,"" & Name3 & ": " & _3_first & ", " & _3_second & ", " & _3_third & " | ",
+					"" &Name3 & ": " & _3_first & ", " & _3_second & ", " & _3_third & " (+" & _3_num - 3 & ")" & " | "),
+				"")
+			VAR _3_text_v3 = IF(
+				_3_is,
+				SWITCH(TRUE(),
+					_3_num = 1,"" & Name3 & ": " & _3_first & " | ",
+					_3_num = 2,"" & Name3 & ": " & _3_first & ", "& _3_second & " | ",
+					"" &Name3 & ": " & _3_first & ", " & _3_second & " (+" & _3_num - 2 & ")" & " | "),
+				"")
+			VAR _3_text_v4 = IF(
+				_3_is,
+				SWITCH(TRUE(),
+					_3_num = 1,"" & Name3 & ": " & _3_first & " | ",
+					"" &Name3 & ": " & _3_first & " (+" & _3_num - 1 & ")" & " | "),
+				"")
+			VAR _3_text_v5 = IF(
+				_3_is, 
+				"" & Name3 & " (" & _3_num & ")" & " | ",
+				"")
+
+			VAR _4_is = ISFILTERED(Col4)
+			VAR _4 = CONCATENATEX(VALUES(Col4),Col4,", ")
+			VAR _4_num = COUNTROWS(VALUES(Col4))
+
+			VAR _4_len = LEN(_4)
+			VAR _4_first = MINX(
+				TOPN(1,VALUES(Col4),Col4),Col4)
+			VAR _4_second = MINX(
+				TOPN(2,VALUES(Col4),Col4),Col4)
+			VAR _4_third = MINX(
+				TOPN(3,VALUES(Col4),Col4),Col4)
+
+			VAR _4_text_v1 = IF(_4_is,"" & Name4 & ": " & _4 & " | ","")
+			VAR _4_text_v2 = IF(
+				_4_is,
+				SWITCH(TRUE(),
+					_4_num = 1,"" & Name4 & ": " & _4_first & " | ",
+					_4_num = 2,"" & Name4 & ": " & _4_first & ", "& _4_second & " | ",
+					_4_num = 3,"" & Name4 & ": " & _4_first & ", " & _4_second & ", " & _4_third & " | ",
+					"" &Name4 & ": " & _4_first & ", " & _4_second & ", " & _4_third & " (+" & _4_num - 3 & ")" & " | "),
+				"")
+			VAR _4_text_v3 = IF(
+				_4_is,
+				SWITCH(TRUE(),
+					_4_num = 1,"" & Name4 & ": " & _4_first & " | ",
+					_4_num = 2,"" & Name4 & ": " & _4_first & ", "& _4_second & " | ",
+					"" &Name4 & ": " & _4_first & ", " & _4_second & " (+" & _4_num - 2 & ")" & " | "),
+				"")
+			VAR _4_text_v4 = IF(
+				_4_is,
+				SWITCH(TRUE(),
+					_4_num = 1,"" & Name4 & ": " & _4_first & " | ",
+					"" &Name4 & ": " & _4_first & " (+" & _4_num - 1 & ")" & " | "),
+				"")
+			VAR _4_text_v5 = IF(
+				_4_is, 
+				"" & Name4 & " (" & _4_num & ")" & " | ",
+				"")
+
+			VAR _5_is = ISFILTERED(Col5)
+			VAR _5 = CONCATENATEX(VALUES(Col5),Col5,", ")
+			VAR _5_num = COUNTROWS(VALUES(Col5))
+
+			VAR _5_len = LEN(_5)
+			VAR _5_first = MINX(
+				TOPN(1,VALUES(Col5),Col5),Col5)
+			VAR _5_second = MINX(
+				TOPN(2,VALUES(Col5),Col5),Col5)
+			VAR _5_third = MINX(
+				TOPN(3,VALUES(Col5),Col5),Col5)
+
+			VAR _5_text_v1 = IF(_5_is,"" & Name5 & ": " & _5 & " | ","")
+			VAR _5_text_v2 = IF(
+				_5_is,
+				SWITCH(TRUE(),
+					_5_num = 1,"" & Name5 & ": " & _5_first & " | ",
+					_5_num = 2,"" & Name5 & ": " & _5_first & ", "& _5_second & " | ",
+					_5_num = 3,"" & Name5 & ": " & _5_first & ", " & _5_second & ", " & _5_third & " | ",
+					"" &Name5 & ": " & _5_first & ", " & _5_second & ", " & _5_third & " (+" & _5_num - 3 & ")" & " | "),
+				"")
+			VAR _5_text_v3 = IF(
+				_5_is,
+				SWITCH(TRUE(),
+					_5_num = 1,"" & Name5 & ": " & _5_first & " | ",
+					_5_num = 2,"" & Name5 & ": " & _5_first & ", "& _5_second & " | ",
+					"" &Name5 & ": " & _5_first & ", " & _5_second & " (+" & _5_num - 2 & ")" & " | "),
+				"")
+			VAR _5_text_v4 = IF(
+				_5_is,
+				SWITCH(TRUE(),
+					_5_num = 1,"" & Name5 & ": " & _5_first & " | ",
+					"" &Name5 & ": " & _5_first & " (+" & _5_num - 1 & ")" & " | "),
+				"")
+			VAR _5_text_v5 = IF(
+				_5_is, 
+				"" & Name5 & " (" & _5_num & ")" & " | ",
+				"")
+
+			VAR _total_f_count = IF(_1_is,_1_num,0) + IF(_2_is,_2_num,0) + IF(_3_is,_3_num,0) + IF(_4_is,_4_num,0) + IF(_5_is,_5_num,0)
+
+			VAR _full_text_v1 = FORMAT(_1_text_v1 & _2_text_v1 & _3_text_v1 & _4_text_v1 & _5_text_v1,"")
+			VAR _full_text_v2 = FORMAT(_1_text_v2 & _2_text_v2 & _3_text_v2 & _4_text_v2 & _5_text_v2,"")
+			VAR _full_text_v3 = FORMAT(_1_text_v3 & _2_text_v3 & _3_text_v3 & _4_text_v3 & _5_text_v3,"")
+			VAR _full_text_v4 = FORMAT(_1_text_v4 & _2_text_v4 & _3_text_v4 & _4_text_v4 & _5_text_v4,"")
+			VAR _full_text_v5 = FORMAT("Filters: " & _1_text_v5 & _2_text_v5 & _3_text_v5 & _4_text_v5 & _5_text_v5,"")
+			VAR _full_text_v6 = FORMAT("Total Filters Applied: " & FORMAT(_total_f_count,"0") & " | ","")
+
+			VAR _v1_len = LEN(_full_text_v1)
+			VAR _v2_len = LEN(_full_text_v2)
+			VAR _v3_len = LEN(_full_text_v3)
+			VAR _v4_len = LEN(_full_text_v4)
+			VAR _v5_len = LEN(_full_text_v5)
+
+
+			VAR _full_text_adjusted = SWITCH(True(),
+				_v1_len <= MaxLength, FORMAT(_full_text_v1,""),
+				_v2_len <= MaxLength, FORMAT(_full_text_v2,""),
+				_v3_len <= MaxLength, FORMAT(_full_text_v3,""),
+				_v4_len <= MaxLength, FORMAT(_full_text_v4,""),
+				_v5_len <= MaxLength, FORMAT(_full_text_v5,""),
+				_full_text_v6)
+
+
+			VAR _full_text_trimed = "" & LEFT(_full_text_adjusted, LEN(_full_text_adjusted) - 2)
+
+			VAR _is_filter = _1_is || _2_is || _3_is || _4_is || _5_is
+
+			VAR _Result = IF(testmode,_test_text,FORMAT(IF(_is_filter, _full_text_trimed, _no_filters),""))
+
+			RETURN 
+			    _Result
+
+	annotation DAXLIB_PackageId = PiotrBartela.TitleContext
+	
+	annotation DAXLIB_PackageVersion = 0.2.0

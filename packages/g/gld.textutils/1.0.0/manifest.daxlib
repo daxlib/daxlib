@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Gld.TextUtils",
+  "version": "1.0.0",
+  "authors": "Adastra,Georgios Eleftherios Ntanalakis",
+  "description": "Function to wrap text in a specified width",
+  "tags": "DAX,WordWrap,Text",
+  "releaseNotes": "Initial release of a function to wrap text in a specified width.",
+  "icon": "/icon.png"
+}

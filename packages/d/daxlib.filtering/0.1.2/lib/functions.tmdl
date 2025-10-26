@@ -1,0 +1,133 @@
+/// Retrieve the first date in dateColumnn where there is a transaction in dateTransaction
+/// it can replace FIRSTNONBLANKVALUE when we can assume that the expression is not blank 
+/// if there is a transaction (in the table that has dateTransaction) for the same date
+/// @param {expr} dateColumn - The date to filter, it is usually the Date column in the Date table
+/// @param {expr} dateTransaction - The date column in the transaction table
+/// @return Table with the filtered date in dateColumn
+function 'DaxLib.Filtering.FirstDateWithTransactions' = ```
+    ( 
+        // The date to filter, it is usually the Date column in the Date table
+        dateColumn : ANYREF EXPR,  
+
+        // The date column in the transaction table
+        dateTransaction : ANYREF EXPR
+    ) => 
+    VAR FirstVisibleDate = MIN ( dateColumn )
+    VAR FirstDateWithData = 
+        CALCULATE ( 
+            MIN ( dateTransaction ), 
+            KEEPFILTERS ( dateColumn >= FirstVisibleDate ) 
+        )
+    RETURN TREATAS ( { FirstDateWithData }, dateColumn )
+    ```
+    annotation DAXLIB_PackageId = DaxLib.Filtering
+    annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Return the value of the expression evaluated in the first date where there are transactions
+/// @param {expr} valueExpr - Expression to evaluate in the first transaction by dateTransaction
+/// @param {expr} dateColumn - The date to filter, it is usually the Date column in the Date table
+/// @param {expr} dateTransaction - The date column in the transaction table
+/// @return The result of valueExpr in the first date with a transaction in dateTransaction
+function 'DaxLib.Filtering.FirstValue' = ```
+    ( 
+        // Expression to evaluate for the first date with a transaction; its result is returned by this function
+        valueExpr : ANYREF EXPR,
+
+        // THe date to filter, it is usually the Date column in the Date table
+        dateColumn : ANYREF EXPR,  
+
+        // The date column in the transaction table
+        dateTransaction : ANYREF EXPR
+    ) => 
+    CALCULATE (
+        valueExpr,
+        DaxLib.Filtering.FirstDateWithTransactions ( dateColumn, dateTransaction )
+    )
+    ```
+    annotation DAXLIB_PackageId = DaxLib.Filtering
+    annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Retrieve the last date in dateColumnn where there is a transaction in dateTransaction
+/// it can replace FIRSTNONBLANKVALUE when we can assume that the expression is not blank 
+/// if there is a transaction (in the table that has dateTransaction) for the same date
+/// @param {expr} dateColumn - The date to filter, it is usually the Date column in the Date table
+/// @param {expr} dateTransaction - The date column in the transaction table
+/// @return Table with the filtered date in dateColumn
+function 'DaxLib.Filtering.LastDateWithTransactions' = ```
+    ( 
+        // THe date to filter, it is usually the Date column in the Date table
+        dateColumn : ANYREF EXPR,  
+
+        // The date column in the transaction table
+        dateTransaction : ANYREF EXPR
+    ) => 
+    VAR LastVisibleDate = MAX ( dateColumn )
+    VAR LastDateWithData = 
+        CALCULATE ( 
+            MAX ( dateTransaction ), 
+            KEEPFILTERS ( dateColumn <= LastVisibleDate ) 
+        )
+    RETURN TREATAS ( { LastDateWithData }, dateColumn )
+    ```
+    annotation DAXLIB_PackageId = DaxLib.Filtering
+    annotation DAXLIB_PackageVersion = 0.1.2
+    
+/// Return the value of the expression evaluated in the last date where there are transactions
+/// @param {expr} valueExpr - Expression to evaluate in the last transaction by dateTransaction
+/// @param {expr} dateColumn - The date to filter, it is usually the Date column in the Date table
+/// @param {expr} dateTransaction - The date column in the transaction table
+/// @return The result of valueExpr in the last date with a transaction in dateTransaction
+function 'DaxLib.Filtering.LastValue' = ```
+    ( 
+        // Expression to evaluate for the last date with a transaction; its result is returned by this function
+        valueExpr : ANYREF EXPR,
+
+        // THe date to filter, it is usually the Date column in the Date table
+        dateColumn : ANYREF EXPR,  
+
+        // The date column in the transaction table
+        dateTransaction : ANYREF EXPR
+    ) => 
+    CALCULATE (
+        valueExpr,
+        DaxLib.Filtering.LastDateWithTransactions ( dateColumn, dateTransaction )
+    )
+    ```
+    annotation DAXLIB_PackageId = DaxLib.Filtering
+    annotation DAXLIB_PackageVersion = 0.1.2
+
+
+/// Search a value in a lookupDate that has min/max columns and a target column containing the value to return
+/// @param {value} searchValue - Number or string to find between minColumn and maxColumn in lookupTable
+/// @param {expr} lookupTable - Table to scan to search the value containing minColumn, maxColumn, and targetColumn
+/// @param {expr} minColumn - Must be included in lookupTable, and it is the minimum boundary of the range, included
+/// @param {expr} maxColumn - Must be included in lookupTable, and it is the maximum boundary of the range, excluded
+/// @param {expr} targetColumn - Column target in lookupTable; the value for the row found is returned by this function 
+/// @return The value of targetColumn for the matching row
+function 'DaxLib.Filtering.RangeLookup' = ```
+    ( 
+        // Number or string to find between minColumn and maxColumn in lookupTable
+        searchValue   : SCALAR VAL,
+
+        // Table to scan to search the value containing minColumn, maxColumn, and targetColumn
+        lookupTable   : ANYREF EXPR, 
+
+        // minColumn must be included in lookupTable, and it is the minimum boundary of the range, included
+        minColumn     : ANYREF EXPR, 
+        
+        // maxColumn must be included in lookupTable, and it is the maximum boundary of the range, excluded
+        maxColumn     : ANYREF EXPR, 
+
+        /// Column target in lookupTable; the value for the row found is returned by this function 
+        targetColumn  : ANYREF EXPR 
+    ) => 
+        SELECTCOLUMNS (
+            FILTER (
+                lookupTable,
+                minColumn <= searchValue && maxColumn > searchValue
+            ),
+            "@Result", targetColumn
+        )
+        ```
+    annotation DAXLIB_PackageId = DaxLib.Filtering
+    annotation DAXLIB_PackageVersion = 0.1.2

@@ -1,0 +1,11 @@
+{
+  "id": "DaxLib.FormatString",
+  "version": "0.1.2",
+  "authors": "KURT BUHLER",
+  "description": "DaxLib format string functions that streamline the creation of custom and dynamic format strings",
+  "tags": "DAX,UDF,FUNCTION,LIB,FORMAT",
+  "releaseNotes": "Fixes to various functions relating to dates, duration, and dynamic units. Also added descriptions.",
+  "projectUrl": "https://data-goblin.github.io/DaxLib.FormatString/",
+  "repositoryUrl": "https://github.com/data-goblin/DaxLib.FormatString",
+  "icon": "/icon.png"
+}

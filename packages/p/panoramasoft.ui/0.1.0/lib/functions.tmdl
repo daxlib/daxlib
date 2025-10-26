@@ -1,0 +1,149 @@
+/// ⭐ Description: Creates a dynamic design template directly from a string, applying custom colors, sizes, and position.
+///    Warning: Your measure must be "ImageUrl" for proper rendering in Power BI visuals
+///    Notes: Panoramasoft.UI.WindowCanvas(layoutDefinition, showInfo)
+/// 
+/// 📖 Examples:
+/// Panoramasoft.UI.WindowCanvas(layoutDefinition, FALSE()) → Renders the layout based on the layoutDefinition configuration.
+/// Panoramasoft.UI.WindowCanvas(layoutDefinition, TRUE())  → Renders the layout with visible size and position attributes.
+///
+/// 📊 Required information:
+/// - Height: Number (rectangle height in pixels)
+/// - Width: Number (rectangle width in pixels)
+/// - Horizontal: Number (X position from left edge)
+/// - Vertical: Number (Y position from top edge)
+/// - CornerRadius: Number (rounded corner radius, 0 = sharp corners)
+/// - FillColor: Text (hex color like #3498db)
+/// - ShowInfo: Boolean (display size and position info)
+///
+/// 📤 Returns: SVG as a data URI (Power BI Image URL compatible)
+/// Renders rectangular windows from a delimited string definition
+///
+/// 🧩 How to use it:
+/// 1. Inside a measure create a variable with the required columns (Id, Height, Width, Horizontal, Vertical, CornerRadius, FillColor).
+/// 2. Concatenate the values into a single string, using commas to separate values and curly braces for each rectangle.
+/// 3. Pass the concatenated string to the Panoramasoft.UI.WindowCanvas function
+///    along with a boolean to show or hide the info text.
+///
+/// E.g.
+/// canvas = 
+///
+/// VAR layout = 
+/// 	"{1, 920, 1280, 0, 0, 25, #1e1d2f},
+/// 	{2, 785, 1070, 175, 100, 20, #eff2f3},
+/// 	{3, 340, 165, 188, 178, 15, #FFFFFF},
+/// 	{4, 340, 165, 188, 532, 15, #FFFFFF},
+/// 	{5, 162, 252, 366, 178, 15, #FFFFFF},
+/// 	{6, 162, 258, 632, 178, 15, #FFFFFF},
+/// 	{7, 162, 252, 366, 358, 15, #FFFFFF},
+/// 	{8, 162, 258, 632, 358, 15, #FFFFFF},
+/// 	{9, 340, 520, 366, 532, 15, #FFFFFF},
+/// 	{10, 340, 330, 900, 178, 15, #FFFFFF}, 
+/// 	{11, 340, 330, 900, 532, 15, #FFFFFF},
+/// 	{12, 48, 292, 935, 116, 25, #FFFFFF}"
+/// RETURN Panoramasoft.UI.WindowCanvas(layout,true)
+FUNCTION 'Panoramasoft.UI.WindowCanvas' =
+        (
+            dataDefinition: string val,
+            showInfo: boolean val
+        ) =>
+
+        //--------------------------------------------------------------------
+        // STEP 1. CLEAN INPUT AND TOKENIZE
+        //--------------------------------------------------------------------
+        VAR CleanText = SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(dataDefinition, "{", ""), "}", ""), "#", "") // Remove extra characters
+        VAR PathText = SUBSTITUTE(CleanText, ",", "|") // Remove extra characters
+
+        VAR ATTR_PER_ROW = 7 // Number of elements per row - WindowID, Height, Width, X, Y, Radius, Color
+        
+        VAR ItemCount = PATHLENGTH(PathText) // Getting the total number of elements
+        VAR RowCount = INT(DIVIDE(ItemCount, ATTR_PER_ROW, 0))  // Total number of elements divided by the number of elements per row
+        VAR IsValidInput = MOD(ItemCount, ATTR_PER_ROW) = 0 // Validating that dataDefinition has the correct number of elements
+
+        //--------------------------------------------------------------------
+        // STEP 2. BUILD TOKEN TABLE
+        //--------------------------------------------------------------------
+        VAR Tokens =
+            SELECTCOLUMNS(
+                GENERATESERIES(1, ItemCount, 1),
+                "Idx", [Value],
+                "Item", TRIM(PATHITEM(PathText, [Value], TEXT))
+            )
+
+        //--------------------------------------------------------------------
+        // STEP 3. BUILD STRUCTURED WINDOW TABLE
+        //--------------------------------------------------------------------
+        VAR WindowTable =
+            ADDCOLUMNS(
+                GENERATESERIES(1, RowCount, 1),
+                "WindowID",     VALUE(MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW - 6), [Item])),
+                "Height",       VALUE(MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW - 5), [Item])),
+                "Width",        VALUE(MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW - 4), [Item])),
+                "Horizontal",   VALUE(MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW - 3), [Item])),
+                "Vertical",     VALUE(MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW - 2), [Item])),
+                "CornerRadius", VALUE(MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW - 1), [Item])),
+                "FillColor",    "#" & MAXX(FILTER(Tokens, [Idx] = [Value] * ATTR_PER_ROW), [Item])
+            )
+        
+        // Calculating Width and Height for canvas
+        VAR CanvasWidth  = MAXX(WindowTable, [Horizontal] + [Width])
+        VAR CanvasHeight = MAXX(WindowTable, [Vertical] + [Height])
+
+        //--------------------------------------------------------------------
+        // 🎨 STEP 4. GENERATE SVG RECTANGLES + LABELS
+        //--------------------------------------------------------------------
+        VAR WindowsWithSVG =
+            ADDCOLUMNS(
+                WindowTable,
+                "svgPart",
+                    "<rect x='" & [Horizontal] &
+                    "' y='" & [Vertical] &
+                    "' width='" & [Width] &
+                    "' height='" & [Height] &
+                    "' rx='" & [CornerRadius] &
+                    "' ry='" & [CornerRadius] &
+                    "' fill='" & [FillColor] & "'/>" &
+                    IF(
+                        showInfo,
+                        "<text x='" & ([Horizontal] + [Width] / 2) &
+                        "' y='" & ([Vertical] + [Height] / 2) &
+                        "' text-anchor='middle' dominant-baseline='middle' " &
+                        "font-size='12' fill='black' font-family='Arial'>" &
+                            "Id:" & [WindowID] &
+                            " H:" & [Height] & " W:" & [Width] & 
+                            " X:" & [Horizontal] & " Y:" & [Vertical] & 
+                        "</text>",
+                        ""
+                    )
+            )
+
+        //--------------------------------------------------------------------
+        // 🧱 STEP 5. COMBINE INTO SINGLE SVG
+        //--------------------------------------------------------------------
+        VAR AllRects = CONCATENATEX(WindowsWithSVG, [svgPart], "")
+
+        VAR SVGTemplate =
+            "data:image/svg+xml;utf8," &
+            "<svg xmlns='http://www.w3.org/2000/svg' " &
+            "width='" & canvasWidth & "' height='" & canvasHeight & "'>" &
+                AllRects &
+            "</svg>"
+
+        //--------------------------------------------------------------------
+        // ⚠️ STEP 6. RETURN ERROR SVG IF INVALID INPUT
+        //--------------------------------------------------------------------
+        VAR ErrorSVG =
+            "data:image/svg+xml;utf8," &
+            "<svg xmlns='http://www.w3.org/2000/svg' width='" & canvasWidth & "' height='" & canvasHeight & "'>" &
+                "<rect width='100%' height='100%' fill='white'/>" &
+                "<text x='10' y='20' font-family='Arial' font-size='14' fill='red'>" &
+                    "Invalid input: expected multiple of " & ATTR_PER_ROW &
+                    " items. Found " & ItemCount & "." &
+                "</text>" &
+            "</svg>"
+
+        RETURN 
+            IF(NOT IsValidInput, ErrorSVG, SVGTemplate)
+
+    annotation DAXLIB_PackageId = Panoramasoft.UI
+    annotation DAXLIB_PackageVersion = 0.1.0
+

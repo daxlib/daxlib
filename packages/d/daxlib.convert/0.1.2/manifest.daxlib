@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DaxLib.Convert",
+  "version": "0.1.2",
+  "authors": "DAXLIB,SQLBI",
+  "description": "A comprehensive set of User-Defined Functions designed to handle a wide range of essential data conversions and transformations. It enables seamless conversion between various units of measurement, including time, temperature, distance, weight, volume, and more.",
+  "tags": "DAX,UDF,CONVERSION",
+  "releaseNotes": "Update metadata with new project and repository URLs",
+  "projectUrl": "https://github.com/daxlib/dev-daxlib-convert",
+  "repositoryUrl": "https://github.com/daxlib/dev-daxlib-convert",
+  "icon": "/icon.png"
+}

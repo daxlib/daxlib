@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "PiotrBartela.TitleContext",
+  "version": "0.1.0",
+  "authors": "Piotr Bartela",
+  "description": "Dynamic DAX function that turns a filtered date range into a clear, presentation-style title (e.g., Revenue Qtr 4'23 – Qtr 2'24 (3 Qtrs) or Revenue Last Year (2024)). Simply provide a prefix (e.g., 'Revenue') and a date column (e.g., 'Calendar'[Date]).",
+  "tags": "DATE, TIME, CONTEXT, DURATION, CONVERSION, PERIOD",
+  "releaseNotes": "Initial commit. Handles Relative (to TODAY()), Years, Qtrs, Mts and Days, also multiple periods and wrong filtering",
+  "projectUrl": "https://github.com/sql-bi/daxlib",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/p/piotrbartela.titlecontext",
+  "icon": "/icon.png"
+}

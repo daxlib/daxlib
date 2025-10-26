@@ -1,0 +1,98 @@
+/// Creates an SVG Chip
+/// Warning: Any measures that use this function must have the "DataCategory" property = "ImageUrl"
+/// Defaults are width:150 and height:25
+function 'Bacci.SVG.Chip' = 
+		(
+		        	// The value which will dictate the length of each bar
+		        	chipText : SCALAR STRING VAL,
+		        
+		        	// The maximum bar length
+		        	colour : SCALAR STRING VAL
+		        )
+		        =>
+		        VAR height = 25 
+		        VAR width = 150
+		        VAR css = 
+		            "<style>
+		            span 
+		            {
+		                display:table;
+		                font:10pt Segoe UI;
+		                border-radius: 20px;
+		                padding: 3px 8px;
+		                border: solid  1px;
+		                vertical-align: top;
+		                text-wrap: nowrap;
+		            }
+		            .orange {	
+		                background-color: #fcece2;
+		                color: #794023;
+		                border-color: #794023;
+		            }
+		            .teal {	
+		                background-color: #d9f5f2;
+		                color: #00786f;
+		                border-color: #00786f;
+		            }
+		            .grey {	
+		                background-color: #f0f1f2;
+		                color: #4a5565;
+		                border-color: #4a5565;
+		            }
+		            .indigo {	
+		                background-color: #eef2ff;
+		                color: #6251d7;
+		                border-color: #6251d7;
+		            }
+		            .pink {	
+		                background-color: #fdf2f8;
+		                color: #c64781;
+		                border-color: #c64781;
+		            }
+		            .blue {	
+		                background-color: #ebf2ff;
+		                color: #2a67ce;
+		                border-color: #2a67ce;
+		            }
+		            .green {	
+		                background-color: #e6f4ea;
+		                color: #137333;
+		                border-color: #137333;
+		            }
+		            .amber {	
+		                background-color: #fff4e5;
+		                color: #856211;
+		                border-color: #856211;
+		            }
+		            .red {	
+		                background-color: #f5d4df;
+		                color: #6a2039;
+		                border-color: #6a2039;
+		            }
+		            .purple {	
+		                background-color: #eeeefa;
+		                color: #4f47ba;
+		                border-color: #4f47ba;
+		            }
+		            </style>"
+		
+		        RETURN
+		        "data:image/svg+xml;utf8,
+		        <svg width='"& width &"' height='"& height &"'  viewBox='-1 -1 " & width+1.5 & " " & height+1.5 & "' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg' >" & css &
+		        "
+		        /*" &  chipText  & "*/ 
+		        <foreignObject x='0' y='0' width='" & width & "' height='" & height & "'>"
+		        & 
+		        "<div xmlns='http://www.w3.org/1999/xhtml'>
+		            <span xmlns='http://www.w3.org/1999/xhtml' class='"&colour&"'>
+		            "&chipText&" 
+		            </span>
+		        </div>"
+		        &
+		        "</foreignObject>
+		        </svg>"
+
+	annotation DAXLIB_PackageId = Bacci.SVG
+
+	annotation DAXLIB_PackageVersion = 0.1.1
+

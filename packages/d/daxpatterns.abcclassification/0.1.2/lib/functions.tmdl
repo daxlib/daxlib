@@ -1,0 +1,116 @@
+/// Return the value computed in the filtered ABC classes
+/// Implement Dynamic ABC Classification pattern from DAX Patterns
+/// Article: https://www.daxpatterns.com/abc-classification/
+/// You must have a table with the definition of 
+/// the ABC classes (abcClassTable) with at least two columns,
+/// the lower and the upper boundary of each class
+/// The first argument is the expression to evaluate for each 
+/// ite in itemTable, which cardinality is expressed by itemKeyColumn
+/// The transactionTable is the table that defines the presence of
+/// transactions, typically the table that has the column(s) 
+/// aggregated in valueExpr
+function 'DaxPatterns.AbcClassification.ComputeInAbcClass' = ```
+        ( 
+            valueExpr : ANYREF EXPR, 
+            transactionsTable : ANYREF EXPR, 
+            itemTable : ANYREF EXPR, 
+            itemKeyColumn : ANYREF EXPR,
+            abcClassTable : ANYREF EXPR,
+            abcLowerBoundaryColumn : ANYREF EXPR,
+            abcUpperBoundaryColumn : ANYREF EXPR
+        ) =>
+            VAR ProductsInClass = 
+                DaxPatterns.AbcClassification.ItemsInClass( 
+                    valueExpr,
+                    TransactionsTable, 
+                    ItemTable, 
+                    ItemKeyColumn, 
+                    abcClassTable,
+                    abcLowerBoundaryColumn,
+                    abcUpperBoundaryColumn 
+                ) 
+            VAR Result =
+                CALCULATE (           
+                    valueExpr,
+                    KEEPFILTERS ( ProductsInClass )
+                )
+            RETURN Result
+        ```
+    annotation DAXLIB_PackageId = DaxPatterns.AbcClassification
+
+    annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Return the items filtered by ABC classes
+/// Implement Dynamic ABC Classification pattern from DAX Patterns
+/// Article: https://www.daxpatterns.com/abc-classification/
+/// You must have a table with the definition of 
+/// the ABC classes (abcClassTable) with at least two columns,
+/// the lower and the upper boundary of each class
+/// The first argument is the expression to evaluate for each 
+/// ite in itemTable, which cardinality is expressed by itemKeyColumn
+/// The transactionTable is the table that defines the presence of
+/// transactions, typically the table that has the column(s) 
+/// aggregated in valueExpr
+function 'DaxPatterns.AbcClassification.ItemsInClass' = ```
+        ( 
+            valueExpr : ANYREF EXPR,
+            transactionsTable : ANYREF EXPR, 
+            itemTable : ANYREF EXPR, 
+            itemKeyColumn : ANYREF EXPR, 
+            abcClassTable : ANYREF EXPR,
+            abcLowerBoundaryColumn : ANYREF EXPR,
+            abcUpperBoundaryColumn : ANYREF EXPR
+        ) => 
+            VAR TransactionsByItem = 	
+                CALCULATETABLE (
+                    ADDCOLUMNS (
+                        SUMMARIZE ( transactionsTable, itemKeyColumn ),
+                        "@Value", CALCULATE ( valueExpr )
+                    ),
+                    ALLSELECTED ( itemTable )
+                )
+            VAR AllItemsValue =
+                SUMX ( 
+                    transactionsByItem,
+                    [@Value]
+                )
+            VAR CumulatedPctByItemTable = 
+                ADDCOLUMNS ( 
+                    transactionsByItem, 
+                    "@CumulatedPct", 
+                        VAR CumulatedValue = 
+                            SUMX ( 
+                                WINDOW ( 
+                                    1, ABS, 
+                                    0, REL, 
+                                    transactionsByItem, 
+                                    ORDERBY ( [@Value], DESC ) 
+                                ), 
+                                [@Value] 
+                            )
+                        VAR Perc = 
+                            DIVIDE (
+                                CumulatedValue,
+                                AllItemsValue
+                            )
+                        RETURN
+                            MIN ( Perc, 1 ) -- Avoid >100% in case of rounding issues
+                )
+            
+            VAR Result =
+                FILTER (
+                    CROSSJOIN (
+                        CumulatedPctByItemTable,
+                        abcClassTable
+                    ),
+                    AND (
+                        [@CumulatedPct] > abcLowerBoundaryColumn,
+                        [@CumulatedPct] <= abcUpperBoundaryColumn
+                    )
+                )
+            RETURN Result
+        ```
+    annotation DAXLIB_PackageId = DaxPatterns.AbcClassification
+
+    annotation DAXLIB_PackageVersion = 0.1.2
+

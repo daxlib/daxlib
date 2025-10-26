@@ -1,0 +1,222 @@
+/// Returns a formatted informational string about the XU.Calendar DAX UDF library.
+function 'XU.Calendar.About' = 
+		() =>
+			VAR LB = UNICHAR(10)
+			RETURN
+				"💡 Library Name: XU.Calendar" & LB &
+				"🧑 Author: HD XU" & LB &
+				"📦 Version: 0.1.0" & LB &
+				"⚖️ License: MIT – Free to use and modify" & LB &
+				"📧 Contact: vic.haodong.xu@outlook.com" & LB &
+				LB &
+				"💎 Functions included:" & LB &
+				"• XU.Calendar.Build(StartDate, EndDate, FiscalYearStartMonth) → Full date table with fiscal & ISO" & LB &
+				"• XU.Calendar.Build.NoFiscal(StartDate, EndDate) → Full date table without fiscal columns" & LB &
+				"• XU.Calendar.Build.Basic(StartDate, EndDate) → Minimal date table for simple models" & LB &
+				LB &
+				"⚠️ Important: " & LB &
+				"After creating a date table using any of these functions, you must manually mark it as a date table in Power BI." 
+
+	annotation DAXLIB_PackageId = XU.Calendar
+
+	annotation DAXLIB_PackageVersion = 0.1.0
+
+/// 💎 Description: Generates a comprehensive date dimension table with calendar, fiscal, and ISO week attributes.
+/// ℹ️ Note: After using this function to create a calculated table, you must manually mark it as a date table in Power BI.
+/// 📌 Example: XU.Calendar.Build(DATE(2015, 1, 1), DATE(2030, 12, 31), 7)
+function 'XU.Calendar.Build' = 
+		(
+			StartDate: SCALAR DATETIME VAL,
+			EndDate: SCALAR DATETIME VAL,
+			// 💡 [e.g., 7 for July]
+			FiscalYearStartMonth: SCALAR INT64 VAL
+		) =>
+			VAR CalendarWithFiscal = 
+				ADDCOLUMNS(
+					CALENDAR(StartDate, EndDate),
+
+					// ===== 1. CORE DATE IDENTIFIERS =====
+					"DateKey", YEAR([Date]) * 10000 + MONTH([Date]) * 100 + DAY([Date]),
+					"YearMonthSort", YEAR([Date]) * 100 + MONTH([Date]),
+					"QuarterYearSort", YEAR([Date]) * 10 + QUARTER([Date]),
+
+					// ===== 2. CALENDAR HIERARCHY =====
+					"Year", YEAR([Date]),
+					"Quarter Number", QUARTER([Date]),
+					"Quarter", "Q" & QUARTER([Date]),
+					"Year-Quarter", "Q" & QUARTER([Date]) & " " & YEAR([Date]),
+					"Month Number", MONTH([Date]),
+					"Month", SWITCH(MONTH([Date]), 
+						1, "January", 2, "February", 3, "March", 4, "April",
+						5, "May", 6, "June", 7, "July", 8, "August",
+						9, "September", 10, "October", 11, "November", 12, "December"
+					),
+					"Short Month", SWITCH(MONTH([Date]),
+						1, "Jan", 2, "Feb", 3, "Mar", 4, "Apr",
+						5, "May", 6, "Jun", 7, "Jul", 8, "Aug",
+						9, "Sep", 10, "Oct", 11, "Nov", 12, "Dec"
+					),
+					"Year-Month", FORMAT([Date], "yyyy-MM"),
+					"Month Year Label", FORMAT([Date], "mmm yyyy"),
+					"Day of Month", DAY([Date]),
+					"Day of Year", DATEDIFF(DATE(YEAR([Date]), 1, 1), [Date], DAY) + 1,
+					"Day of Week Number", WEEKDAY([Date], 2),
+					"Day of Week", SWITCH(WEEKDAY([Date], 2),
+						1, "Monday", 2, "Tuesday", 3, "Wednesday", 4, "Thursday",
+						5, "Friday", 6, "Saturday", 7, "Sunday"
+					),
+					"Short Day", SWITCH(WEEKDAY([Date], 2),
+						1, "Mon", 2, "Tue", 3, "Wed", 4, "Thu",
+						5, "Fri", 6, "Sat", 7, "Sun"
+					),
+
+					// ===== 3. SPECIAL CALENDAR SYSTEMS =====
+					"ISO Week Number", WEEKNUM([Date], 21),
+					"ISO Year", 
+						VAR ThursdayInWeek = [Date] - (WEEKDAY([Date], 2) - 4)
+						RETURN YEAR(ThursdayInWeek),
+					"ISO Year-Week", 
+						VAR ThursdayInWeek = [Date] - (WEEKDAY([Date], 2) - 4)
+						VAR CalculatedISOYear = YEAR(ThursdayInWeek)
+						VAR CalculatedISOWeek = WEEKNUM([Date], 21)
+						RETURN "W" & CalculatedISOYear & "-" & RIGHT("00" & CalculatedISOWeek, 2),
+
+					// Fiscal attributes
+					"Fiscal Year Number", IF(MONTH([Date]) >= FiscalYearStartMonth, YEAR([Date]), YEAR([Date]) - 1),
+					"Fiscal Year", "FY" & RIGHT(YEAR([Date]) - (MONTH([Date]) < FiscalYearStartMonth), 2),
+					"Fiscal Month Number", MOD(MONTH([Date]) - FiscalYearStartMonth + 12, 12) + 1,
+					"Fiscal Quarter Number", ROUNDUP((MOD(MONTH([Date]) - FiscalYearStartMonth + 12, 12) + 1) / 3, 0),
+					"Fiscal Quarter", 
+						"FY" & RIGHT(YEAR([Date]) - (MONTH([Date]) < FiscalYearStartMonth), 2) & 
+						" Q" & ROUNDUP((MOD(MONTH([Date]) - FiscalYearStartMonth + 12, 12) + 1) / 3, 0),
+
+					// ===== 4. TIME INDICATORS =====
+					"Is Weekend", WEEKDAY([Date], 2) IN {6, 7},
+					"Is Work Day", NOT (WEEKDAY([Date], 2) IN {6, 7})
+				)
+			RETURN
+				CalendarWithFiscal
+
+	annotation DAXLIB_PackageId = XU.Calendar
+	
+	annotation DAXLIB_PackageVersion = 0.1.0
+
+/// 💎 Description: Generates a minimal date dimension table with essential calendar attributes only.
+/// ℹ️ Note: After using this function to create a calculated table, you must manually mark it as a date table in Power BI.
+/// 📌 Example: XU.Calendar.Build.Basic(DATE(2015, 1, 1), DATE(2030, 12, 31))
+function 'XU.Calendar.Build.Basic' = 
+		(
+			StartDate: SCALAR DATETIME VAL,
+			EndDate: SCALAR DATETIME VAL
+		) =>
+			ADDCOLUMNS(
+				CALENDAR(StartDate, EndDate),
+
+				// Core identifiers
+				"DateKey", YEAR([Date]) * 10000 + MONTH([Date]) * 100 + DAY([Date]),
+				"YearMonthSort", YEAR([Date]) * 100 + MONTH([Date]),
+
+				// Calendar hierarchy
+				"Year", YEAR([Date]),
+				"Quarter Number", QUARTER([Date]),
+				"Quarter", "Q" & QUARTER([Date]),
+				"Year-Quarter", "Q" & QUARTER([Date]) & " " & YEAR([Date]),
+				"Month Number", MONTH([Date]),
+				"Month", SWITCH(MONTH([Date]), 
+					1, "January", 2, "February", 3, "March", 4, "April",
+					5, "May", 6, "June", 7, "July", 8, "August",
+					9, "September", 10, "October", 11, "November", 12, "December"
+				),
+				"Short Month", SWITCH(MONTH([Date]),
+					1, "Jan", 2, "Feb", 3, "Mar", 4, "Apr",
+					5, "May", 6, "Jun", 7, "Jul", 8, "Aug",
+					9, "Sep", 10, "Oct", 11, "Nov", 12, "Dec"
+				),
+				"Year-Month", FORMAT([Date], "yyyy-MM"),
+				"Month Year Label", FORMAT([Date], "mmm yyyy"),
+				"Day of Month", DAY([Date]),
+				"Day of Week Number", WEEKDAY([Date], 2),
+				"Day of Week", SWITCH(WEEKDAY([Date], 2),
+					1, "Monday", 2, "Tuesday", 3, "Wednesday", 4, "Thursday",
+					5, "Friday", 6, "Saturday", 7, "Sunday"
+				),
+				"Short Day", SWITCH(WEEKDAY([Date], 2),
+					1, "Mon", 2, "Tue", 3, "Wed", 4, "Thu",
+					5, "Fri", 6, "Sat", 7, "Sun"
+				),
+
+				// Flags
+				"Is Weekend", WEEKDAY([Date], 2) IN {6, 7},
+				"Is Work Day", NOT (WEEKDAY([Date], 2) IN {6, 7})
+			)
+
+	annotation DAXLIB_PackageId = XU.Calendar
+	
+	annotation DAXLIB_PackageVersion = 0.1.0
+
+
+/// 💎 Description: Generates a comprehensive date table without any fiscal year columns.
+/// ℹ️ Note: After using this function to create a calculated table, you must manually mark it as a date table in Power BI.
+/// 📌 Example: XU.Calendar.Build.NoFiscal(DATE(2015, 1, 1), DATE(2030, 12, 31))
+function 'XU.Calendar.Build.NoFiscal' = 
+		(
+			StartDate: SCALAR DATETIME VAL,
+			EndDate: SCALAR DATETIME VAL
+		) =>
+			ADDCOLUMNS(
+				CALENDAR(StartDate, EndDate),
+
+				// ===== 1. CORE DATE IDENTIFIERS =====
+				"DateKey", YEAR([Date]) * 10000 + MONTH([Date]) * 100 + DAY([Date]),
+				"YearMonthSort", YEAR([Date]) * 100 + MONTH([Date]),
+				"QuarterYearSort", YEAR([Date]) * 10 + QUARTER([Date]),
+
+				// ===== 2. CALENDAR HIERARCHY =====
+				"Year", YEAR([Date]),
+				"Quarter Number", QUARTER([Date]),
+				"Quarter", "Q" & QUARTER([Date]),
+				"Year-Quarter", "Q" & QUARTER([Date]) & " " & YEAR([Date]),
+				"Month Number", MONTH([Date]),
+				"Month", SWITCH(MONTH([Date]), 
+					1, "January", 2, "February", 3, "March", 4, "April",
+					5, "May", 6, "June", 7, "July", 8, "August",
+					9, "September", 10, "October", 11, "November", 12, "December"
+				),
+				"Short Month", SWITCH(MONTH([Date]),
+					1, "Jan", 2, "Feb", 3, "Mar", 4, "Apr",
+					5, "May", 6, "Jun", 7, "Jul", 8, "Aug",
+					9, "Sep", 10, "Oct", 11, "Nov", 12, "Dec"
+				),
+				"Year-Month", FORMAT([Date], "yyyy-MM"),
+				"Month Year Label", FORMAT([Date], "mmm yyyy"),
+				"Day of Month", DAY([Date]),
+				"Day of Year", DATEDIFF(DATE(YEAR([Date]), 1, 1), [Date], DAY) + 1,
+				"Day of Week Number", WEEKDAY([Date], 2),
+				"Day of Week", SWITCH(WEEKDAY([Date], 2),
+					1, "Monday", 2, "Tuesday", 3, "Wednesday", 4, "Thursday",
+					5, "Friday", 6, "Saturday", 7, "Sunday"
+				),
+				"Short Day", SWITCH(WEEKDAY([Date], 2),
+					1, "Mon", 2, "Tue", 3, "Wed", 4, "Thu",
+					5, "Fri", 6, "Sat", 7, "Sun"
+				),
+
+				// ===== 3. ISO WEEK ATTRIBUTES (NO FISCAL) =====
+				"ISO Week Number", WEEKNUM([Date], 21),
+				"ISO Year", 
+					VAR ThursdayInWeek = [Date] - (WEEKDAY([Date], 2) - 4)
+					RETURN YEAR(ThursdayInWeek),
+				"ISO Year-Week", 
+					VAR ThursdayInWeek = [Date] - (WEEKDAY([Date], 2) - 4)
+					VAR CalculatedISOYear = YEAR(ThursdayInWeek)
+					VAR CalculatedISOWeek = WEEKNUM([Date], 21)
+					RETURN "W" & CalculatedISOYear & "-" & RIGHT("00" & CalculatedISOWeek, 2),
+
+				// ===== 4. TIME INDICATORS =====
+				"Is Weekend", WEEKDAY([Date], 2) IN {6, 7},
+				"Is Work Day", NOT (WEEKDAY([Date], 2) IN {6, 7})
+			)
+
+	annotation DAXLIB_PackageId = XU.Calendar
+	
+	annotation DAXLIB_PackageVersion = 0.1.0
