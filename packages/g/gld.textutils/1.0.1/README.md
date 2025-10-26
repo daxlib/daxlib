@@ -61,7 +61,7 @@ WordWrap =
 EVALUATE
 ROW(
     "Wrapped",
-    WordWrap("State-of-the-art technology is evolving rapidly.", 20)
+    Gld.TextUtils.WordWrap("State-of-the-art technology is evolving rapidly.", 20)
 )
 ```
 
