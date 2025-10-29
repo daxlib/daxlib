@@ -6,5 +6,6 @@
   "description": "A set of functions that can be used to show the selected values as a list of items.",
   "tags": "DAX,UDF,FUNCTION,LIB,SLICER",
   "releaseNotes": "Improved beta release of SavoryData.Selection2List library. Provides functions to display the selected items as a text string.",
-  "icon": "/icon.png"
+  "icon": "/icon.png",
+  "readme": "/README.md"
 }
