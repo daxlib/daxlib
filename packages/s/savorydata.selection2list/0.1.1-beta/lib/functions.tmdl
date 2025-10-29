@@ -2,16 +2,28 @@
 function 'SavoryData.Selection2List.Config_MaxNumberOfElements' =
 	    () => 
 		3
+	
+	annotation DAXLIB_PackageId = SavoryData.Selection2List
+	
+	annotation DAXLIB_PackageVersion = 0.1.1-beta
 
 /// default for the TextColumnName
 function 'SavoryData.Selection2List.Config_TextColumnName' =
 	    () => 
 		BLANK()
+	
+	annotation DAXLIB_PackageId = SavoryData.Selection2List
+	
+	annotation DAXLIB_PackageVersion = 0.1.1-beta
 
 /// default for the DateFormat
 function 'SavoryData.Selection2List.Config_DateFormat' =
 	    () => 
 		"YYYY-MM-DD"
+	
+	annotation DAXLIB_PackageId = SavoryData.Selection2List
+	
+	annotation DAXLIB_PackageVersion = 0.1.1-beta
 
 /// returns list of selected text values, MaxNumberOfElements and TextColumName are accepted as a parameter
 function 'SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName' =
