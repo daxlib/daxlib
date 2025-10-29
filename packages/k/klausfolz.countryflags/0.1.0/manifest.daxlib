@@ -6,8 +6,8 @@
   "description": "Returns the flag image (as SVG code) for a given ISO3 country code.",
   "tags": "COUNTRY,FLAG,SVG",
   "releaseNotes": "Initial release. Returns the flag image (as SVG code) for a given ISO3 country code. More options to get the flag in different formats and sizes will follow in future releases.",
-  "projectUrl": "https://github.com/sql-bi/daxlib",
-  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/k/klausfolz.countryflags",
+  "projectUrl": "https://github.com/daxlib/daxlib",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/k/klausfolz.countryflags",
   "icon": "/icon.png",
   "readme": "/README.md"
 }
