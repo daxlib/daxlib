@@ -1,0 +1,160 @@
+/// Performs a modified SAMEPERIODLASTYEAR shift referencing a custom calendar, clearing filters on unrelated columns and respecting any complete periods selected
+///
+/// metricExpr - The calculation to perform.
+///
+/// calendarTable - The calendar table of the model.
+///
+/// calendarDateColumn - The date column of the model's calendar table. Must be from the the same as calendarTable.
+///
+/// customCalendar - The custom calendar to use. Must be a member of calendarTable.
+///
+/// fiscalPeriodColumn - The Time Unit column from the custom calendar to consider as the point of comparison to go back one year on a per period basis (Year, Semester, Quarter, Month, or Week).
+///
+/// fiscalPeriodDayCountColumn - A "Day of" Time Unit column. It does not need to be the same period type as fiscalPeriodColumn.
+function 'InteractBI.TimeIntelligence.SPLY' = ```
+
+		( 
+			metricExpr : ANYREF EXPR,
+			calendarTable : ANYREF,
+			calendarDateColumn : ANYREF,
+			customCalendar : ANYREF,
+			fiscalPeriodColumn : ANYREF, 
+			fiscalPeriodDayCountColumn : ANYREF 
+		) =>
+		
+		/*
+		Questions? Comments? Reach out to Lucas at lucas@interact.bi
+
+		This function serves three purposes:
+		1. Eliminate the filter-keep behaviour of SAMEPERIODLASTYEAR()
+		- This allows the use of Relative/descriptive columns, such as MTD, Last Month, etc
+		2. Allows the use of columns not marked in a calendar
+		3. Provide a more logical result than the default when mixing incompatible calendars and periods with a different number of days, respecting external filter context
+		- If Calendar Month July 2024 covers two Fiscal Months, a Gregorian and Fiscal calendar set up,
+			and this calendar month is selected, the result shown for SAMEPERIODLASTYEAR will be the full result for both months.
+			The default behaviour is understandable and correct, but provides illogical results for comparison
+			
+		The function achieves this by:
+		A) Respecting internal and external filters
+		B) Ensuring that if an entire period is selected, it receives the results for it's full period shift.
+		C) If a part period is selected, the user controls what comparison point is used with fiscalPeriodDayCountColumn.
+		- If a Day of Year column is selected, the part period result will be X day of the previous fiscal year
+		- If a Day of Month column is selected, the part period result will be Y day of the previous fiscal year's corresponding month
+		There is no requirement for fiscalPeriodDayCountColumn to be part of the same grouping as fiscalPeriodColumn.
+		D) Removing all filters from the calendar table after we have received the context needed to make them irrelevant
+		
+		Each combination will provide different but deterministic results, which can be incorporated into the business rules and developer requirements.
+		You get to choose the comparison point that makes the most sense for your users, which respects the subjective nature of partial period comparisons
+		*/
+		
+		//capture the in context dates that provide a logical start/end point for the comparison
+		VAR selectedDates =
+			VALUES ( calendarDateColumn )
+			
+		//determine the number of days in fiscalPeriodColumn so we can confirm if an entire period is selected
+		VAR inContextDates =
+			SELECTCOLUMNS (
+				ADDCOLUMNS (
+					SUMMARIZE (
+						calendarTable,
+						fiscalPeriodColumn,
+						fiscalPeriodDayCountColumn
+					),
+					"@Days In Fiscal Period", 
+						VAR inContextDates_iterationFiscalPeriod = fiscalPeriodColumn
+						RETURN
+							CALCULATE ( 
+								COUNTROWS ( calendarTable ),
+								REMOVEFILTERS ( calendarTable ),
+								fiscalPeriodColumn = inContextDates_iterationFiscalPeriod
+							)
+					),
+				[@Days In Fiscal Period],
+				"int_fiscalPeriod", fiscalPeriodColumn,
+				"int_fiscalPeriodDayCount", fiscalPeriodDayCountColumn
+			)
+			
+		// determine how many days are selected for each fiscal period in the context
+		VAR combinedContext =
+			ADDCOLUMNS (
+				SUMMARIZE (
+					inContextDates,
+					[int_fiscalPeriod],
+					[@Days In Fiscal Period]
+				),
+				"@Selected Days of Fiscal Period",
+					VAR combinedContext_iterationFiscalPeriod = [int_fiscalPeriod]
+					RETURN
+						CALCULATE (
+							COUNTROWS ( calendarTable ),
+							TREATAS ( selectedDates, calendarDateColumn ),
+							fiscalPeriodColumn = combinedContext_iterationFiscalPeriod
+						)
+			)
+			
+		// segment the periods selected in full from the ones with only partial
+		VAR fullPeriods =
+			SELECTCOLUMNS (
+				FILTER ( combinedContext, [@Selected Days of Fiscal Period] = [@Days In Fiscal Period] ),
+				[int_fiscalPeriod]
+			)
+		VAR partPeriods =
+			SELECTCOLUMNS (
+				FILTER ( combinedContext, [@Selected Days of Fiscal Period] <> [@Days In Fiscal Period] ),
+				[int_fiscalPeriod]
+			)
+			
+		// full periods are summarized by the column from fiscalPeriodColumn to obtain SPLY for those months in full
+		VAR fullPeriodsResult =
+			ADDCOLUMNS (
+				fullPeriods,
+				"@Result", 
+				VAR fullPeriodsResult_iterationFiscalPeriod = [int_fiscalPeriod]
+				RETURN
+				CALCULATE (
+					CALCULATE ( 
+						CALCULATE ( metricExpr ),
+						SAMEPERIODLASTYEAR ( customCalendar )
+					),
+					REMOVEFILTERS ( calendarTable ),
+					TREATAS ( { fullPeriodsResult_iterationFiscalPeriod }, fiscalPeriodColumn ) 
+				)
+			)
+			
+		// if a partial period is selected, return the corresponding days based on the day count from the same period last year
+		// this allows us to influence the construct of the lattice even if the report is operating at a different grain
+		// eg using Month: selecting days 1-7 for 2025-01 returns the results for days 1-7 from 2024-01.
+		// eg using Week: selecting day 29 for 2025-01 returns the results for days 29 from 2024, even if this doesn't belong to the same fiscal period
+		VAR partPeriodsTable =
+				FILTER (
+					inContextDates,
+					[int_fiscalPeriod] IN partPeriods &&
+					NOT [int_fiscalPeriod] IN fullPeriods
+				)
+		
+		VAR partPeriodsResult =
+			ADDCOLUMNS (
+				partPeriodsTable,
+				"@Result",
+				VAR partPeriodsResult_iterationFiscalPeriod = [int_fiscalPeriod]
+				VAR partPeriodsResult_iterationPeriodDay = [int_fiscalPeriodDayCount]
+				RETURN
+				CALCULATE (
+					CALCULATE ( 
+						CALCULATE ( metricExpr ),
+						SAMEPERIODLASTYEAR ( customCalendar )
+					),
+					REMOVEFILTERS ( calendarTable ),
+					TREATAS ( { ( partPeriodsResult_iterationFiscalPeriod, partPeriodsResult_iterationPeriodDay ) }, fiscalPeriodColumn, fiscalPeriodDayCountColumn ) 
+				)
+			)
+			
+		VAR result = 
+			SUMX ( partPeriodsResult, [@Result] ) + SUMX ( fullPeriodsResult, [@Result] )
+		RETURN
+			result
+		```
+		annotation DAXLIB_PackageId = InteractBI.TimeIntelligence
+
+		annotation DAXLIB_PackageVersion = 0.1.0
+
