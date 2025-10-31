@@ -799,91 +799,91 @@ function 'DaxLib.SVG.Compound.Pill' =
 /// measureRef     	NUMERIC EXPR    	The measure to evaluate
 /// barColor    	STRING          	The Hex color of the bars i.e "#01B8AA"
 function 'DaxLib.SVG.Compound.Bar' = 
-	(
-		x: INT64,
-		y: INT64,
-		width: INT64,
-		height: INT64,
-		paddingX: DOUBLE,
-		paddingY: DOUBLE,
-		axisRef: ANYREF EXPR,
-		measureRef: NUMERIC EXPR,
-		barColor: STRING
-	) =>
+		(
+			x: INT64,
+			y: INT64,
+			width: INT64,
+			height: INT64,
+			paddingX: DOUBLE,
+			paddingY: DOUBLE,
+			axisRef: ANYREF EXPR,
+			measureRef: NUMERIC EXPR,
+			barColor: STRING
+		) =>
 
-		// Apply padding to dimensions
-		VAR _X = 			x + (width * (IF(ISBLANK(paddingX), 0, paddingX) / 2))
-		VAR _Y = 			y + (height * (IF(ISBLANK(paddingY), 0, paddingY) / 2))
-		VAR _Width = 		width * (1 - IF(ISBLANK(paddingX), 0, paddingX))
-		VAR _Height = 		height * (1 - IF(ISBLANK(paddingY), 0, paddingY))
-	
-		// Check if Axis is numeric
-		VAR axisSample = 	MAX( axisRef )
-		VAR axisIsNumeric = ISNUMERIC( axisSample ) || ISDATETIME( axisSample )
+			// Apply padding to dimensions
+			VAR _X = 			x + (width * (IF(ISBLANK(paddingX), 0, paddingX) / 2))
+			VAR _Y = 			y + (height * (IF(ISBLANK(paddingY), 0, paddingY) / 2))
+			VAR _Width = 		width * (1 - IF(ISBLANK(paddingX), 0, paddingX))
+			VAR _Height = 		height * (1 - IF(ISBLANK(paddingY), 0, paddingY))
 		
-		// For totals
-		VAR _Data = 
-			ADDCOLUMNS(
-				FILTER(
-					VALUES( axisRef ),
-					NOT ISBLANK(measureRef)
-				),
-				"@AxisIndex", 	
-					IF(
-						axisIsNumeric,
-						axisRef,
-						RANK( DENSE, CALCULATETABLE( VALUES( axisRef ), ALLSELECTED() ) )
-					),
-				"@Value", measureRef
-			)
-	
-		// Define axis scales		
-		VAR _XMin = 	MINX( _Data, [@AxisIndex] )
-		VAR _XMax = 	MAXX( _Data, [@AxisIndex] )
-		VAR _RawYMin = 	MINX( _Data, [@Value] )
-		VAR _YMin = 	IF( _RawYMin > 0, 0, _RawYMin )
-		VAR _YMax = 	MAXX( _Data, [@Value] )
-	
-		VAR _CountBars = CALCULATE(COUNT(axisRef), axisRef >= _XMin && axisRef <= _XMax)
-		VAR _BarWidth = DIVIDE( 
-			_Width, 
-			_CountBars
-			) 
-	
-		//Bars
-		VAR _Bars = 
-			CONCATENATEX(
-				_Data,
-				IF( 
-					NOT ISBLANK( [@Value] ), 
-					DaxLib.SVG.Element.Rect(
-						DaxLib.SVG.Scale.Normalize( [@AxisIndex], _XMin, _XMax, _X, _X + _Width ),
-						DaxLib.SVG.Scale.Normalize( [@Value], _YMin, _YMax, _Y + _Height, _Y ),
-						_BarWidth,
-						_Height - DaxLib.SVG.Scale.Normalize( [@Value], _YMin, _YMax, _Y + _Height, _Y ),
-						0,
-						0,
-						DaxLib.SVG.Attr.Shapes(
-							IF( NOT ISBLANK( barColor ), barColor, "#01B8AA" ),		// fill
-							BLANK(),	// fillOpacity
-							BLANK(),	// fillRule
-							BLANK(), // stroke
-							1,			// stroke
-							BLANK(),	// strokeOpacity
-							BLANK()		// opacity
-						),
-						BLANK()
-					)
-				),
-				" ",
-				[@AxisIndex],
-				ASC
-			)
-	
-	
-		RETURN ///_CountBars
+			// Check if Axis is numeric
+			VAR axisSample = 	MAX( axisRef )
+			VAR axisIsNumeric = ISNUMERIC( axisSample ) || ISDATETIME( axisSample )
 			
-			IF( NOT ISEMPTY( _Data ), _Bars )
+			// For totals
+			VAR _Data = 
+				ADDCOLUMNS(
+					FILTER(
+						VALUES( axisRef ),
+						NOT ISBLANK(measureRef)
+					),
+					"@AxisIndex", 	
+						IF(
+							axisIsNumeric,
+							axisRef,
+							RANK( DENSE, CALCULATETABLE( VALUES( axisRef ), ALLSELECTED() ) )
+						),
+					"@Value", measureRef
+				)
+		
+			// Define axis scales		
+			VAR _XMin = 	MINX( _Data, [@AxisIndex] )
+			VAR _XMax = 	MAXX( _Data, [@AxisIndex] )
+			VAR _RawYMin = 	MINX( _Data, [@Value] )
+			VAR _YMin = 	IF( _RawYMin > 0, 0, _RawYMin )
+			VAR _YMax = 	MAXX( _Data, [@Value] )
+		
+			VAR _CountBars = CALCULATE(COUNT(axisRef), axisRef >= _XMin && axisRef <= _XMax)
+			VAR _BarWidth = DIVIDE( 
+				_Width, 
+				_CountBars
+				) 
+		
+			//Bars
+			VAR _Bars = 
+				CONCATENATEX(
+					_Data,
+					IF( 
+						NOT ISBLANK( [@Value] ), 
+						DaxLib.SVG.Element.Rect(
+							DaxLib.SVG.Scale.Normalize( [@AxisIndex], _XMin, _XMax, _X, _X + _Width ),
+							DaxLib.SVG.Scale.Normalize( [@Value], _YMin, _YMax, _Y + _Height, _Y ),
+							_BarWidth,
+							_Height - DaxLib.SVG.Scale.Normalize( [@Value], _YMin, _YMax, _Y + _Height, _Y ),
+							0,
+							0,
+							DaxLib.SVG.Attr.Shapes(
+								IF( NOT ISBLANK( barColor ), barColor, "#01B8AA" ),		// fill
+								BLANK(),	// fillOpacity
+								BLANK(),	// fillRule
+								BLANK(), // stroke
+								1,			// stroke
+								BLANK(),	// strokeOpacity
+								BLANK()		// opacity
+							),
+							BLANK()
+						)
+					),
+					" ",
+					[@AxisIndex],
+					ASC
+				)
+		
+		
+			RETURN ///_CountBars
+				
+				IF( NOT ISEMPTY( _Data ), _Bars )
 
 	annotation DAXLIB_PackageId = DaxLib.SVG
 
