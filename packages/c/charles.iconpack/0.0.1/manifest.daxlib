@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Charles.IconPack",
+  "version": "0.0.1",
+  "authors": "Edward Charles",
+  "description": "A simple function meant to show people how they can use functions to store icons they commonly use",
+  "tags": "icon, icon pack, svg",
+  "projectUrl": "https://github.com/sql-bi/daxlib",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/c/charles.iconpack"
+}
