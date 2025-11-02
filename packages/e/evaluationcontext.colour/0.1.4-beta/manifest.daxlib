@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EvaluationContext.Colour",
+  "version": "0.1.4-beta",
+  "authors": "Jake Duddy",
+  "description": "A DAX UDF library for manipulation of hex colours for Power BI",
+  "tags": "DAX,UDF,colour",
+  "releaseNotes": "JSDoc comments added to all functions",
+  "projectUrl": "https://evaluationcontext.github.io/evaluationcontext.colour/",
+  "repositoryUrl": "https://github.com/EvaluationContext/evaluationcontext.colour",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
