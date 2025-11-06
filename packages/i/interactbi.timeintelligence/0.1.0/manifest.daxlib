@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "InteractBI.TimeIntelligence",
+  "version": "0.1.0",
+  "authors": "Interact BI - Lucas Shipsides",
+  "description": "Extends the features of Power BI DAX Time Intelligence functions",
+  "tags": "SAMEPERIODLASTYEAR,custom calendar,time intelligence,fiscal calendar",
+  "projectUrl": "https://interact.bi/",
+  "repositoryUrl": "https://github.com/InteractBI/dax-TimeIntelligence/",
+  "readme": "/README.md"
+}
