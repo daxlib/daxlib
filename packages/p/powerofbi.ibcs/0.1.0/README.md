@@ -20,6 +20,8 @@ The functions generate SVG code. Change the measure's data category to "Image UR
 
 ## Usage Examples
 
+PBIX file: https://github.com/avatorl/PowerBI-IBCS/blob/main/UDF/DAX%20UDF%20SVG%20IBCS%20Examples.pbix
+
 ### PowerofBI.IBCS.BarChart.AbsoluteValues
 <img width="267" height="150" alt="image" src="https://github.com/user-attachments/assets/75cc6271-17eb-4466-bbeb-91c0641c090d" />
 
