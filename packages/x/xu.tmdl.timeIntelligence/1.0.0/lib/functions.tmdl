@@ -87,40 +87,40 @@ function 'XU.TMDL.TimeIntelligence.MeasureCreate' =
 					"       measure '" & [Value] & " PQC' = CALCULATE([" & [Value] & "], PARALLELPERIOD(" & DateColumn & ", -1, QUARTER))" & NumberFormat & LB &
 					"       measure '" & [Value] & " PMC' = CALCULATE([" & [Value] & "], PARALLELPERIOD(" & DateColumn & ", -1, MONTH))" & NumberFormat & LB &
 					
-					// Year-Over-Year | Quarter-Over-Quarter | Month-Over-Month
-					"       measure '" & [Value] & " YOY' = [" & [Value] & "] - [" & [Value] & " PY]" & NumberFormat & LB &
-					"       measure '" & [Value] & " QOQ' = [" & [Value] & "] - [" & [Value] & " PQ]" & NumberFormat & LB &
-					"       measure '" & [Value] & " MOM' = [" & [Value] & "] - [" & [Value] & " PM]" & NumberFormat & LB &
+					// Year-Over-Year | Quarter-Over-Quarter | Month-Over-Month absolute number
+					"       measure '" & [Value] & " YOY Δ' = [" & [Value] & "] - [" & [Value] & " PY]" & NumberFormat & LB &
+					"       measure '" & [Value] & " QOQ Δ' = [" & [Value] & "] - [" & [Value] & " PQ]" & NumberFormat & LB &
+					"       measure '" & [Value] & " MOM Δ' = [" & [Value] & "] - [" & [Value] & " PM]" & NumberFormat & LB &
 					
-					// Year-Over-Year % | Quarter-Over-Quarter % | Month-Over-Month %
-					"       measure '" & [Value] & " YOY %' = DIVIDE([" & [Value] & " YOY], [" & [Value] & " PY])" & PercentFormat & LB &
-					"       measure '" & [Value] & " QOQ %' = DIVIDE([" & [Value] & " QOQ], [" & [Value] & " PQ])" & PercentFormat & LB &
-					"       measure '" & [Value] & " MOM %' = DIVIDE([" & [Value] & " MOM], [" & [Value] & " PM])" & PercentFormat & LB &
+					// Year-Over-Year % | Quarter-Over-Quarter % | Month-Over-Month percentage
+					"       measure '" & [Value] & " YOY %' = DIVIDE([" & [Value] & " YOY Δ], [" & [Value] & " PY])" & PercentFormat & LB &
+					"       measure '" & [Value] & " QOQ %' = DIVIDE([" & [Value] & " QOQ Δ], [" & [Value] & " PQ])" & PercentFormat & LB &
+					"       measure '" & [Value] & " MOM %' = DIVIDE([" & [Value] & " MOM Δ], [" & [Value] & " PM])" & PercentFormat & LB &
 					
 					// Previous YTD | Previous QTD | Previous MTD
 					"       measure '" & [Value] & " PYTD' = CALCULATE([" & [Value] & " YTD], DATEADD(" & DateColumn & ", -1, YEAR))" & NumberFormat & LB &
 					"       measure '" & [Value] & " PQTD' = CALCULATE([" & [Value] & " QTD], DATEADD(" & DateColumn & ", -1, QUARTER))" & NumberFormat & LB &
 					"       measure '" & [Value] & " PMTD' = CALCULATE([" & [Value] & " MTD], DATEADD(" & DateColumn & ", -1, MONTH))" & NumberFormat & LB &
 					
-					// Year-Over-Year-To-Date | Quarter-Over-Quarter-To-Date | Month-Over-Month-To-Date
-					"       measure '" & [Value] & " YOYTD' = [" & [Value] & " YTD] - [" & [Value] & " PYTD]" & NumberFormat & LB &
-					"       measure '" & [Value] & " QOQTD' = [" & [Value] & " QTD] - [" & [Value] & " PQTD]" & NumberFormat & LB &
-					"       measure '" & [Value] & " MOMTD' = [" & [Value] & " MTD] - [" & [Value] & " PMTD]" & NumberFormat & LB &
+					// Year-Over-Year-To-Date | Quarter-Over-Quarter-To-Date | Month-Over-Month-To-Date absolute number
+					"       measure '" & [Value] & " YOYTD Δ' = [" & [Value] & " YTD] - [" & [Value] & " PYTD]" & NumberFormat & LB &
+					"       measure '" & [Value] & " QOQTD Δ' = [" & [Value] & " QTD] - [" & [Value] & " PQTD]" & NumberFormat & LB &
+					"       measure '" & [Value] & " MOMTD Δ' = [" & [Value] & " MTD] - [" & [Value] & " PMTD]" & NumberFormat & LB &
 					
-					// Year-Over-Year-To-Date % | Quarter-Over-Quarter-To-Date % | Month-Over-Month-To-Date %
-					"       measure '" & [Value] & " YOYTD %' = DIVIDE([" & [Value] & " YOYTD], [" & [Value] & " PYTD])" & PercentFormat & LB &
-					"       measure '" & [Value] & " QOQTD %' = DIVIDE([" & [Value] & " QOQTD], [" & [Value] & " PQTD])" & PercentFormat & LB &
-					"       measure '" & [Value] & " MOMTD %' = DIVIDE([" & [Value] & " MOMTD], [" & [Value] & " PMTD])" & PercentFormat & LB &
+					// Year-Over-Year-To-Date % | Quarter-Over-Quarter-To-Date % | Month-Over-Month-To-Date percentage
+					"       measure '" & [Value] & " YOYTD %' = DIVIDE([" & [Value] & " YOYTD Δ], [" & [Value] & " PYTD])" & PercentFormat & LB &
+					"       measure '" & [Value] & " QOQTD %' = DIVIDE([" & [Value] & " QOQTD Δ], [" & [Value] & " PQTD])" & PercentFormat & LB &
+					"       measure '" & [Value] & " MOMTD %' = DIVIDE([" & [Value] & " MOMTD Δ], [" & [Value] & " PMTD])" & PercentFormat & LB &
 					
-					// YTD | QTD | MTD Over Previous Year | Quarter | Month Complete
-					"       measure '" & [Value] & " YTDOPYC' = [" & [Value] & " YTD] - [" & [Value] & " PYC]" & NumberFormat & LB &
-					"       measure '" & [Value] & " QTDOPQC' = [" & [Value] & " QTD] - [" & [Value] & " PQC]" & NumberFormat & LB &
-					"       measure '" & [Value] & " MTDOPMC' = [" & [Value] & " MTD] - [" & [Value] & " PMC]" & NumberFormat & LB &
+					// YTD | QTD | MTD Over Previous Year | Quarter | Month Complete absolute number
+					"       measure '" & [Value] & " YTDOPYC Δ' = [" & [Value] & " YTD] - [" & [Value] & " PYC]" & NumberFormat & LB &
+					"       measure '" & [Value] & " QTDOPQC Δ' = [" & [Value] & " QTD] - [" & [Value] & " PQC]" & NumberFormat & LB &
+					"       measure '" & [Value] & " MTDOPMC Δ' = [" & [Value] & " MTD] - [" & [Value] & " PMC]" & NumberFormat & LB &
 					
-					// YTD | QTD | MTD Over Previous Year | Quarter | Month Complete %
-					"       measure '" & [Value] & " YTDOPYC %' = DIVIDE([" & [Value] & " YTDOPYC], [" & [Value] & " PYC])" & PercentFormat & LB &
-					"       measure '" & [Value] & " QTDOPQC %' = DIVIDE([" & [Value] & " QTDOPQC], [" & [Value] & " PQC])" & PercentFormat & LB &
-					"       measure '" & [Value] & " MTDOPMC %' = DIVIDE([" & [Value] & " MTDOPMC], [" & [Value] & " PMC])" & PercentFormat & LB &
+					// YTD | QTD | MTD Over Previous Year | Quarter | Month Complete percentage
+					"       measure '" & [Value] & " YTDOPYC %' = DIVIDE([" & [Value] & " YTDOPYC Δ], [" & [Value] & " PYC])" & PercentFormat & LB &
+					"       measure '" & [Value] & " QTDOPQC %' = DIVIDE([" & [Value] & " QTDOPQC Δ], [" & [Value] & " PQC])" & PercentFormat & LB &
+					"       measure '" & [Value] & " MTDOPMC %' = DIVIDE([" & [Value] & " MTDOPMC Δ], [" & [Value] & " PMC])" & PercentFormat & LB &
 					
 					// Moving Annual Total | Previous Year MAT | MAT Growth | MAT Growth %
 					"       measure '" & [Value] & " MAT' = CALCULATE([" & [Value] & "], DATESINPERIOD(" & DateColumn & ", MAX(" & DateColumn & "), -12, MONTH))" & NumberFormat & LB &
