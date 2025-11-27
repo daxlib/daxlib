@@ -149,9 +149,9 @@ For each base measure, the library generates 34 time intelligence variations:
 
 ### Period-over-Period
 
-- **YOY** (Year-over-Year absolute)
-- **QOQ** (Quarter-over-Quarter absolute)
-- **MOM** (Month-over-Month absolute)
+- **YOY Δ** (Year-over-Year change)
+- **QOQ Δ** (Quarter-over-Quarter change)
+- **MOM Δ** (Month-over-Month change)
 - **YOY %** (Year-over-Year percentage)
 - **QOQ %** (Quarter-over-Quarter percentage)
 - **MOM %** (Month-over-Month percentage)
@@ -164,18 +164,18 @@ For each base measure, the library generates 34 time intelligence variations:
 
 ### Period-to-Date Comparisons
 
-- **YOYTD** (Year-over-Year-to-Date absolute)
-- **QOQTD** (Quarter-over-Quarter-to-Date absolute)
-- **MOMTD** (Month-over-Month-to-Date absolute)
+- **YOYTD Δ** (Year-over-Year-to-Date change)
+- **QOQTD Δ** (Quarter-over-Quarter-to-Date change)
+- **MOMTD Δ** (Month-over-Month-to-Date change)
 - **YOYTD %** (Year-over-Year-to-Date percentage)
 - **QOQTD %** (Quarter-over-Quarter-to-Date percentage)
 - **MOMTD %** (Month-over-Month-to-Date percentage)
 
 ### Period-to-Date vs Complete Period
 
-- **YTDOPYC** (YTD Over Previous Year Complete)
-- **QTDOPQC** (QTD Over Previous Quarter Complete)
-- **MTDOPMC** (MTD Over Previous Month Complete)
+- **YTDOPYC Δ** (YTD Over Previous Year Complete change)
+- **QTDOPQC Δ** (QTD Over Previous Quarter Complete change)
+- **MTDOPMC Δ** (MTD Over Previous Month Complete change)
 - **YTDOPYC %** (YTD Over Previous Year Complete percentage)
 - **QTDOPQC %** (QTD Over Previous Quarter Complete percentage)
 - **MTDOPMC %** (MTD Over Previous Month Complete percentage)
@@ -184,7 +184,7 @@ For each base measure, the library generates 34 time intelligence variations:
 
 - **MAT** (Moving Annual Total)
 - **PYMAT** (Previous Year Moving Annual Total)
-- **MATG** (MAT Growth absolute)
+- **MATG** (MAT Growth absolute number)
 - **MATG %** (MAT Growth percentage)
 
 ---
