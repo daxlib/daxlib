@@ -47,7 +47,7 @@ function 'XU.TMDL.TimeIntelligence.Config.PercentFormat' =
 /// 💎 Description: Generates TMDL script to create time intelligence measures for a list of base measures
 /// 1️⃣ Parameter - MeasureList: List of base measure names (e.g., {"Sales Amount", "Profit"})
 /// 2️⃣ Parameter - DateColumn: Date column name (e.g., "'Calendar'[Date]")
-/// 3️⃣ Parameter - MeasureTable: Name of table where the generated measures will be created (e.g., "Financial Metrics")
+/// 3️⃣ Parameter - MeasureTable: Name of table where the generated measures will be created (e.g., "'Financial Metrics'")
 /// 💡 Note: Formats are controlled by XU.TMDL.TimeIntelligence.Config.NumberFormat() and XU.TMDL.TimeIntelligence.Config.PercentFormat()
 /// 📌 Example: XU.TMDL.TimeIntelligence.MeasureCreate({"Sales Amount", "Profit"}, "'Calendar'[Date]", "'Financial Metrics'")
 function 'XU.TMDL.TimeIntelligence.MeasureCreate' =
