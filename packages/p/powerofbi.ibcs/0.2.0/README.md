@@ -28,7 +28,7 @@ These UDFs generate charts (as SVG images) that can be embedded into Power BI co
 
 ## Usage Examples
 
-PBIX file: https://github.com/avatorl/PowerBI-IBCS/blob/main/UDF/DAX%20UDF%20SVG%20IBCS%20Examples.pbix
+PBIX files: https://github.com/avatorl/PowerBI-IBCS/blob/main/UDF/
 
 ### PowerofBI.IBCS.BarChart.AbsoluteValues
 
@@ -86,7 +86,7 @@ Use in Matrix, Button List visuals.
 
 ### PowerofBI.IBCS.ColumnChart.WithAbsoluteVariance
 
-<img width="1125" height="510" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_column_chart_waterfall.png" /></br>
+<img width="675" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_column_chart_waterfall.png" /></br>
 
 ```
 PowerofBI.IBCS.ColumnChart.WithAbsoluteVariance ( 
