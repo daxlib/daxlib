@@ -12,6 +12,10 @@ Author: Andrzej Leszkiewicz
 
 🔗 https://powerofbi.org/about
 
+## Usage Examples
+
+PBIX files: https://github.com/avatorl/PowerBI-IBCS/blob/main/UDF/
+
 ## Usage Instructions
 
 These UDFs generate charts (as SVG images) that can be embedded into Power BI core visuals such as table, matrix, button slicer, list slicer, card (new), or image (depending on the chart type).
@@ -26,11 +30,9 @@ These UDFs generate charts (as SVG images) that can be embedded into Power BI co
 
 <img width="162" height="164" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_format_image.png" /></br>
 
-## Usage Examples
-
-PBIX files: https://github.com/avatorl/PowerBI-IBCS/blob/main/UDF/
-
 ### PowerofBI.IBCS.BarChart.AbsoluteValues
+
+Bar chart to compare absolute values (e.g., actual year vs. previous year).
 
 <img width="267" height="150" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_absolute_values.png" /></br>
 
@@ -49,6 +51,8 @@ PowerofBI.IBCS.BarChart.AbsoluteValues(
 ```
 
 ### PowerofBI.IBCS.BarChart.AbsoluteVariance
+
+Bar chart to compare absolute variance (e.g., actual year over previous year).
 
 <img width="378" height="161" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_absolute_variance.png" /></br>
 
@@ -70,6 +74,8 @@ PowerofBI.IBCS.BarChart.AbsoluteVariance (
 
 ### PowerofBI.IBCS.BarChart.RelativeVariance
 
+Pin chart to compare relative variance (e.g., actual year over previous year, in percent of the previous year).
+
 <img width="290" height="150" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_relative_variance.png" /></br>
 
 Use in Table, Matrix, Button List visuals.
@@ -86,6 +92,8 @@ Use in Matrix, Button List visuals.
 
 ### PowerofBI.IBCS.ColumnChart.WithAbsoluteVariance
 
+Column chart to show absolute values (e.g., actual year and previous year) and absolute variance (actual year minus previous year) on a timeline (e.g., months on the X-axis).
+
 <img width="675" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_column_chart_waterfall.png" /></br>
 
 ```
@@ -98,7 +106,12 @@ PowerofBI.IBCS.ColumnChart.WithAbsoluteVariance (
 )
 ```
 
-### PowerofBI.SVG.PctOfTotalwithPieChart
+### PowerofBI.IBCS.Extras.PieChart.PctOfTotal
+
+Small pie charts to show the percent of the total for each table or matrix row.
+
+To strictly follow IBCS, pie charts can be disabled to output only the percent data label (in italic font style, which still requires using SVG because it is not supported natively for specific columns only). But I believe this form of pie charts deserves to exist if used together with absolute variance bars. See Top N + Others Without Any Changes in the Data Model (using PowerofBI.IBCS): 🔗 https://www.powerofbi.org/2025/12/02/top-n-others-without-any-changes-in-the-data-model/.
+
 
 <img width="123" height="295" alt="image" src="https://raw.githubusercontent.com/avatorl/dax-udf-svg-ibcs/refs/heads/main/docs/images/screen_pct_of_total_pie.png" /></br>
 
