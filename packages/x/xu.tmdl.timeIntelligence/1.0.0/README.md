@@ -2,7 +2,7 @@
 
 A UDF library for **automatically generating TMDL scripts** that create comprehensive time intelligence measures in Power BI — eliminating manual, error-prone measure creation.
 
-Based on your existing base measures, this library generates scripts to create 30+ time intelligence calculations including YTD, QTD, MTD, YOY, YOYTD, MAT, and period-over-period comparisons — all with consistent formatting and logic.
+Based on your existing base measures, this library generates scripts to create 30+ time intelligence calculations including YTD, QTD, MTD, YOY Δ, YOYTD Δ, MAT, and period-over-period comparisons — all with consistent formatting and logic.
 
 ---
 
@@ -37,7 +37,7 @@ Follow these steps to generate and deploy time intelligence measures:
    ```dax
    TMDL Script = 
    XU.TMDL.TimeIntelligence.MeasureCreate(
-       {"Sales Amount", "Sales Cost"},  // Your existing base measures
+       "Sales Amount, Sales Cost",  // Your existing base measures names (comma-separated)
        "'Calendar'[Date]",                          // Your date column reference
        "'Financial Metrics'"                      // Table to store new measures
    )
@@ -55,28 +55,28 @@ Follow these steps to generate and deploy time intelligence measures:
    - Execute the script to create all 30+ time intelligence measures automatically
      ![XU.TMDL.TimeIntelligence_ExecuteScript.png](https://raw.githubusercontent.com/DS-Vic/PIC/main/XU.TMDL.TimeIntelligence_ExecuteScript.png)
 
-> 💡 **Tip**: Always review the generated script before execution, especially in production environments. Start with a small set of base measures to validate the process before scaling up.
+> 💡 **Tip**: Always review the generated script before execution, especially in production environments. Start with a small set of base measures to validate the process before scaling up. Do not use commas within measure names as they are used as separators.
 
 ---
 
 ## Functions
 
-### `XU.TMDL.TimeIntelligence.MeasureCreate(MeasureList, DateColumn, MeasureTable)`
+### `XU.TMDL.TimeIntelligence.MeasureCreate(MeasureNames, DateColumnName, MeasureTableName)`
 
 The core function that generates a complete TMDL script to create time intelligence measures for multiple base measures.
 
 **Parameters**:
 
-- `MeasureList`: List of base measure names (e.g., `{"Sales Amount", "Profit"}`)
-- `DateColumn`: Date column name (e.g., `"'Calendar'[Date]"`)
-- `MeasureTable`: Name of table where the generated measures will be created (e.g., `"Financial Metrics"`)
+- `MeasureNames`: Measure names string, if there are multiple measures, separate them with commas (,). (so DO NOT use commas within measure names) (e.g., "Sales Amount, Profit")
+- `DateColumnName`: Date column name (e.g., `"'Calendar'[Date]"`)
+- `MeasureTableName`: Name of table where the generated measures will be created (e.g., `"Financial Metrics"`)
 
 **Returns**: A complete TMDL script ready for execution.
 
 ```dax
 TMDL Script = 
 XU.TMDL.TimeIntelligence.MeasureCreate(
-    {"Sales Amount", "Sales Cost"},
+    "Sales Amount, Sales Cost",
     "'Calendar'[Date]",
     "'Financial Metrics'"
 )

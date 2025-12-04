@@ -3,7 +3,7 @@
   "id": "XU.TMDL.TimeIntelligence",
   "version": "1.0.0",
   "authors": "HD XU",
-  "description": "Generate TMDL scripts which can automatically create 30+ time intelligence measures (including YTD, YOY, YOYTD, QTD, MTD, MAT) based on your existing base measures.",
+  "description": "Generate TMDL scripts which can automatically create 30+ time intelligence measures (including YTD, YOY Δ, YOY %, YOYTD, QTD, MTD, MAT) based on your existing base measures.",
   "tags": "TMDL, Time Intelligence, DAX, Measure, XU",
   "releaseNotes": "Initial release",
   "icon": "/icon.png",
