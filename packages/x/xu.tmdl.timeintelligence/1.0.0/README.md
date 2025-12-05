@@ -68,8 +68,8 @@ The core function that generates a complete TMDL script to create time intellige
 **Parameters**:
 
 - `MeasureNames`: Measure names string, if there are multiple measures, separate them with commas (,). (so DO NOT use commas within measure names) (e.g., "Sales Amount, Profit")
-- `DateColumnName`: Date column name (e.g., `"'Calendar'[Date]"`)
-- `MeasureTableName`: Name of table where the generated measures will be created (e.g., `"Financial Metrics"`)
+- `DateColumnName`: Date column name string, use the format "'TableName'[ColumnName]", **TableName** should be wrapped in single quotes (') (if the name contains spaces/special characters, and strongly recommended in all cases)(e.g., "'Calendar'[Date]")
+- `MeasureTableName`: Name of table where the generated measures will be created. It should be wrapped in single quotes (') (if the name contains spaces/special characters, and strongly recommended in all cases) (e.g., "'Financial Metrics'")
 
 **Returns**: A complete TMDL script ready for execution.
 
