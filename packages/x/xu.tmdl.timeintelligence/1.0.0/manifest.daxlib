@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "XU.TMDL.TimeIntelligence",
+  "version": "1.0.0",
+  "authors": "HD XU",
+  "description": "Generate TMDL scripts which can automatically create 30+ time intelligence measures (including YTD, YOY Δ, YOY %, YOYTD, QTD, MTD, MAT) based on your existing base measures.",
+  "tags": "TMDL, Time Intelligence, DAX, Measure, XU",
+  "releaseNotes": "Initial release",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
