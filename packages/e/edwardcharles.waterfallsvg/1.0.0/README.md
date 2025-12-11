@@ -16,19 +16,52 @@ Licensed under [CC BY-SA 4.0 International](http://creativecommons.org/licenses/
 ## Usage
 
 ```dax
-EVALUATE { 'EdwardCharles.WaterfallSVG.WaterfallChart'(WaterfallLayout, 200000, "2025 P&L", "USD Thousands") }
+EVALUATE { 
+    'EdwardCharles.WaterfallSVG.WaterfallChart'(
+        WaterfallLayout,
+        WaterfallLayout[Key],
+        WaterfallLayout[Parent],
+        WaterfallLayout[Name],
+        WaterfallLayout[Type],
+        WaterfallLayout[Sort],
+        WaterfallLayout[Depth],
+        WaterfallLayout[IsLeaf],
+        WaterfallLayout[Path],
+        WaterfallLayout[Value],
+        WaterfallLayout[Sign],
+        200000, 
+        "2025 P&L", 
+        "USD Thousands"
+    ) 
+}
 ```
 
 ## Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `_dataTable` | TABLE | Layout table with hierarchy and values |
-| `_maxValue` | INT64 | Scale maximum for bar width |
+| `_dataTable` | TABLE | Source table expression |
+| `_keyCol` | COLUMN | Unique identifier (Integer) |
+| `_parentCol` | COLUMN | Parent key (Integer) |
+| `_nameCol` | COLUMN | Display name (String) |
+| `_typeCol` | COLUMN | Row type ("Expense", "Income", "Subtotal") |
+| `_sortCol` | COLUMN | Sort order (Integer) |
+| `_depthCol` | COLUMN | Hierarchy depth (Integer) |
+| `_isLeafCol` | COLUMN | Leaf status (Boolean) |
+| `_pathCol` | COLUMN | Hierarchy path (String) |
+| `_valueCol` | COLUMN | Value (Decimal) |
+| `_signCol` | COLUMN | Sign multiplier (-1, 1) |
+| `_maxValue` | INTEGER | Scale maximum for bar width |
 | `_Title` | STRING | Main chart title |
 | `_Subtitle` | STRING | Subtitle text |
 
-## Required Table Schema
+## Model Independence
+
+This function is **Model Independent**. It does not depend on specific table or column names in your data model. You can use any table structure by mapping your columns to the function parameters.
+
+## Example Table Schema
+
+The following schema is used in the examples below, but your table can use different column names.
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -45,11 +78,11 @@ EVALUATE { 'EdwardCharles.WaterfallSVG.WaterfallChart'(WaterfallLayout, 200000, 
 
 > **Note**: The UDF calculates `SignedValue = Value × Sign` internally.
 
-## Creating the Layout Table
+## Example Implementation: Creating a Layout Table
 
-This follows the [DAX Patterns: Parent-Child Hierarchies](https://www.daxpatterns.com/parent-child-hierarchies/) approach.
+The following example demonstrates how to create a layout table using `DATATABLE` and calculated columns. This is just one way to provide data to the function.
 
-### Step 1: Base Data Table
+### Example Step 1: Base Data Table
 
 ```dax
 WaterfallLayout = 
@@ -79,7 +112,7 @@ DATATABLE(
 )
 ```
 
-### Step 2: Add Calculated Columns
+### Example Step 2: Add Calculated Columns
 
 ```dax
 // Path: Hierarchy path using DAX PATH function
@@ -100,13 +133,23 @@ IsLeaf = NOT(
 Sign = IF(WaterfallLayout[Type] IN {"Expense"}, -1, 1)
 ```
 
-### Step 3: Call the UDF
+### Example Step 3: Call the UDF
 
-Since the table columns match the required schema, you can pass the table directly:
+Pass the table and explicit column references. This ensures the function is model-independent and works with any column naming convention.
 
 ```dax
-WaterfallChart = 'EdwardCharles.WaterfallSVG.WaterfallChart'(
+WaterfallChart = EdwardCharles.WaterfallSVG.WaterfallChart(
     WaterfallLayout,
+    WaterfallLayout[Key],
+    WaterfallLayout[Parent],
+    WaterfallLayout[Name],
+    WaterfallLayout[Type],
+    WaterfallLayout[Sort],
+    WaterfallLayout[Depth],
+    WaterfallLayout[IsLeaf],
+    WaterfallLayout[Path],
+    WaterfallLayout[Value],
+    WaterfallLayout[Sign],
     200000,
     "2025 Profit & Loss",
     "USD ($)"
