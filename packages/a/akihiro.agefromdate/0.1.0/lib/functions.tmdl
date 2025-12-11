@@ -1,0 +1,20 @@
+/// Function to calculate age from date of birth
+function AgeFromDate =
+        (birthdate: scalar datetime val) =>
+        
+                VAR todayDate = TODAY()  /// Get today's date
+                VAR yearsDiff = YEAR(todayDate) - YEAR(birthdate) /// Calculate the age difference
+                /// Return 1 if the month of today is greater than the month of the birthday, or if today is the birthday. Otherwise, return 0.
+                VAR hasHadBirthday =
+                IF(
+                    (MONTH(todayDate) > MONTH(birthdate)) ||
+                    (MONTH(todayDate) = MONTH(birthdate) && DAY(todayDate) >= DAY(birthdate)),
+                    1,
+                    0
+                )
+                RETURN
+                    yearsDiff - (1 - hasHadBirthday)
+
+	annotation DAXLIB_PackageId = akihiro.agefromdate
+
+	annotation DAXLIB_PackageVersion = 0.1.0
