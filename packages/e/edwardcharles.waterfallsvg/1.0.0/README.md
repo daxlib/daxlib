@@ -16,24 +16,22 @@ Licensed under [CC BY-SA 4.0 International](http://creativecommons.org/licenses/
 ## Usage
 
 ```dax
-EVALUATE { 
-    'EdwardCharles.WaterfallSVG.WaterfallChart'(
-        WaterfallLayout,
-        WaterfallLayout[Key],
-        WaterfallLayout[Parent],
-        WaterfallLayout[Name],
-        WaterfallLayout[Type],
-        WaterfallLayout[Sort],
-        WaterfallLayout[Depth],
-        WaterfallLayout[IsLeaf],
-        WaterfallLayout[Path],
-        WaterfallLayout[Value],
-        WaterfallLayout[Sign],
-        200000, 
-        "2025 P&L", 
-        "USD Thousands"
-    ) 
-}
+Image URL = EdwardCharles.WaterfallSVG.WaterfallChart(
+    WaterfallLayout,
+    WaterfallLayout[Key],
+    WaterfallLayout[Parent],
+    WaterfallLayout[Name],
+    WaterfallLayout[Type],
+    WaterfallLayout[Sort],
+    WaterfallLayout[Depth],
+    WaterfallLayout[IsLeaf],
+    WaterfallLayout[Path],
+    WaterfallLayout[Value],
+    WaterfallLayout[Sign],
+    200000,
+    "2025 Profit & Loss",
+    "USD ($)"
+)
 ```
 
 ## Parameters
@@ -163,3 +161,4 @@ Returns an SVG data URI string for use in Power BI Image visual.
 ## License
 
 This work is licensed under [CC BY-SA 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+
