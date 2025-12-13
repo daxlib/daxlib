@@ -5,7 +5,8 @@
 
 Generate SVG waterfall charts for P&L visualization in Power BI.
 
-![Example Chart](example.png)
+![Example Chart](https://raw.githubusercontent.com/edwardpcharles/Power-BI-Projects/main/Waterfall%20UDF/example.png
+)
 
 ## Attribution
 
@@ -161,4 +162,5 @@ Returns an SVG data URI string for use in Power BI Image visual.
 ## License
 
 This work is licensed under [CC BY-SA 4.0 International](http://creativecommons.org/licenses/by-sa/4.0/).
+
 
