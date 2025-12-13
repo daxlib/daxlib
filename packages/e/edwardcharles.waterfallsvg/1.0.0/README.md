@@ -1,7 +1,7 @@
 # EdwardCharles.WaterfallSVG
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Edward%20Charles-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/edward-charles-085025b1/)
-[![YouTube](https://img.shields.io/badge/YouTube-@DropMaterializedView-red?style=flat&logo=youtube)](https://www.youtube.com/@DropMaterializedView)
+- [LinkedIn: Edward Charles](https://www.linkedin.com/in/edward-charles-085025b1/)
+- [YouTube: @DropMaterializedView](https://www.youtube.com/@DropMaterializedView)
 
 Generate SVG waterfall charts for P&L visualization in Power BI.
 
