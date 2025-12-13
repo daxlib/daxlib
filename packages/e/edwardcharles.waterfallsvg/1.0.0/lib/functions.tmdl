@@ -1,0 +1,198 @@
+/// Generates an SVG waterfall chart
+/// Based on IBCS® Chart Template C12: Vertical waterfalls
+/// https://www.ibcs.com/resource/chart-template-12/
+/// © 2024 IBCS Association | www.ibcs.com with adaptations by Edward Charles.
+/// Licensed under CC BY-SA 4.0 International (http://creativecommons.org/licenses/by-sa/4.0/legalcode)
+/// @param {table} _dataTable - Source table expression
+/// @param {ANYREF} _keyCol - Column reference for unique identifier (Integer)
+/// @param {ANYREF} _parentCol - Column reference for parent key (Integer)
+/// @param {ANYREF} _nameCol - Column reference for display name (String)
+/// @param {ANYREF} _typeCol - Column reference for row type ("Expense", "Income", "Subtotal")
+/// @param {ANYREF} _sortCol - Column reference for sort order (Integer)
+/// @param {ANYREF} _depthCol - Column reference or expression for hierarchy depth (Integer)
+/// @param {ANYREF} _isLeafCol - Column reference or expression for leaf node status (Boolean)
+/// @param {ANYREF} _pathCol - Column reference or expression for hierarchy path (String)
+/// @param {ANYREF} _valueCol - Column reference for value (Decimal)
+/// @param {ANYREF} _signCol - Column reference or expression for sign (-1, 1)
+/// @param {int64} _maxValue - Scale maximum for bar width (lower = wider bars)
+/// @param {string} _Title - Main chart title
+/// @param {string} _Subtitle - Subtitle text below title
+/// @returns SVG data URI string for use in Image visual
+function 'EdwardCharles.WaterfallSVG.WaterfallChart' = 
+    (
+        _dataTable: TABLE,
+        _keyCol: ANYREF EXPR,
+        _parentCol: ANYREF EXPR,
+        _nameCol: ANYREF EXPR,
+        _typeCol: ANYREF EXPR,
+        _sortCol: ANYREF EXPR,
+        _depthCol: ANYREF EXPR,
+        _isLeafCol: ANYREF EXPR,
+        _pathCol: ANYREF EXPR,
+        _valueCol: ANYREF EXPR,
+        _signCol: ANYREF EXPR,
+        _maxValue: INT64,
+        _Title: STRING,
+        _Subtitle: STRING
+    ) =>
+        // === CONFIGURATION ===
+
+        VAR _rowHeight = 18
+        VAR _labelWidth = 220
+        VAR _barAreaWidth = 300
+        VAR _chartWidth = _labelWidth + _barAreaWidth + 40
+        VAR _fontSize = 11
+        VAR _indentStep = 15
+        VAR _fontFamily = "Arial"
+        VAR _totalRowPadding = 10
+        VAR _totalLinePadding = 5
+        VAR _doubleLinePadding = 8
+
+        VAR _safeTitle = SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(_Title, "&", "&amp;"), "<", "&lt;"), ">", "&gt;")
+        VAR _headerText = _safeTitle
+        VAR _headerSize = 16
+        VAR _safeSubtitle = SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(_Subtitle, "&", "&amp;"), "<", "&lt;"), ">", "&gt;")
+        VAR _subHeaderText = _safeSubtitle
+        VAR _subHeaderSize = 12
+        VAR _headerHeight = 50
+        VAR _totalColor = "#333333"
+        VAR _connectorColor = "#666666"
+        VAR _strokeColor = "#555"
+        VAR _valueFormat = "#,0,.00"
+        VAR _finalTotalLabel = "Net Income"
+        
+        // === SVG HELPERS ===
+        VAR _dash = "stroke-width='1' stroke-dasharray='2,2'"
+        VAR _negFill = "url(#patNegative)"
+        VAR _patterns = "<defs><pattern id='patNegative' patternUnits='userSpaceOnUse' width='6' height='6'><rect width='6' height='6' fill='white'/><path d='M0,6 L6,0' stroke='#666' stroke-width='1.5'/><path d='M-1,1 L1,-1' stroke='#666' stroke-width='1.5'/><path d='M5,7 L7,5' stroke='#666' stroke-width='1.5'/></pattern></defs>"
+        
+        // === SCALARS ===
+        VAR _scale = DIVIDE(_barAreaWidth, _maxValue)
+        VAR _barX0 = _labelWidth + 8
+        
+        // === DATA ===
+        // Map generic parameters to internal schema
+        VAR _baseData = 
+            ADDCOLUMNS(
+                SELECTCOLUMNS(
+                    _dataTable,
+                    "Key", _keyCol,
+                    "Parent", _parentCol,
+                    "Name", _nameCol,
+                    "Type", _typeCol,
+                    "Sort", _sortCol,
+                    "Depth", _depthCol,
+                    "IsLeaf", _isLeafCol,
+                    "Path", _pathCol,
+                    "Value", _valueCol,
+                    "Sign", _signCol
+                ),
+                "@SignedValue", [Value] * [Sign]
+            )
+        VAR _data = ADDCOLUMNS(
+            _baseData, 
+            "@CalcValue",
+            VAR _k = [Key]
+            RETURN IF(
+                [IsLeaf], 
+                [@SignedValue],
+                SUMX(FILTER(_baseData, PATHCONTAINS([Path], _k) && [IsLeaf]), [@SignedValue])
+            )
+        )
+        
+        // === CALCULATIONS ===
+        VAR _calc = ADDCOLUMNS(
+            _data,
+            "@Running", VAR _s = [Sort] RETURN SUMX(FILTER(_data, [IsLeaf] && [Sort] <= _s), [@SignedValue]),
+            "@RunBefore", VAR _s = [Sort] RETURN SUMX(FILTER(_data, [IsLeaf] && [Sort] < _s), [@SignedValue]),
+            "@ChildSum", VAR _k = [Key] RETURN SUMX(FILTER(_data, [Parent] = _k), [@CalcValue]),
+            "@HasKids", VAR _k = [Key] RETURN COUNTROWS(FILTER(_data, [Parent] = _k)) > 0,
+            "@IsRoot", ISBLANK([Parent]),
+            "@Kid1Sort", VAR _k = [Key] RETURN MINX(FILTER(_data, [Parent] = _k), [Sort]),
+            "@Kid2Sort", VAR _k = [Key] RETURN MAXX(FILTER(_data, [Parent] = _k), [Sort]),
+            "@IsSub", [Type] = "Subtotal"
+        )
+        
+        // === LAYOUT FLAGS ===
+        VAR _layout = ADDCOLUMNS(
+            _calc,
+            "@IsFloat", [@IsSub] && [@HasKids] && NOT([@IsRoot]),
+            "@IsResult", [@IsSub] && ([@IsRoot] || NOT([@HasKids]))
+        )
+        
+        // === Y-POSITIONING ===
+    VAR _posY = ADDCOLUMNS(
+        _layout,
+        "@Row", VAR _s = [Sort] RETURN COUNTROWS(FILTER(_layout, [Sort] < _s)),
+        "@Pad", VAR _s = [Sort] RETURN COUNTROWS(FILTER(_layout, [Sort] <= _s && [@IsResult])) * _totalLinePadding,
+        "@Kid1Row", VAR _f = [@Kid1Sort] RETURN IF(NOT(ISBLANK(_f)), COUNTROWS(FILTER(_layout, [Sort] < _f)), BLANK()),
+        "@Kid2Row", VAR _l = [@Kid2Sort] RETURN IF(NOT(ISBLANK(_l)), COUNTROWS(FILTER(_layout, [Sort] < _l)), BLANK())
+    )
+        
+        // === VIEWMODEL ===
+        VAR _vm = ADDCOLUMNS(
+            _posY,
+            "@Y", ([@Row] * _rowHeight) + [@Pad],
+            "@DirVal", IF([@IsFloat], [@ChildSum], IF([@IsSub], [@Running], [@SignedValue])),
+            "@BarL", IF([@IsFloat], [@Running] - [@ChildSum], IF([@IsSub], 0, [@RunBefore])),
+            "@BarR", [@Running],
+            "@CY1", VAR _r = [@Kid1Row] RETURN IF(NOT(ISBLANK(_r)), (_r * _rowHeight) + [@Pad] + 3, BLANK()),
+            "@CY2", VAR _r = [@Kid2Row] RETURN IF(NOT(ISBLANK(_r)), (_r * _rowHeight) + [@Pad] + 15, BLANK()),
+            "@DispVal", IF([@IsResult], [@Running], IF([@IsSub], [@ChildSum], [@SignedValue])),
+            "@Fill", VAR _d = IF([@IsFloat], [@ChildSum], IF([@IsSub], [@Running], [@SignedValue])) RETURN IF([@IsSub], IF(_d < 0, _negFill, _totalColor), IF([@SignedValue] >= 0, "white", _negFill)),
+            "@Wt", IF([@IsSub], "bold", "normal"),
+            "@Ind", 5 + ((IF(ISBLANK([Depth]) || [Depth] < 1, 1, [Depth]) - 1) * _indentStep),
+            "@Pre", VAR _d = IF([@IsFloat], [@ChildSum], IF([@IsSub], [@Running], [@SignedValue])) RETURN IF([@IsResult], "= ", IF(_d < 0, "- ", "+ "))
+        )
+        
+        // === RENDER ===
+        VAR _rows = CONCATENATEX(
+            _vm,
+            VAR _safeName = SUBSTITUTE(SUBSTITUTE(SUBSTITUTE([Name], "&", "&amp;"), "<", "&lt;"), ">", "&gt;")
+            VAR _y = [@Y]
+            VAR _bL = MIN([@BarL], [@BarR])
+            VAR _bR = MAX([@BarL], [@BarR])
+            VAR _bW = MAX((_bR - _bL) * _scale, 1)
+            VAR _bX = _barX0 + (_bL * _scale)
+            VAR _cX = _barX0 + ([@RunBefore] * _scale)
+            VAR _vX = IF([@DirVal] < 0, _bX - 5, _bX + _bW + 5)
+            VAR _anc = IF([@DirVal] < 0, "end", "start")
+            VAR _step = IF([@Row] > 0 && NOT([@IsFloat]), "<line x1='" & _cX & "' y1='" & (_y+3) & "' x2='" & _cX & "' y2='" & (_y-3) & "' stroke='" & _connectorColor & "' " & _dash & "/>", "")
+            VAR _brk = IF([@IsFloat],
+                VAR _x1 = _barX0 + ([@BarL] * _scale)
+                VAR _x2 = _barX0 + ([@BarR] * _scale)
+                RETURN IF(NOT(ISBLANK([@CY1])), "<line x1='" & _x1 & "' y1='" & (_y+3) & "' x2='" & _x1 & "' y2='" & [@CY1] & "' stroke='" & _connectorColor & "' " & _dash & "/>", "") &
+                    IF(NOT(ISBLANK([@CY2])), "<line x1='" & _x2 & "' y1='" & (_y+3) & "' x2='" & _x2 & "' y2='" & [@CY2] & "' stroke='" & _connectorColor & "' " & _dash & "/>", ""), "")
+            VAR _hL = IF([@IsResult], "<line x1='0' y1='" & (_y - _totalLinePadding) & "' x2='" & _chartWidth & "' y2='" & (_y - _totalLinePadding) & "' stroke='black' stroke-width='1'/>", "")
+            RETURN _hL & _step & _brk &
+                "<foreignObject x='" & [@Ind] & "' y='" & _y & "' width='" & (_labelWidth - [@Ind]) & "' height='" & _rowHeight & "'><div xmlns='http://www.w3.org/1999/xhtml' style='width:100%;height:100%;display:flex;align-items:center;font-family:" & _fontFamily & ";font-size:" & _fontSize & "px;font-weight:" & [@Wt] & ";line-height:1.1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis'>" & [@Pre] & _safeName & "</div></foreignObject>" &
+                "<rect x='" & _bX & "' y='" & (_y+3) & "' width='" & _bW & "' height='12' fill='" & [@Fill] & "' stroke='" & _strokeColor & "' stroke-width='0.5'/>" &
+                "<text x='" & _vX & "' y='" & (_y+12) & "' font-size='" & _fontSize & "' font-family='" & _fontFamily & "' font-weight='" & [@Wt] & "' text-anchor='" & _anc & "'>" & FORMAT(ABS([@DispVal]), _valueFormat) & "</text>",
+            "", [Sort], ASC)
+        
+        // === FINAL ROW ===
+        VAR _fVal = SUMX(FILTER(_data, [IsLeaf]), [@SignedValue])
+        VAR _nRows = COUNTROWS(_calc)
+        VAR _fPad = COUNTROWS(FILTER(_posY, [@IsResult])) * _totalLinePadding
+        VAR _fY = (_nRows * _rowHeight) + _fPad + _totalRowPadding
+        VAR _fW = ABS(_fVal) * _scale
+        VAR _fCX = _barX0 + (_fVal * _scale)
+        VAR _cR = _totalRowPadding + 15 + _doubleLinePadding
+        VAR _fRow = 
+            "<line x1='0' y1='" & (_fY-2) & "' x2='" & _chartWidth & "' y2='" & (_fY-2) & "' stroke='black' stroke-width='0.5'/>" & 
+            "<line x1='0' y1='" & (_fY+1) & "' x2='" & _chartWidth & "' y2='" & (_fY+1) & "' stroke='black' stroke-width='0.5'/>" & 
+            "<line x1='" & _fCX & "' y1='" & (_fY+3+_doubleLinePadding) & "' x2='" & _fCX & "' y2='" & (_fY-_cR+_doubleLinePadding) & "' stroke='" & _connectorColor & "' " & _dash & "/>" &
+            "<text x='5' y='" & (_fY+12+_doubleLinePadding) & "' font-family='" & _fontFamily & "' font-weight='bold' font-size='" & _fontSize & "'>" & _finalTotalLabel & "</text>" &
+            "<rect x='" & _barX0 & "' y='" & (_fY+3+_doubleLinePadding) & "' width='" & _fW & "' height='12' fill='" & _totalColor & "' stroke='" & _totalColor & "'/>" &
+            "<text x='" & (_barX0+_fW+5) & "' y='" & (_fY+12+_doubleLinePadding) & "' font-family='" & _fontFamily & "' font-weight='bold' font-size='" & _fontSize & "'>" & FORMAT(ABS(_fVal), _valueFormat) & "</text>"
+        
+        // === ASSEMBLY ===
+        VAR _cH = _fY + 25 + _doubleLinePadding
+        VAR _tH = _cH + _headerHeight
+        VAR _vDiv = "<line x1='" & (_labelWidth+2) & "' y1='0' x2='" & (_labelWidth+2) & "' y2='" & _cH & "' stroke='black' stroke-width='1'/>"
+        VAR _hdr = "<text x='0' y='" & _headerSize & "' font-family='" & _fontFamily & "' font-weight='bold' font-size='" & _headerSize & "'>" & _headerText & "</text><text x='0' y='" & (_headerSize+_subHeaderSize+5) & "' font-family='" & _fontFamily & "' font-size='" & _subHeaderSize & "' fill='#666'>" & _subHeaderText & "</text>"
+
+        RETURN "data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='" & _chartWidth & "' height='" & _tH & "'>" & _patterns & "<g transform='translate(0," & _headerHeight & ")'>" & _rows & _fRow & _vDiv & "</g>" & _hdr & "</svg>"
+
+annotation DAXLIB_PackageId = EdwardCharles.WaterfallSVG
+annotation DAXLIB_PackageVersion = 1.0.0
