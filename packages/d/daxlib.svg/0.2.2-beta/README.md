@@ -2,17 +2,20 @@
 
 DaxLib.SVG is a DAX User-Defined Functions (UDF) library designed to make creating SVG visuals in Power BI easier.
 
-[![Download From DaxLib](https://img.shields.io/badge/Download%20from%20DaxLib-009688?style=for-the-badge&logo=cloudsmith&logoColor=white)](https://daxlib.org/package/daxlib.svg/)
-[![Download Example PBIP](https://img.shields.io/badge/Download%20Example%20PBIP-607D8B?style=for-the-badge&logo=microsoftpowerbi&logoColor=white)](https://github.com/daxlib/dev-daxlib-svg/tree/main/samples/pbip/svg)
-
 ## Getting Started
 
 1. Download the library from [DAX Lib](https://daxlib.org/package/DaxLib.SVG/)
 2. Install using TMDL view
 3. Start using the functions in your measures
-   
-For detailed examples, check out our [example PBIP file](https://github.com/daxlib/dev-daxlib-svg/tree/main/samples/pbip/svg).
 
+## Examples
+
+For detailed examples, check out the [PBIP file](https://github.com/daxlib/dev-daxlib-svg/tree/main/samples/pbip/svg):
+
+1. Download the source code: [Download ZIP](https://github.com/daxlib/dev-daxlib-svg/archive/refs/heads/main.zip)
+2. Extract the ZIP file
+3. Open `samples/pbip/svg/SVG.pbip` in Power BI Desktop
+   
 ## Function Categories
 
 | Category | Description |
