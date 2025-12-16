@@ -52,5 +52,6 @@ function 'EdwardCharles.NativeHTML.HTMLimage' =
             
         RETURN SvgOutput
     
-    annotation DAXLIB_PackageId = NativeHTML
+    annotation DAXLIB_PackageId = EdwardCharles.NativeHTML
     annotation DAXLIB_PackageVersion = 1.0.0
+
