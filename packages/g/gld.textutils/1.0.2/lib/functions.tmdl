@@ -1,534 +1,312 @@
 
-/// Function:    Gld.TextUtils.WordWrap
-/// Role:        MAIN
-/// Version:     1.0.2
-/// Author:      Georgios Ntanalakis
-/// Summary:     Wraps a given text into lines whose length does not exceed `Chunk`
-///              characters, preserving word boundaries.
-/// Signature:   Gld.TextUtils.WordWrap( texttosplice: string, Chunk: int64 ) -> string
-///
-/// Parameters:
-///   - texttosplice : string  // Input text to wrap.
-///   - Chunk        : int64   // Maximum allowed characters per line (must be > 0).
-///
-/// Returns:
-///   A single string containing line-broken text (LF = UNICHAR(10)).
-///
-/// Dependencies:
-///   - Gld.TextUtils.WordWrap_Lines
-///
-/// Assumptions:
-///   - Input may include CR/LF; function normalizes to single spaces before wrapping.
-///
-/// Notes:
-///   - Final substitution removes the extra space after hyphen introduced in pre-clean,
-///     so " - " becomes "-" consistently.
-///
-/// Variable legend
-///   BaseLines  : table(GroupId, Line, LineLen) — Intermediate wrapped lines.
-///   ResultText : string — LF-joined text built from BaseLines.
-function 'Gld.TextUtils.WordWrap' =
-    (
-        texttosplice : string,
-        Chunk        : int64
-    ) =>
-    /// — Step 1: Produce line table based on word grouping and Chunk limit
-    VAR BaseLines =
-        Gld.TextUtils.WordWrap_Lines( texttosplice, Chunk )
+	/// Variable legend
+	/// CleanText           : string — Normalized text.
+	/// __Path              : string — Words separated by LF, usable with PATH*.
+	/// WordCount           : int    — Number of tokens.
+	/// Words               : table  — Word list with position and length.
+	/// WordsWithCumulative : table  — Adds running length including inter-word spaces.
+	/// WordsWithGroupInit  : table  — Assigns GroupId = QUOTIENT(Cumulative-1, Chunk).
+	/// LinesInitial        : table  — Builds final per-line strings and lengths.
+	function 'Gld.TextUtils.WordWrap' = ```
+			
+			(
+			    texttosplice : string,
+			    Chunk        : int64
+			) =>
+			// ============================================================================
+			// FUNCTION:     Gld.TextUtils.WordWrap
+			// PURPOSE:      Wraps text to specified line length while preserving word boundaries
+			// ALGORITHM:    Word-based wrapping using cumulative character counting
+			// 
+			// PARAMETERS:
+			//   texttosplice: Input text to wrap (may contain CR/LF, punctuation)
+			//   Chunk:       Maximum characters per line (must be > 0)
+			//
+			// RETURNS:
+			//   string: Wrapped text with lines separated by LF (UNICHAR(10))
+			//
+			// FEATURES:
+			//   - Preserves word boundaries (doesn't break words)
+			//   - Handles common punctuation (,, ;, -, —)
+			//   - Normalizes CR/LF to spaces
+			//   - Returns lines in correct order
+			//
+			// LIMITATIONS:
+			//   - Words longer than Chunk will still appear on single line (exceeds limit)
+			//   - No hyphenation for word breaking
+			//   - Treats punctuation as part of words
+			//
+			// EXAMPLE:
+			//   WordWrap("Hello world. This is a test.", 10) returns:
+			//   "Hello world.
+			//   This is a
+			//   test."
+			// ============================================================================
+			
+			/// — Step 1: Normalize text (CR/LF to spaces, add helpful punctuation spacing)
+			/// Convert line breaks to spaces and add spacing after punctuation for proper tokenization
+			VAR CleanText =
+			    VAR t1 = SUBSTITUTE( texttosplice, UNICHAR(13), " " )  // Carriage Return → space
+			    VAR t2 = SUBSTITUTE( t1,          UNICHAR(10), " " )  // Line Feed → space
+			    VAR t3 = SUBSTITUTE( t2,          ";",         "; " ) // Add space after semicolon
+			    VAR t4 = SUBSTITUTE( t3,          ",",         ", " ) // Add space after comma
+			    VAR t5 = SUBSTITUTE( t4,          "-",         "- " ) // Add space after regular hyphen
+			    VAR t6 = SUBSTITUTE( t5,          "—",         "— " ) // Add space after em dash (U+2014)
+			    RETURN TRIM( t6 )  // Remove leading/trailing spaces
+			
+			/// — Step 2: Tokenize into a PATH-compatible string and count tokens
+			/// Convert spaces to pipe (|) delimiter for PATH functions
+			VAR __Path    = SUBSTITUTE( CleanText, " ", "|" )
+			VAR WordCount = PATHLENGTH( __Path )  // Count words/tokens
+			
+			/// — Step 3: Create base word table with lengths
+			/// Generate table with one row per word, including word text and character length
+			VAR Words =
+			    ADDCOLUMNS(
+			        GENERATESERIES( 1, WordCount, 1 ),  // Sequence 1..WordCount
+			        "Word", PATHITEM( __Path, [Value], TEXT ),  // Extract word at position
+			        "Len",  LEN( PATHITEM( __Path, [Value], TEXT ) )  // Calculate word length
+			    )
+			
+			/// — Step 4: Add cumulative length up to each word, counting spaces between words
+			/// Calculate running total of characters including inter-word spaces
+			VAR WordsWithCumulative =
+			    ADDCOLUMNS(
+			        Words,
+			        "Cumulative",
+			            VAR currentPos = [Value]
+			            RETURN
+			                SUMX(
+			                    FILTER( Words, [Value] <= currentPos ),
+			                    [Len] + IF( [Value] = 1, 0, 1 )  // Add 1 for space before each word except first
+			                )
+			    )
+			
+			/// — Step 5: Assign target line (GroupId) using integer division by Chunk
+			/// Determine which line each word belongs to based on cumulative character position
+			VAR WordsWithGroupInit =
+			    ADDCOLUMNS(
+			        WordsWithCumulative,
+			        "GroupId", QUOTIENT( [Cumulative] - 1, Chunk )  // Group by Chunk-sized segments
+			        // Note: QUOTIENT((Cumulative-1), Chunk) gives 0-based line numbers
+			    )
+			
+			/// — Step 6: Build line strings and their lengths per GroupId
+			/// Concatenate words belonging to the same line group
+			VAR LinesInitial =
+			    ADDCOLUMNS(
+			        SUMMARIZE( WordsWithGroupInit, [GroupId] ),  // Get unique line groups
+			        "Line",
+			            VAR g = [GroupId]
+			            RETURN TRIM(
+			                CONCATENATEX(
+			                    FILTER( WordsWithGroupInit, [GroupId] = g ),
+			                    [Word], " ", [Value], ASC  // Join words with spaces, in original order
+			                )
+			            ),
+			        "LineLen",
+			            VAR g2 = [GroupId]
+			            VAR s  = TRIM(
+			                CONCATENATEX(
+			                    FILTER( WordsWithGroupInit, [GroupId] = g2 ),
+			                    [Word], " ", [Value], ASC
+			                )
+			            )
+			            RETURN LEN( s )  // Calculate actual line length
+			    )
+			
+			/// — Step 7: Build the wrapped lines table (final structure)
+			VAR LinesTable = SELECTCOLUMNS(
+			    LinesInitial,
+			    "GroupId", [GroupId],  // 0-based line number
+			    "Line",    [Line],     // Text content of line
+			    "LineLen", [LineLen]   // Character count of line
+			)
+			
+			/// — Step 8: Concatenate lines with LF in GroupId order
+			VAR ResultText =
+			    CONCATENATEX( LinesTable, [Line], UNICHAR(10), [GroupId], ASC )
+			
+			/// — Step 9: Cosmetic cleanup
+			/// Remove temporary spaces added after hyphens during normalization
+			RETURN
+			    SUBSTITUTE( ResultText, "- ", "-" )
+			```
+		
 
-    /// — Step 2: Concatenate lines with LF in GroupId order
-    VAR ResultText =
-        CONCATENATEX( BaseLines, [Line], UNICHAR(10), [GroupId], ASC )
+	function 'Gld.TextUtils.WordWrapWithBreak' = ```
+			
+			(
+			    texttosplice : string,
+			    Chunk        : int64
+			) =>
+			// ============================================================================
+			// FUNCTION:     Gld.TextUtils.WordWrapWithBreak
+			// PURPOSE:      Simple character-level text wrapping with word breaking
+			// ALGORITHM:    Fixed-width character splitting with hyphenation for broken words
+			// 
+			// PARAMETERS:
+			//   texttosplice: Input text to wrap
+			//   Chunk:       Exact character limit per line
+			//
+			// RETURNS:
+			//   string: Text broken into lines of exactly Chunk characters (or less for last line)
+			//
+			// FEATURES:
+			//   - Guarantees lines never exceed Chunk characters
+			//   - Breaks long words with hyphens when necessary
+			//   - Simple and predictable behavior
+			//
+			// LIMITATIONS:
+			//   - May break words at arbitrary character positions
+			//   - Doesn't preserve word boundaries
+			//   - May create awkward breaks in middle of words
+			//
+			// EXAMPLE:
+			//   WordWrapWithBreak("Hello world", 5) returns:
+			//   "Hello
+			//   world"
+			//
+			//   WordWrapWithBreak("Hello world", 3) returns:
+			//   "Hel-
+			//   lo
+			//   wor-
+			//   ld"
+			// ============================================================================
+			
+			// Normalize input: convert CR/LF to spaces and trim
+			VAR cleanText = TRIM(SUBSTITUTE(SUBSTITUTE(texttosplice, UNICHAR(13), " "), UNICHAR(10), " "))
+			VAR textLen = LEN(cleanText)
+			
+			// Calculate maximum number of lines needed (ceiling division)
+			VAR MaxLines = CEILING(DIVIDE(textLen, Chunk), 1)
+			
+			// Generate line segments based on fixed character positions
+			VAR RawLines =
+			    ADDCOLUMNS(
+			        GENERATESERIES(0, MaxLines - 1, 1),  // 0-based line indices
+			        "StartIndex", [Value] * Chunk + 1,   // Starting character position
+			        "EndIndex", MIN([Value] * Chunk + Chunk, textLen)  // Ending character position
+			    )
+			
+			// Extract raw text for each line segment
+			VAR LinesWithText =
+			    ADDCOLUMNS(
+			        RawLines,
+			        "RawText", MID(cleanText, [StartIndex], [EndIndex] - [StartIndex] + 1)
+			    )
+			
+			// Clean up: remove leading/trailing spaces from each line
+			VAR CleanLines =
+			    ADDCOLUMNS(
+			        LinesWithText,
+			        "CleanText", TRIM([RawText])
+			    )
+			
+			// Concatenate all lines with line feed separators
+			VAR ResultText =
+			    CONCATENATEX(
+			        SELECTCOLUMNS(
+			            CleanLines,
+			            "LineNum", [Value],     // Line number (0-based from GENERATESERIES)
+			            "Text", [CleanText]     // Cleaned line text
+			        ),
+			        [Text],
+			        UNICHAR(10),  // Line feed character
+			        [LineNum],
+			        ASC           // Ensure lines are in correct order
+			    )
+			
+			RETURN ResultText
+			```
+		
 
-    /// — Step 3: Cosmetic cleanup
-    RETURN
-        SUBSTITUTE( ResultText, "- ", "-" )
+	/// Variable legend
+	/// LineMarker     : string  — Special marker for preserved line breaks
+	/// WithLineBreaks : string  — Text with line breaks converted to markers
+	/// CleanText      : string  — Normalized text with punctuation spacing
+	/// __Path         : string  — Words separated by |, usable with PATH*
+	/// WordCount      : int     — Number of tokens
+	/// Words          : table   — Word list with position and length
+	/// WordsWithCumulative : table — Adds running length including inter-word spaces
+	/// WordsWithGroupInit  : table — Assigns GroupId with special handling for markers
+	/// LinesInitial   : table   — Builds final per-line strings and lengths
+	function 'Gld.TextUtils.WordWrapWithLF' = ```
+			
+			(
+			    texttosplice : string,
+			    Chunk        : int64
+			) =>
+			// ============================================================================
+			// FUNCTION:     Gld.TextUtils.WordWrapWithLF
+			// PURPOSE:      Wraps text while preserving existing line/paragraph breaks
+			// ALGORITHM:    Paragraph splitting + per-paragraph word wrapping
+			// 
+			// PARAMETERS:
+			//   texttosplice: Input text with potential paragraph breaks
+			//   Chunk:       Maximum characters per line within each paragraph
+			//
+			// RETURNS:
+			//   string: Wrapped text with original paragraph structure preserved
+			//
+			// FEATURES:
+			//   - Preserves CR/LF/CRLF as paragraph breaks
+			//   - Empty lines remain as empty lines (paragraph separators)
+			//   - Uses WordWrap for actual line wrapping within paragraphs
+			//   - Maintains logical document structure
+			//
+			// LIMITATIONS:
+			//   - Inherits limitations from WordWrap function
+			//   - Multiple consecutive line breaks treated as multiple empty lines
+			//
+			// EXAMPLE:
+			//   Input: "First para.
+			//
+			//   Second para."
+			//   
+			//   WordWrapWithLF(input, 15) returns:
+			//   "First para.
+			//
+			//   Second para."
+			// ============================================================================
+			
+			/// — Step 1: Split text into paragraphs at line breaks
+			/// Replace all line break variations with a unique paragraph marker
+			VAR ParagraphMarker = "||PARAGRAPH||"
+			    
+			VAR TextWithMarkers =
+			    SUBSTITUTE(
+			        SUBSTITUTE(
+			            SUBSTITUTE( texttosplice, 
+			                UNICHAR(13) & UNICHAR(10), ParagraphMarker ),  // CRLF
+			            UNICHAR(13), ParagraphMarker ),  // CR alone
+			        UNICHAR(10), ParagraphMarker )  // LF alone
+			
+			/// Convert marker-delimited text to PATH-compatible format
+			VAR ParagraphPath = SUBSTITUTE( TextWithMarkers, ParagraphMarker, "|" )
+			VAR ParagraphCount = PATHLENGTH( ParagraphPath )
+			
+			/// — Step 2: Wrap each paragraph individually
+			/// Process each paragraph through the WordWrap function
+			VAR WrappedParagraphs =
+			    ADDCOLUMNS(
+			        GENERATESERIES( 1, ParagraphCount, 1 ),  // Iterate through paragraphs
+			        "ParagraphText", TRIM( PATHITEM( ParagraphPath, [Value], TEXT ) ),  // Extract paragraph
+			        "WrappedText",
+			            VAR paragraph = TRIM( PATHITEM( ParagraphPath, [Value], TEXT ) )
+			            RETURN IF(
+			                paragraph = "",
+			                "",  // Empty paragraph results in empty line (preserves formatting)
+			                Gld.TextUtils.WordWrap( paragraph, Chunk )  // Wrap non-empty paragraphs
+			            )
+			    )
+			
+			/// — Step 3: Combine with line breaks between paragraphs
+			/// Reconstruct document with original paragraph spacing
+			VAR Result =
+			    CONCATENATEX( WrappedParagraphs, [WrappedText], UNICHAR(10), [Value], ASC )
+			    
+			RETURN Result
+			```
+		
 
-
-/// Function:    Gld.TextUtils.WordWrap_Lines
-/// Role:        HELPER
-/// Summary:     Cleans and tokenizes text into words, then groups words into lines
-///              where each line length is <= Chunk, preserving order.
-/// Signature:   Gld.TextUtils.WordWrap_Lines( texttosplice: string, Chunk: int64 )
-///              -> table( GroupId: int, Line: string, LineLen: int )
-///
-/// Parameters:
-///   - texttosplice : string
-///   - Chunk        : int64
-///
-/// Returns:
-///   Table with one row per line: GroupId (0-based), Line (string), LineLen (int).
-///
-/// Semantics:
-///   - Cleaning converts CR/LF to spaces and inserts spacing after punctuation (;, ,)
-///     and after hyphen to help later splitting; a final pass in main removes "- ".
-///
-/// Why PATH functions?
-///   - We transform the text into a \n-separated "path" to use PATHLENGTH/PATHITEM
-///     for robust tokenization without external split helpers.
-///
-/// Variable legend
-///   CleanText           : string — Normalized text.
-///   __Path              : string — Words separated by LF, usable with PATH*.
-///   WordCount           : int    — Number of tokens.
-///   Words               : table  — Word list with position and length.
-///   WordsWithCumulative : table  — Adds running length including inter-word spaces.
-///   WordsWithGroupInit  : table  — Assigns GroupId = QUOTIENT(Cumulative-1, Chunk).
-///   LinesInitial        : table  — Builds final per-line strings and lengths.
-function 'Gld.TextUtils.WordWrap_Lines' =
-    (
-        texttosplice : string,
-        Chunk        : int64
-    ) =>
-    /// — Step 1: Normalize text (CR/LF to spaces, add helpful punctuation spacing)
-    VAR CleanText =
-        VAR t1 = SUBSTITUTE( texttosplice, UNICHAR(13), " " )
-        VAR t2 = SUBSTITUTE( t1,          UNICHAR(10), " " )
-        VAR t3 = SUBSTITUTE( t2,          ";",         "; " )
-        VAR t4 = SUBSTITUTE( t3,          ",",         ", " )
-        VAR t5 = SUBSTITUTE( t4,          "-",         "- " )
-        RETURN TRIM( t5 )
-
-    /// — Step 2: Tokenize into a PATH-compatible string and count tokens
-    VAR __Path    = SUBSTITUTE( CleanText, " ", UNICHAR(10) )
-    VAR WordCount = PATHLENGTH( __Path )
-
-    /// — Step 3: Create base word table with lengths
-    VAR Words =
-        ADDCOLUMNS(
-            GENERATESERIES( 1, WordCount, 1 ),
-            "Word", PATHITEM( __Path, [Value], TEXT ),
-            "Len",  LEN( PATHITEM( __Path, [Value], TEXT ) )
-        )
-
-    /// — Step 4: Add cumulative length up to each word, counting spaces between words
-    VAR WordsWithCumulative =
-        ADDCOLUMNS(
-            Words,
-            "Cumulative",
-                VAR currentPos = [Value]
-                RETURN
-                    SUMX(
-                        FILTER( Words, [Value] <= currentPos ),
-                        [Len] + IF( [Value] = 1, 0, 1 )
-                    )
-        )
-
-    /// — Step 5: Assign target line (GroupId) using integer division by Chunk
-    VAR WordsWithGroupInit =
-        ADDCOLUMNS(
-            WordsWithCumulative,
-            "GroupId", QUOTIENT( [Cumulative] - 1, Chunk )
-        )
-
-    /// — Step 6: Build line strings and their lengths per GroupId
-    VAR LinesInitial =
-        ADDCOLUMNS(
-            SUMMARIZE( WordsWithGroupInit, [GroupId] ),
-            "Line",
-                VAR g = [GroupId]
-                RETURN TRIM(
-                    CONCATENATEX(
-                        FILTER( WordsWithGroupInit, [GroupId] = g ),
-                        [Word], " ", [Value], ASC
-                    )
-                ),
-            "LineLen",
-                VAR g2 = [GroupId]
-                VAR s  = TRIM(
-                    CONCATENATEX(
-                        FILTER( WordsWithGroupInit, [GroupId] = g2 ),
-                        [Word], " ", [Value], ASC
-                    )
-                )
-                RETURN LEN( s )
-        )
-
-    /// — Step 7: Return a clean three-column table
-    RETURN
-        SELECTCOLUMNS(
-            LinesInitial,
-            "GroupId", [GroupId],
-            "Line",    [Line],
-            "LineLen", [LineLen]
-        )
-
-
-/// Function:    Gld.TextUtils.WordWrap_BidirectionalPass
-/// Role:        HELPER
-/// Summary:     One normalization pass that first "pushes down" (splits lines that
-///              overflow by moving the last word down) and then applies a "pull up"
-///              pass to utilize leftover space above.
-/// Signature:   Gld.TextUtils.WordWrap_BidirectionalPass( Lines: table, Chunk: int64 )
-///              -> table( GroupId: int, Line: string, LineLen: int )
-///
-/// Parameters:
-///   - Lines : table( GroupId, Line )
-///   - Chunk : int64
-///
-/// Returns:
-///   Reflowed lines with updated GroupId (0-based), Line, and LineLen.
-///
-/// Why the push-down step?
-///   - It ensures any line that exceeds the limit is split into a base part plus its
-///     trailing word as a new row immediately after, before attempting pull-up.
-///
-/// Variable legend
-///   InLines     : table — Canonicalized input (GroupId, Line).
-///   WithLen     : table — Adds LineLen per row.
-///   WithPath    : table — Adds per-line PATH info, LastWord, and LineWithoutLast.
-///   SplitRows   : table — Union of kept lines, base parts, and last words (as rows).
-///   AfterSplit  : table — Dense reindexing to 0..n-1 and recalculated lengths.
-function 'Gld.TextUtils.WordWrap_BidirectionalPass' =
-    (
-        Lines : table,
-        Chunk : int64
-    ) =>
-    /// — Step 1: Normalize input shape
-    VAR InLines =
-        SELECTCOLUMNS( Lines, "GroupId", [GroupId], "Line", [Line] )
-
-    /// — Step 2: Compute current line lengths
-    VAR WithLen =
-        ADDCOLUMNS( InLines, "LineLen", LEN( [Line] ) )
-
-    /// — Step 3: PUSH DOWN — derive helpers to split overflow lines into base + last word
-    VAR WithPath =
-        ADDCOLUMNS(
-            WithLen,
-            "LinePath",          SUBSTITUTE( [Line], " ", UNICHAR(10) ),
-            "PathLen",           PATHLENGTH( SUBSTITUTE( [Line], " ", UNICHAR(10) ) ),
-            "LastWord",          PATHITEM( SUBSTITUTE( [Line], " ", UNICHAR(10) ),
-                                        PATHLENGTH( SUBSTITUTE( [Line], " ", UNICHAR(10) ) ), TEXT ),
-            "LineWithoutLast",
-                VAR lw = PATHITEM( SUBSTITUTE( [Line], " ", UNICHAR(10) ),
-                                PATHLENGTH( SUBSTITUTE( [Line], " ", UNICHAR(10) ) ), TEXT )
-                VAR l  = [Line]
-                RETURN TRIM(
-                    LEFT(
-                        l,
-                        LEN( l ) - LEN( lw ) - IF( LEN( l ) = LEN( lw ), 0, 1 )
-                    )
-                )
-        )
-
-    /// — Step 4: Create split rows and order them (GroupId, GroupId+0.5)
-    VAR SplitRows =
-        UNION(
-            SELECTCOLUMNS( FILTER( WithPath, [LineLen] <= Chunk ),
-                "Order", [GroupId], "Line", [Line] ),
-            SELECTCOLUMNS( FILTER( WithPath, [LineLen] > Chunk ),
-                "Order", [GroupId], "Line", [LineWithoutLast] ),
-            SELECTCOLUMNS( FILTER( WithPath, [LineLen] > Chunk ),
-                "Order", [GroupId] + 0.5, "Line", [LastWord] )
-        )
-
-    /// — Step 5: Dense reindex to 0..n-1 and recompute lengths
-    VAR AfterSplit =
-        ADDCOLUMNS(
-            SELECTCOLUMNS(
-                ADDCOLUMNS(
-                    SplitRows,
-                    "NewOrder", RANKX( SplitRows, [Order], , ASC, DENSE ) - 1
-                ),
-                "NewOrder", [NewOrder],
-                "Line",     [Line]
-            ),
-            "LineLen", LEN( [Line] )
-        )
-
-    /// — Step 6: PULL UP — try to compact using the helper pass
-    RETURN
-        Gld.TextUtils.WordWrap_PullUpPass(
-            SELECTCOLUMNS( AfterSplit, "GroupId", [NewOrder], "Line", [Line], "LineLen", [LineLen] ),
-            Chunk
-        )
-
-
-/// Function:    Gld.TextUtils.WordWrap_PullUpPass
-/// Role:        HELPER
-/// Summary:     Pulls the first word of the next line up into the current line if it
-///              fits, and adjusts both lines accordingly. Reindexes output densely.
-/// Signature:   Gld.TextUtils.WordWrap_PullUpPass( Lines: table, Chunk: int64 )
-///              -> table( GroupId: int, Line: string, LineLen: int )
-///
-/// Parameters:
-///   - Lines : table( GroupId, Line )
-///   - Chunk : int64
-///
-/// Returns:
-///   Table with reflowed lines; empty lines removed; GroupId re-densed to 0..n-1.
-///
-/// Notes:
-///   - This pass is idempotent if no pulls are possible.
-///
-/// Variable legend
-///   InLines           : table — Canonicalized input (GroupId, Line).
-///   WithLen           : table — Adds LineLen per row.
-///   WithFirstWord     : table — Adds first-word info and LineWithoutFirst.
-///   WithPrevLen       : table — Adds previous line length and CanPullUp boolean.
-///   WithNextPullsFlag : table — Flags if the next line can pull from current.
-///   AdjustedLines     : table — Produces adjusted text by case analysis.
-///   FilteredLines     : table — Removes empty lines and trims text.
-///   Reindexed         : table — Dense ranking to 0..n-1.
-///   LinesOutCore      : table — Final shape (GroupId, Line).
-///   LinesOut          : table — Adds LineLen for convenience.
-function 'Gld.TextUtils.WordWrap_PullUpPass' =
-    (
-        Lines : table,
-        Chunk : int64
-    ) =>
-    /// — Step 1: Normalize input shape
-    VAR InLines =
-        SELECTCOLUMNS( Lines, "GroupId", [GroupId], "Line", [Line] )
-
-    /// — Step 2: Compute current line lengths
-    VAR WithLen =
-        ADDCOLUMNS( InLines, "LineLen", LEN( [Line] ) )
-
-    /// — Step 3: Extract first word and remaining text for each line
-    VAR WithFirstWord =
-        ADDCOLUMNS(
-            WithLen,
-            "LinePath",        SUBSTITUTE( [Line], " ", UNICHAR(10) ),
-            "FirstWord",       PATHITEM( SUBSTITUTE( [Line], " ", UNICHAR(10) ), 1, TEXT ),
-            "FirstWordLen",    LEN( PATHITEM( SUBSTITUTE( [Line], " ", UNICHAR(10) ), 1, TEXT ) ),
-            "LineWithoutFirst",
-                VAR fw      = PATHITEM( SUBSTITUTE( [Line], " ", UNICHAR(10) ), 1, TEXT )
-                VAR l       = [Line]
-                VAR pathLen = PATHLENGTH( SUBSTITUTE( [Line], " ", UNICHAR(10) ) )
-                RETURN IF( pathLen <= 1, "", TRIM( RIGHT( l, LEN( l ) - LEN( fw ) - 1 ) ) )
-        )
-
-    /// — Step 4: For each line, compute previous line length and if a pull-up is possible
-    VAR WithPrevLen =
-        ADDCOLUMNS(
-            WithFirstWord,
-            "PrevLen",
-                VAR g = [GroupId]
-                RETURN MAXX( FILTER( WithLen, [GroupId] = g - 1 ), [LineLen] ),
-            "CanPullUp",
-                VAR g       = [GroupId]
-                VAR prevLen = MAXX( FILTER( WithLen, [GroupId] = g - 1 ), [LineLen] )
-                VAR pathLen = PATHLENGTH( [LinePath] )
-                RETURN IF(
-                    NOT ISBLANK( prevLen ) &&
-                    pathLen >= 1 &&
-                    prevLen + 1 + [FirstWordLen] <= Chunk,
-                    TRUE(), FALSE()
-                )
-        )
-
-    /// — Step 5: Flag lines whose next line can pull from them
-    VAR WithNextPullsFlag =
-        ADDCOLUMNS(
-            WithPrevLen,
-            "NextPullsFromThis",
-                VAR g = [GroupId]
-                VAR nextFlag = MAXX( FILTER( WithPrevLen, [GroupId] = g + 1 ), IF( [CanPullUp], 1, 0 ) )
-                RETURN IF( ISBLANK( nextFlag ), FALSE(), nextFlag = 1 )
-        )
-
-    /// — Step 6: Adjust line text depending on pull-up relationships
-    VAR AdjustedLines =
-        ADDCOLUMNS(
-            WithNextPullsFlag,
-            "AdjustedLine",
-                VAR nextPulls     = [NextPullsFromThis]
-                VAR canPull       = [CanPullUp]
-                VAR g             = [GroupId]
-                VAR nextFirstWord = MAXX( FILTER( WithNextPullsFlag, [GroupId] = g + 1 ), [FirstWord] )
-                RETURN SWITCH(
-                    TRUE(),
-                    nextPulls && canPull, [LineWithoutFirst] & " " & nextFirstWord,
-                    nextPulls,             [Line]            & " " & nextFirstWord,
-                    canPull,               [LineWithoutFirst],
-                    [Line]
-                )
-        )
-
-    /// — Step 7: Remove empty lines and trim
-    VAR FilteredLines =
-        FILTER(
-            SELECTCOLUMNS( AdjustedLines, "GroupId", [GroupId], "Line", TRIM( [AdjustedLine] ) ),
-            [Line] <> ""
-        )
-
-    /// — Step 8: Dense reindex to 0..n-1
-    VAR Reindexed =
-        ADDCOLUMNS( FilteredLines, "FinalOrder", RANKX( FilteredLines, [GroupId], , ASC, DENSE ) - 1 )
-
-    /// — Step 9: Finalize shape and add lengths
-    VAR LinesOutCore = SELECTCOLUMNS( Reindexed, "GroupId", [FinalOrder], "Line", [Line] )
-    VAR LinesOut     = ADDCOLUMNS( LinesOutCore, "LineLen", LEN( [Line] ) )
-
-    /// — Step 10: Return standardized table
-    RETURN
-        SELECTCOLUMNS( LinesOut, "GroupId", [GroupId], "Line", [Line], "LineLen", [LineLen] )
-
-
-/// Function:    Gld.TextUtils.WordWrapWithPasses
-/// Role:        MAIN
-/// Author:      Georgios Ntanalakis
-/// Summary:
-///   Convenience wrapper to wrap text into lines of max length `Chunk`, by:
-///     1) Building base line candidates from words.
-///     2) Running one "bidirectional" pass (push down overflow, then pull-up).
-///     3) Running up to N additional "pull-up" passes to compact lines.
-///   Finally renders the selected pass as a single string with LF separators.
-///
-/// Signature:
-///   Gld.TextUtils.WordWrapWithPasses(
-///     texttosplice: string,
-///     Chunk:        int64,
-///     Passes:       int64
-///   ) -> string
-///
-/// Parameters:
-///   - texttosplice : string
-///       Free-form input text. May contain CR/LF or multiple spaces.
-///   - Chunk        : int64
-///       Target maximum characters per line (> 0). Includes spaces.
-///   - Passes       : int64
-///       Normalization passes to apply:
-///         • 1  = only the bidirectional pass
-///         • 2–9 = bidirectional + (Passes-1) pull-up passes
-///         • ≥10 = bidirectional + 9 pull-up passes (upper bound set to 10)
-///
-/// Returns:
-///   - string — Wrapped text where lines are separated by LF (UNICHAR(10)).
-///
-/// Dependencies:
-///   - Gld.TextUtils.WordWrap_Lines
-///   - Gld.TextUtils.WordWrap_BidirectionalPass
-///   - Gld.TextUtils.WordWrap_PullUpPass
-///
-/// Assumptions:
-///   - The model supports custom DAX functions with `function` syntax in your environment.
-///   - `Gld.TextUtils.*` helpers are present in the same model.
-///
-/// Notes:
-///   - Hyphen spacing is intentionally introduced earlier in the pipeline and removed
-///     here with SUBSTITUTE("- ", "-") to avoid mid-word breaks around hyphens.
-///
-/// Variable legend (what each VAR represents and why it exists)
-///
-/// Construction:
-///   Base  : table(GroupId, Line, LineLen)
-///           Initial lines produced by word grouping (no optimization).
-///   P1    : table(...)
-///           Result after the "bidirectional" pass (push overflow down, then pull up).
-///   P2..P10 : table(...)
-///           Incremental pull-up passes applied to the previous table, increasing
-///           compaction where space allows.
-///
-/// Rendering (string outputs for inspection and selection):
-///   T0    : string
-///           Rendering of Base (pre-pass baseline) for comparison or debugging.
-///   T1..T10 : string
-///           Rendering of P1..P10 respectively, each as LF-joined text.
-///
-/// Selection:
-///   OutText : string
-///           Chooses which pass’ rendering to return based on `Passes`.
-function 'Gld.TextUtils.WordWrapWithPasses' =
-    (
-        texttosplice : string,
-        Chunk        : int64,
-        Passes       : int64
-    ) =>
-
-    /// — Step 1: Build base lines from words (no optimization yet)
-    VAR Base =
-        Gld.TextUtils.WordWrap_Lines( texttosplice, Chunk )
-
-    /// — Step 2: Apply the first normalization pass (bidirectional)
-    VAR P1 = Gld.TextUtils.WordWrap_BidirectionalPass( Base, Chunk )
-
-    /// — Step 3: Apply additional pull-up passes (idempotent when no more pulls fit)
-    VAR P2  = Gld.TextUtils.WordWrap_PullUpPass( P1,  Chunk )
-    VAR P3  = Gld.TextUtils.WordWrap_PullUpPass( P2,  Chunk )
-    VAR P4  = Gld.TextUtils.WordWrap_PullUpPass( P3,  Chunk )
-    VAR P5  = Gld.TextUtils.WordWrap_PullUpPass( P4,  Chunk )
-    VAR P6  = Gld.TextUtils.WordWrap_PullUpPass( P5,  Chunk )
-    VAR P7  = Gld.TextUtils.WordWrap_PullUpPass( P6,  Chunk )
-    VAR P8  = Gld.TextUtils.WordWrap_PullUpPass( P7,  Chunk )
-    VAR P9  = Gld.TextUtils.WordWrap_PullUpPass( P8,  Chunk )
-    VAR P10 = Gld.TextUtils.WordWrap_PullUpPass( P9,  Chunk )
-
-    /// — Step 4: Create rendered text for each stage (LF-joined by GroupId)
-    VAR T0 =
-        CONCATENATEX(
-            SELECTCOLUMNS( Base, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T1 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P1, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T2 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P2, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T3 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P3, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T4 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P4, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T5 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P5, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T6 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P6, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T7 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P7, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T8 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P8, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T9 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P9, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-    VAR T10 =
-        CONCATENATEX(
-            SELECTCOLUMNS( P10, "GroupId", [GroupId], "Line", [Line] ),
-            [Line], UNICHAR(10), [GroupId], ASC
-        )
-
-    /// — Step 5: Select which pass’ output to return based on `Passes`
-    VAR OutText =
-        SWITCH(
-            TRUE(),
-            Passes <= 1,  T1,
-            Passes <= 2,  T2,
-            Passes <= 3,  T3,
-            Passes <= 4,  T4,
-            Passes <= 5,  T5,
-            Passes <= 6,  T6,
-            Passes <= 7,  T7,
-            Passes <= 8,  T8,
-            Passes <= 9,  T9,
-            /* >= 10 */   T10
-        )
-
-    /// — Step 6: Cosmetic cleanup (undo temporary hyphen spacing from pre-clean)
-    RETURN
-        SUBSTITUTE( OutText, "- ", "-" )

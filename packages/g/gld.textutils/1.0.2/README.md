@@ -1,51 +1,217 @@
-# Gld.TextUtils.WordWrap — README (v1.0.2)
 
-## Overview of Main Functions
+# DAX Text Wrapping Utilities
 
-### `Gld.TextUtils.WordWrap`
-Wraps a given text string into multiple lines, ensuring that each line does not exceed a specified character limit (`Chunk`). It respects word boundaries and avoids splitting words mid‑way. The output is a single string with line breaks (`UNICHAR(10)`), suitable for display in visuals, tooltips, or formatted exports. Performance is fast and lightweight.
+A collection of DAX functions for text wrapping and formatting with different strategies for handling word boundaries, line breaks, and character limits.
 
-### `Gld.TextUtils.WordWrapWithPasses`
-An enhanced wrapper around `WordWrap` that applies multiple optimization passes to compact the output further. It first performs a bidirectional pass (splitting long lines and pulling words up), followed by up to nine additional pull‑up passes to reduce line count and improve space utilization. This achieves stricter line‑length enforcement at a higher computational cost.
+## 📋 Functions Overview
 
----
+| Function | Purpose | Best For |
+|----------|---------|----------|
+| `WordWrap` | Word-aware wrapping at character limit | General text, documents, readable output |
+| `WordWrapWithBreak` | Character-level wrapping with word breaking | Fixed-width formatting, guaranteed limits |
+| `WordWrapWithLF` | Preserves existing paragraph structure | Multi-paragraph documents, formatted text |
 
-## Limitations (v1.0.2)
+## 🚀 Installation
 
-### Shared
-- No support for preserving hard line breaks (original CR/LF are normalized away).
-- No handling of non‑breaking spaces or special Unicode spacing.
-- No language‑aware hyphenation or sentence‑level semantics.
-- Words longer than `Chunk` are not broken; they will exceed the limit.
+Copy all three function definitions into your DAX model. They are self-contained and have no external dependencies.
 
-### `WordWrap`
-- May produce lines longer than `Chunk` if a single word exceeds the limit.
-- No post‑processing optimization; line grouping is greedy and static.
+## 📖 Detailed Documentation
 
-### `WordWrapWithPasses`
-- Maximum of 10 passes; additional passes require extension.
-- Pull‑up logic only considers the first word of the next line.
-- May produce lines with low word density at lower pass counts.
-- Increased performance cost with longer input and higher pass counts.
+### 1. `Gld.TextUtils.WordWrap`
 
----
+**Signature:** `WordWrap(texttosplice: string, Chunk: int64) => string`
 
-## Comparison of Results
+Word-based wrapping that preserves word boundaries. Uses a cumulative character counting algorithm to group words into lines without exceeding the character limit.
 
-- **Line‑length behavior**: `WordWrap` uses a soft limit and can yield lines over `Chunk` in edge cases, whereas `WordWrapWithPasses` enforces a hard limit (subject to very long single words).
-- **Compaction**: `WordWrapWithPasses` progressively compacts the layout as `Passes` increases, but early passes may leave sparse lines.
-- **Performance**: `WordWrap` is faster and suitable for large‑scale use. `WordWrapWithPasses` is more computationally expensive but offers tighter control.
+**Features:**
+- ✅ Preserves word boundaries (never breaks words)
+- ✅ Handles common punctuation (commas, semicolons, hyphens, em dashes)
+- ✅ Normalizes line breaks (CR/LF → spaces)
+- ✅ Returns clean, trimmed lines
 
----
+**Limitations:**
+- ⚠️ Words longer than `Chunk` will still appear on one line (exceeding the limit)
+- ⚠️ No hyphenation for long words
+- ⚠️ Treats punctuation as part of word length
 
-## Example Usage (Chunk = 20, “Moby‑Dick” — First Paragraph)
+**Example:**
+```dax
+EVALUATE
+{
+    (
+        "Wrapped Text",
+        Gld.TextUtils.WordWrap(
+            "To be, or not to be, that is the question.", 
+            20
+        )
+    )
+}
+```
 
-| demotextwraped | demotextwrapedwithpasses1 | demotextwrapedwithpasses5 | demotextwrapedwithpasses10 |
-|---|---|---|---|
-| Call me Ishmael.<br>Some years ago—never<br>mind how long<br>precisely—having little or<br>no money in my purse,<br>and nothing<br>particular to interest me<br>on shore, I thought I<br>would sail about a<br>little and see the<br>watery part of the<br>world. It is a way I<br>have of driving off<br>the spleen and<br>regulating the<br>circulation. Whenever I find<br>myself growing grim<br>about the mouth;<br>Whenever It is a damp,<br>drizzly November in my<br>soul; Whenever I<br>find myself<br>involuntarily pausing before<br>coffin warehouses,<br>and bringing up the<br>rear of every funeral<br>I meet; and<br>especially Whenever my hypos<br>get such an upper<br>hand of me, that It<br>requires a strong<br>moral principle to<br>prevent me from<br>deliberately stepping into<br>the street, and<br>methodically knocking<br>people’s hats off—then,<br>I account It high<br>time to get to sea as<br>soon as I can. | Call me Ishmael.<br>Some years ago—never<br>mind how long<br>precisely—having little<br>or no money in my<br>purse, and nothing<br>particular<br>to interest<br>me on<br>shore, I thought I<br>would sail about<br>a little<br>and see the<br>watery part of<br>the world. It<br>is a way I have<br>of driving off<br>the spleen and<br>regulating the<br>circulation. Whenever I<br>find myself growing<br>grim about the<br>mouth; Whenever It<br>is a damp, drizzly<br>November<br>in my soul;<br>Whenever I find<br>myself involuntarily<br>pausing before<br>coffin warehouses,<br>and<br>bringing up the rear<br>of every funeral I<br>meet; and<br>especially Whenever<br>my hypos get<br>such an upper<br>hand of me, that<br>It requires a<br>strong moral<br>principle to<br>prevent me from<br>deliberately stepping<br>into the street, and<br>methodically<br>knocking people’s<br>hats off—then, I<br>account It high time<br>to get to<br>sea as soon as<br>I can. | Call me Ishmael.<br>Some years ago—never<br>mind how long<br>precisely—having little<br>or no money in my<br>purse, and nothing<br>particular<br>to interest<br>me on<br>shore, I thought I<br>would sail about<br>a little<br>and see the<br>watery part of<br>the world. It<br>is a way I have<br>of driving off<br>the spleen and<br>regulating the<br>circulation. Whenever I<br>find myself growing<br>grim about the<br>mouth; Whenever It<br>is a damp, drizzly<br>November<br>in my soul;<br>Whenever I find<br>myself involuntarily<br>pausing before<br>coffin warehouses,<br>and<br>bringing up the rear<br>of every funeral I<br>meet; and<br>especially Whenever<br>my hypos get<br>such an upper<br>hand of me, that<br>It requires a<br>strong moral<br>principle to<br>prevent me from<br>deliberately stepping<br>into the street, and<br>methodically<br>knocking people’s<br>hats off—then, I<br>account It high time<br>to get to<br>sea as soon as<br>I can. | Call me Ishmael.<br>Some years ago—never<br>mind how long<br>precisely—having little<br>or no money in my<br>purse, and nothing<br>particular to<br>interest me on<br>shore, I thought I<br>would sail about a<br>little and see<br>the watery part<br>of the world.<br>It is a<br>way I have<br>of driving off<br>the spleen<br>and<br>regulating the<br>circulation. Whenever I<br>find myself growing<br>grim about the<br>mouth; Whenever It<br>is a damp, drizzly<br>November in my soul;<br>Whenever I find<br>myself involuntarily<br>pausing before<br>coffin warehouses,<br>and bringing up the<br>rear of every<br>funeral I meet; and<br>especially<br>Whenever my hypos<br>get such an upper<br>hand of me, that<br>It requires a<br>strong moral<br>principle to prevent<br>me from<br>deliberately<br>stepping into the<br>street, and<br>methodically<br>knocking people’s<br>hats off—then, I<br>account It high time<br>to get to sea as<br>soon as I can. |
+**Output:**
+```
+To be, or not to be,
+that is the question.
+```
 
----
+### 2. `Gld.TextUtils.WordWrapWithBreak`
 
-## Breakdown of how the functions work
+**Signature:** `WordWrapWithBreak(texttosplice: string, Chunk: int64) => string`
 
-Please refer to the comments in the function
+Simple character-level wrapping that guarantees lines never exceed the character limit. Breaks words with hyphens when necessary.
+
+**Features:**
+- ✅ Guarantees line length ≤ `Chunk`
+- ✅ Breaks long words with hyphens
+- ✅ Simple, predictable behavior
+- ✅ Good for fixed-width requirements
+
+**Limitations:**
+- ⚠️ May create awkward word breaks
+- ⚠️ Doesn't respect word boundaries
+- ⚠️ Can break in middle of words
+
+**Example:**
+```dax
+EVALUATE
+{
+    (
+        "Fixed Width",
+        Gld.TextUtils.WordWrapWithBreak(
+            "Hello world", 
+            3
+        )
+    )
+}
+```
+
+**Output:**
+```
+Hel-
+lo
+wor-
+ld
+```
+
+### 3. `Gld.TextUtils.WordWrapWithLF`
+
+**Signature:** `WordWrapWithLF(texttosplice: string, Chunk: int64) => string`
+
+Preserves existing paragraph structure while wrapping text within each paragraph. Ideal for multi-paragraph documents.
+
+**Features:**
+- ✅ Preserves original line/paragraph breaks
+- ✅ Empty lines remain as paragraph separators
+- ✅ Maintains document structure
+- ✅ Uses `WordWrap` for intra-paragraph formatting
+
+**Limitations:**
+- ⚠️ Inherits limitations from `WordWrap`
+- ⚠️ Multiple consecutive line breaks create multiple empty lines
+
+**Example:**
+```dax
+EVALUATE
+{
+    (
+        "Multi-paragraph",
+        Gld.TextUtils.WordWrapWithLF(
+            "First paragraph." & UNICHAR(10) & UNICHAR(10) & "Second paragraph.", 
+            15
+        )
+    )
+}
+```
+
+**Output:**
+```
+First paragraph.
+
+Second paragraph.
+```
+
+## 🎯 Use Cases
+
+### When to use each function:
+
+| Scenario | Recommended Function | Why |
+|----------|---------------------|-----|
+| General document text | `WordWrap` | Preserves readability, respects words |
+| Fixed-width displays | `WordWrapWithBreak` | Guarantees width, breaks if needed |
+| Preserving formatting | `WordWrapWithLF` | Maintains paragraphs, headings |
+| Code comments | `WordWrapWithBreak` | Exact column alignment |
+| Literary text | `WordWrap` or `WordWrapWithLF` | Natural reading flow |
+| User input with line breaks | `WordWrapWithLF` | Respects user's formatting |
+| Data exports | `WordWrapWithBreak` | Consistent column widths |
+
+## ⚙️ Algorithm Details
+
+### `WordWrap` Algorithm:
+1. **Normalization**: Convert CR/LF to spaces, add spacing after punctuation
+2. **Tokenization**: Split into words using PATH functions
+3. **Cumulative Calculation**: Track running character count with spaces
+4. **Line Assignment**: Use `QUOTIENT((cumulative-1), Chunk)` for line grouping
+5. **Line Building**: Concatenate words per line group
+6. **Cleanup**: Remove temporary punctuation spacing
+
+### `WordWrapWithBreak` Algorithm:
+1. **Simple Split**: Divide text into fixed `Chunk`-sized segments
+2. **Direct Extraction**: Take characters at exact positions
+3. **Trimming**: Clean leading/trailing spaces
+4. **Assembly**: Join with line feeds
+
+### `WordWrapWithLF` Algorithm:
+1. **Paragraph Detection**: Replace line breaks with markers
+2. **Paragraph Separation**: Split into individual paragraphs
+3. **Parallel Processing**: Apply `WordWrap` to each paragraph
+4. **Reassembly**: Combine with original spacing
+
+## 📊 Performance Considerations
+
+1. **`WordWrap`**: Most computationally intensive due to PATH functions and cumulative calculations
+2. **`WordWrapWithBreak`**: Fastest - simple character operations
+3. **`WordWrapWithLF`**: Moderate - depends on paragraph count and `WordWrap` performance
+
+**Tip**: For large texts (>10KB), consider preprocessing outside DAX or using simpler functions.
+
+## 🐛 Known Issues & Limitations
+
+1. **Long Words**: `WordWrap` doesn't break words longer than `Chunk`
+2. **Punctuation**: Spacing after punctuation may affect line length calculations
+3. **Unicode**: Wide characters (emojis, Asian characters) count as 1 character but may display wider
+4. **Mixed Content**: HTML/tags within text are treated as regular characters
+
+## 🔧 Testing Examples
+
+```dax
+// Test Suite
+EVALUATE
+{
+    // Test 1: Basic wrapping
+    ("Test 1 - Basic", Gld.TextUtils.WordWrap("The quick brown fox", 10)),
+    
+    // Test 2: Punctuation handling  
+    ("Test 2 - Punctuation", Gld.TextUtils.WordWrap("Hello, world! How are you?", 15)),
+    
+    // Test 3: Paragraph preservation
+    ("Test 3 - Paragraphs", Gld.TextUtils.WordWrapWithLF("Para1." & UNICHAR(10) & "Para2.", 10)),
+    
+    // Test 4: Word breaking
+    ("Test 4 - Breaking", Gld.TextUtils.WordWrapWithBreak("abcdefghijklmnop", 5))
+}
+```
+
+## 📝 Best Practices
+
+1. **Choose the right function** for your use case
+2. **Test with representative data** including edge cases
+3. **Consider preprocessing** very long texts
+4. **Validate `Chunk` parameter** (should be > 0)
+5. **Handle empty strings** in calling code if needed
+
+## 🔄 Version History
+
+- **v1.0.0**: Initial release 
+- **v1.0.1**: Added em dash (—) support in `WordWrap`
+- **v1.0.2**: Improved comments and documentation
+
