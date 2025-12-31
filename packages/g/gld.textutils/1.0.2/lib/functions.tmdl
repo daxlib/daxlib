@@ -7,7 +7,6 @@
 /// WordsWithGroupInit  : table  — Assigns GroupId = QUOTIENT(Cumulative-1, Chunk).
 /// LinesInitial        : table  — Builds final per-line strings and lengths.
 function 'Gld.TextUtils.WordWrap' = ```
-		
 		(
 		    texttosplice : string,
 		    Chunk        : int64
@@ -132,11 +131,10 @@ function 'Gld.TextUtils.WordWrap' = ```
 		    SUBSTITUTE( ResultText, "- ", "-" )
 		```
 	annotation DAXLIB_PackageId = Gld.TextUtils
-	annotation DAXLIB_PackageVersion = 1.0.1
+	annotation DAXLIB_PackageVersion = 1.0.2
 	
 
 function 'Gld.TextUtils.WordWrapWithBreak' = ```
-		
 		(
 		    texttosplice : string,
 		    Chunk        : int64
@@ -235,7 +233,6 @@ function 'Gld.TextUtils.WordWrapWithBreak' = ```
 /// WordsWithGroupInit  : table — Assigns GroupId with special handling for markers
 /// LinesInitial   : table   — Builds final per-line strings and lengths
 function 'Gld.TextUtils.WordWrapWithLF' = ```
-		
 		(
 		    texttosplice : string,
 		    Chunk        : int64
