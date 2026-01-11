@@ -1,4 +1,4 @@
-DEFINE FUNCTION
+FUNCTION
 
 // this UDF generates the concatenated labels and values for Top and Bottom Performers, with delta value.
 lmolus.TopBottomDelta  = 
