@@ -1,0 +1,175 @@
+
+/// This UDF generate SVG target indicators | target value based on measure reference
+/// Any measures that use this function must have the "DataCategory" property "ImageUrl"
+/// default weight and height is 300 x 60, you can change in in SVG output
+FUNCTION  'lmolus.SVGTargetIndicatorDynamic' =
+
+			 (
+				// type measure that will be evaluated against the target value
+				MeasureToEvaluate : ANYREF EXPR , 
+
+				// type measure with target value or put the static value
+				TargetValue : ANYREF EXPR ,
+
+				// icon color when value is on target eg. "#007c66"
+				IconColortWhenValueOnTarget : STRING VAL , 
+
+				// icon color when value is below target eg. "#ee0d0b"
+				IconColortWhenValueBelowTarget : STRING VAL ,
+
+				// background color when value is on target eg. "#e6f4eb" 
+				BcgColortWhenValueOnTarget : STRING VAL , 
+
+				// bbackground color when value is below target eg. "#f5ebe4" 
+				BcgColortWhenValueBelowTarget : STRING VAL , 
+
+				// text to display when value is on target eg. "On target"
+				TypeTextWhenValueOnTarget : STRING VAL ,
+
+				// text to display when value is below target eg. "Below target"
+				TypeTextWhenValueBelowTarget : STRING VAL 
+
+			 ) =>
+
+				VAR _value = MeasureToEvaluate
+				VAR _target = TargetValue
+
+
+				// build SVG icons (24x24)
+				VAR _on_target_icon = 
+				"<svg viewBox='0 0 24 24' width='20' height='20' xmlns='http://www.w3.org/2000/svg' style='vertical-align: middle;'>
+				<path fill-rule='evenodd' clip-rule='evenodd' 
+						d='M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z' 
+						fill='" & IconColortWhenValueOnTarget & "'/>
+				</svg>"
+
+				VAR _below_target_icon = 
+				"<svg viewBox='0 0 512 512' width='20' height='20' xmlns='http://www.w3.org/2000/svg' style='vertical-align: middle;'>
+				<path d='M246.31 5.63c6.61 3.78 12.09 9.26 15.87 15.88l182.48 319.34c11.69 20.46 4.58 46.52-15.87 58.21-6.45 3.68-13.75 5.61-21.2 5.61H42.67C19.1 404.67 0 385.57 0 362c0-7.43 1.94-14.74 5.62-21.2L188.1 21.51C199.79 1.05 225.85-6.06 246.31 5.63zM224 272c-15.24 0-26.67 11.26-26.67 26.28 0 15.7 11.08 26.97 26.67 26.97s26.67-11.26 26.67-26.62c0-15.36-11.43-26.63-26.67-26.63zm21.33-165.33h-42.67v128h42.67v-128z' 
+						fill='" & IconColortWhenValueBelowTarget & "'/>
+				</svg>"
+				
+
+				// SVG output (300x60)
+				VAR Result = 
+					IF ( 
+						_value >= _target ,
+						"data:image/svg+xml;utf8,
+						<svg xmlns='http://www.w3.org/2000/svg' width='220' height='60'>
+						<foreignObject width='300' height='60'>
+							<div xmlns='http://www.w3.org/1999/xhtml' 
+								style='display: flex; align-items: flex-start; padding-top: 10px; padding-left: 10px; 
+										font-family: Segoe UI, sans-serif; height: 52px;'>
+							<div style='display: inline-flex; align-items: center; background-color:" & BcgColortWhenValueOnTarget & "; color:" & IconColortWhenValueOnTarget & "; 
+										border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; line-height: 1;'>
+								<span style='display: flex; align-items: center; margin-right: 6px;'>" & _on_target_icon & "</span>
+								<span style='position: relative; top: -2.25px;'>" & TypeTextWhenValueOnTarget & "</span>
+							</div>
+							</div>
+						</foreignObject>
+						</svg>" ,
+						
+						"data:image/svg+xml;utf8,
+						<svg xmlns='http://www.w3.org/2000/svg' width='220' height='60'>
+						<foreignObject width='300' height='60'>
+							<div xmlns='http://www.w3.org/1999/xhtml' 
+								style='display: flex; align-items: flex-start; padding-top: 10px; padding-left: 10px; 
+										font-family: Segoe UI, sans-serif; height: 52px;'>
+							<div style='display: inline-flex; align-items: center; background-color:" & BcgColortWhenValueBelowTarget & "; color:" & IconColortWhenValueBelowTarget & "; 
+										border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; line-height: 1;'>
+								<span style='display: flex; align-items: center; margin-right: 6px;'>" & _below_target_icon & "</span>
+								<span style='position: relative; top: -2.25px;'>" & TypeTextWhenValueBelowTarget & "</span>
+							</div>
+							</div>
+						</foreignObject>
+						</svg>"
+					)
+				RETURN
+					Result
+
+
+/// This UDF generate SVG target indicators based on static value, tahta you define manually
+/// Any measures that use this function must have the "DataCategory" property "ImageUrl"
+/// default weight and height is 300 x 60, you can change in in SVG output
+FUNCTION  'lmolus.SVGTargetIndicatorStatic' =
+			 (
+				// type measure that will be evaluated against the target value
+				MeasureToEvaluate : ANYREF EXPR , 
+
+				// type target value eg. 0.7
+				TargetValue : DECIMAL VAL ,
+
+				// icon color when value is on target eg. "#007c66"
+				IconColortWhenValueOnTarget : STRING VAL , 
+
+				// icon color when value is below target eg. "#ee0d0b"
+				IconColortWhenValueBelowTarget : STRING VAL ,
+
+				// background color when value is on target eg. "#e6f4eb" 
+				BcgColortWhenValueOnTarget : STRING VAL , 
+
+				// bbackground color when value is below target eg. "#f5ebe4" 
+				BcgColortWhenValueBelowTarget : STRING VAL , 
+
+				// text to display when value is on target eg. "On target"
+				TypeTextWhenValueOnTarget : STRING VAL ,
+
+				// text to display when value is below target eg. "Below target"
+				TypeTextWhenValueBelowTarget : STRING VAL 
+
+			 ) =>
+
+				VAR _value = MeasureToEvaluate
+
+
+				// build SVG icons (24x24)
+				VAR _on_target_icon = 
+				"<svg viewBox='0 0 24 24' width='20' height='20' xmlns='http://www.w3.org/2000/svg' style='vertical-align: middle;'>
+				<path fill-rule='evenodd' clip-rule='evenodd' 
+						d='M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z' 
+						fill='" & IconColortWhenValueOnTarget & "'/>
+				</svg>"
+
+				VAR _below_target_icon = 
+				"<svg viewBox='0 0 512 512' width='20' height='20' xmlns='http://www.w3.org/2000/svg' style='vertical-align: middle;'>
+				<path d='M246.31 5.63c6.61 3.78 12.09 9.26 15.87 15.88l182.48 319.34c11.69 20.46 4.58 46.52-15.87 58.21-6.45 3.68-13.75 5.61-21.2 5.61H42.67C19.1 404.67 0 385.57 0 362c0-7.43 1.94-14.74 5.62-21.2L188.1 21.51C199.79 1.05 225.85-6.06 246.31 5.63zM224 272c-15.24 0-26.67 11.26-26.67 26.28 0 15.7 11.08 26.97 26.67 26.97s26.67-11.26 26.67-26.62c0-15.36-11.43-26.63-26.67-26.63zm21.33-165.33h-42.67v128h42.67v-128z' 
+						fill='" & IconColortWhenValueBelowTarget & "'/>
+				</svg>"
+
+
+				// SVG output (300x60)
+				VAR Result = 
+					IF ( 
+						_value >= TargetValue ,
+						"data:image/svg+xml;utf8,
+						<svg xmlns='http://www.w3.org/2000/svg' width='220' height='60'>
+						<foreignObject width='300' height='60'>
+							<div xmlns='http://www.w3.org/1999/xhtml' 
+								style='display: flex; align-items: flex-start; padding-top: 10px; padding-left: 10px; 
+										font-family: Segoe UI, sans-serif; height: 52px;'>
+							<div style='display: inline-flex; align-items: center; background-color:" & BcgColortWhenValueOnTarget & "; color:" & IconColortWhenValueOnTarget & "; 
+										border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; line-height: 1;'>
+								<span style='display: flex; align-items: center; margin-right: 6px;'>" & _on_target_icon & "</span>
+								<span style='position: relative; top: -2.25px;'>" & TypeTextWhenValueOnTarget & "</span>
+							</div>
+							</div>
+						</foreignObject>
+						</svg>" ,
+						
+						"data:image/svg+xml;utf8,
+						<svg xmlns='http://www.w3.org/2000/svg' width='220' height='60'>
+						<foreignObject width='300' height='60'>
+							<div xmlns='http://www.w3.org/1999/xhtml' 
+								style='display: flex; align-items: flex-start; padding-top: 10px; padding-left: 10px; 
+										font-family: Segoe UI, sans-serif; height: 52px;'>
+							<div style='display: inline-flex; align-items: center; background-color:" & BcgColortWhenValueBelowTarget & "; color:" & IconColortWhenValueBelowTarget & "; 
+										border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; line-height: 1;'>
+								<span style='display: flex; align-items: center; margin-right: 6px;'>" & _below_target_icon & "</span>
+								<span style='position: relative; top: -2.25px;'>" & TypeTextWhenValueBelowTarget & "</span>
+							</div>
+							</div>
+						</foreignObject>
+						</svg>"
+					)
+				RETURN
+					Result
