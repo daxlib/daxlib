@@ -1,5 +1,5 @@
 /// this UDF generates the concatenated labels and values for Top and Bottom Performers, with delta value.
-FUNCTION 'lmolus.TopBottomDelta' = 
+FUNCTION 'lmolus.TopBottomDelta.ComputeTopBottomDelta' = 
 		( 
 			// Type column name to evaluate - it will be also be used as labels
 			ColumnReference :  ANYREF EXPR ,
