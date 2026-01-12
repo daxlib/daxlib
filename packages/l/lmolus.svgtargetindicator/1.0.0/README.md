@@ -57,7 +57,7 @@ Measure = lmolus.SVGTargetIndicatorDynamicTargetValue (
 
 ➡️ Table
 
-<img width="700" height="327" alt="image" src="https://raw.githubusercontent.com/lukaszmolus/dax.udf/main/SVGTargetInidicator/Images/SVGTargetIndicator_table.png" /></br>
+<img width="700" height="331" alt="image" src="https://raw.githubusercontent.com/lukaszmolus/dax.udf/main/SVGTargetInidicator/Images/SVGTargetIndicator_table.png" /></br>
 
 ---
 
