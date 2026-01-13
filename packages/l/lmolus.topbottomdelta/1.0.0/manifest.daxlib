@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "lmolus.TopBottomDelta",
+  "version": "1.0.0",
+  "authors": "Lukasz Molus",
+  "description": "This function generates the concatenated labels and values for Top and Bottom Performers, with delta value.",
+  "tags": "DAX,UDF,FORMAT,VISUALIZATION",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/l/lmolus.topbottomdelta",
+  "releaseNotes": "Initial release of TopBottomDelta UDF.",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
