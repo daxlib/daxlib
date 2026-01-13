@@ -38,14 +38,14 @@ Author: [Lukasz Molus](linkedin.com/in/łukasz-molus-386265264)
 
 ```dax
 Measure = lmolus.SVGTargetIndicatorDynamicTargetValue ( 
-    [Margin %],                     -- ColumnReference
-    [Margin % target],              -- MeasureWithTargetReference
+    [Margin %],                   -- ColumnReference
+    [Margin % target],            -- MeasureWithTargetReference
     "#007c66",                    -- IconColortWhenValueOnTarget
     "#ee0d0b",                    -- IconColortWhenValueBelowTarget
     "#e6f4eb",                    -- BcgColortWhenValueOnTarget
     "#f5ebe4",                    -- BcgColortWhenValueBelowTarget
-    "On target",                    -- TextWhenValueOnTarget
-    "Below target"                  -- TextWhenValueBelowTarget
+    "On target",                  -- TextWhenValueOnTarget
+    "Below target"                -- TextWhenValueBelowTarget
 )
 ```
 
