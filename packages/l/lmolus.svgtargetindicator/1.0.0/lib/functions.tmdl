@@ -1,7 +1,7 @@
 /// This UDF generate SVG target indicators | target value based on measure reference
 /// Any measures that use this function must have the "DataCategory" property "ImageUrl"
 /// default weight and height is 300 x 60, you can change in in SVG output
-FUNCTION  'lmolus.SVGTargetIndicatorDynamicTargatValue' =
+FUNCTION  'lmolus.SVGTargetIndicator.DynamicTargatValue' =
 
 			 (
 				// type measure that will be evaluated against the target value
@@ -93,7 +93,7 @@ FUNCTION  'lmolus.SVGTargetIndicatorDynamicTargatValue' =
 /// This UDF generate SVG target indicators based on static value, tahta you define manually
 /// Any measures that use this function must have the "DataCategory" property "ImageUrl"
 /// default weight and height is 300 x 60, you can change in in SVG output
-FUNCTION  'lmolus.SVGTargetIndicatorStaticTargetValue' =
+FUNCTION  'lmolus.SVGTargetIndicator.StaticTargetValue' =
 			 (
 				// type measure that will be evaluated against the target value
 				MeasureToEvaluate : ANYREF EXPR , 
