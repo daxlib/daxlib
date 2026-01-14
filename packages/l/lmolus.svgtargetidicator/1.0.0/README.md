@@ -7,7 +7,7 @@
 ℹ️ Any measures that use this function must have the "DataCategory" property = "ImageUrl".
 
 
-Author: [Lukasz Molus](linkedin.com/in/łukasz-molus-386265264)
+Author: [Lukasz Molus](https://www.linkedin.com/in/%C5%82ukasz-molus-386265264/)
 
 ---
 
