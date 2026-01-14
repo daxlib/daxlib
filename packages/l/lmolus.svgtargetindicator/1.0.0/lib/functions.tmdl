@@ -86,7 +86,7 @@ FUNCTION  'lmolus.SVGTargetIndicator.DynamicTargetValue' =
 				RETURN
 					Result
 
-		annotation DAXLIB_PackageId = lmolus.SvgTargetIndicator
+		annotation DAXLIB_PackageId = lmolus.SVGTargetIndicator
 
 		annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -176,6 +176,6 @@ FUNCTION  'lmolus.SVGTargetIndicator.StaticTargetValue' =
 				RETURN
 					Result
 
-		annotation DAXLIB_PackageId = lmolus.SvgTargetIndicator
+		annotation DAXLIB_PackageId = lmolus.SVGTargetIndicator
 
 		annotation DAXLIB_PackageVersion = 1.0.0
