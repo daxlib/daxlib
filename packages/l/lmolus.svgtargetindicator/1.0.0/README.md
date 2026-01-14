@@ -37,7 +37,7 @@ Author: [Lukasz Molus](https://www.linkedin.com/in/%C5%82ukasz-molus-386265264/)
 ## Usage example (Contoso 10M Model)
 
 ```dax
-Measure = lmolus.SVGTargetIndicatorDynamicTargetValue ( 
+Measure = lmolus.SVGTargetIndicator.DynamicTargetValue ( 
     [Margin %],                   -- ColumnReference
     [Margin % target],            -- MeasureWithTargetReference
     "#007c66",                    -- IconColortWhenValueOnTarget
