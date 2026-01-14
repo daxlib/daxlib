@@ -5,7 +5,7 @@
 🔥Moreover, this approach will allow you to show not only the values, but also the labels within the measure!
 
 
-Author: [Lukasz Molus](linkedin.com/in/łukasz-molus-386265264)
+Author: [Lukasz Molus](https://www.linkedin.com/in/%C5%82ukasz-molus-386265264/)
 
 ---
 
@@ -23,7 +23,7 @@ Author: [Lukasz Molus](linkedin.com/in/łukasz-molus-386265264)
 
 *   **ColumnReference:** - ANYREF EXPR - Type column name to evaluate (it will be also be used as labels);
 *   **MeasureToEvaluate:** - ANYREF EXPR - Type measure that will be evaluated against column reference;
-*   **FormatTypeForDeltaValue:** - STRING VAL - In what format results for delta sholud be displayed eg. "0.0%", "#,##0,.0K", etc.
+*   **FormatTypeForDeltaValue:** - STRING VAL - In what format results for delta should be displayed eg. "0.0%", "#,##0,.0K", etc.
 
 ℹ️ You can also change the culture of format in the funcrion code.
 
