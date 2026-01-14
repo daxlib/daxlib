@@ -1,4 +1,4 @@
-# About lmolus.SVGTargetInidicator
+# About lmolus.SVGTargetIndicator
 
 💡 SVGTargetInidicator - set of two functions, that will allow you to show SVG target indicators based on measure reference or static value. 
 
