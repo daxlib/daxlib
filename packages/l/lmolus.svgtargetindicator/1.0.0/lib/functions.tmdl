@@ -86,6 +86,9 @@ FUNCTION  'lmolus.SVGTargetIndicatorDynamicTargatValue' =
 				RETURN
 					Result
 
+			annotation DAXLIB_PackageId = lmolus.SvgTargetIndicator
+
+			annotation DAXLIB_PackageVersion = 1.0.0
 
 /// This UDF generate SVG target indicators based on static value, tahta you define manually
 /// Any measures that use this function must have the "DataCategory" property "ImageUrl"
