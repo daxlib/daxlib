@@ -1,304 +1,304 @@
-	/// default for the MaxNumberofElements
-	function 'SavoryData.Selection2List.Config_MaxNumberOfElements' =
-	        () => 
-			3
+/// default for the MaxNumberofElements
+function 'SavoryData.Selection2List.Config_MaxNumberOfElements' =
+        () => 
+		3
 
-	/// default for the TextColumnName
-	function 'SavoryData.Selection2List.Config_TextColumnName' =
-	        () => 
-			BLANK()
+/// default for the TextColumnName
+function 'SavoryData.Selection2List.Config_TextColumnName' =
+        () => 
+		BLANK()
 
-	/// default for the DateFormat
-	function 'SavoryData.Selection2List.Config_DateFormat' =
-	        () => 
-			"YYYY-MM-DD"
+/// default for the DateFormat
+function 'SavoryData.Selection2List.Config_DateFormat' =
+        () => 
+		"YYYY-MM-DD"
 
-	/// returns list of selected text values, MaxNumberOfElements and TextColumName are accepted as a parameter
-	function 'SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName' =
-	        (pTextColumn : ANYREF EXPR, pMaxNumberOfElements : VAL, pAllTextColumnName : VAL) => 
-	        	VAR vCountOfSelection = COUNTROWS(VALUES(pTextColumn))
-	        	VAR vBeyondLimit = vCountOfSelection > pMaxNumberOfElements
-				VAR vMaxNumberOfElements = COALESCE(pMaxNumberOfElements, SavoryData.Selection2List.Config_MaxNumberOfElements())
-	        	VAR Result =
-	        		SWITCH(
-	        			TRUE(),
-	        			NOT(ISCROSSFILTERED(pTextColumn)),   // all
-							COALESCE(pAllTextColumnName, SavoryData.Selection2List.Config_TextColumnName(), "All " & NAMEOF(pTextColumn), pAllTextColumnName), 
-	        			vCountOfSelection = 1,               // only 1
-							CONVERT(VALUES(pTextColumn), TEXT), 
-	        			vCountOfSelection = 2,               // only 2
-							CONCATENATEX(VALUES(pTextColumn), CONVERT(pTextColumn, TEXT), " & "), 
-	        			vBeyondLimit,                        // beyond limit
-	        				CONCATENATEX(TOPN(vMaxNumberOfElements, VALUES(pTextColumn)), CONVERT(pTextColumn, TEXT), ", ") & ", ...", 
-	        			SELECTEDVALUE(                      // below limit
-	        				pTextColumn, 
-	        				CONCATENATEX(VALUES(pTextColumn), CONVERT(pTextColumn, TEXT), ", ") 
-						)
-	        		)
-					
-	        	RETURN CONVERT(Result, TEXT) 
-					
-	
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
-
-	/// returns list of selected text values, only MaxNumberOfElements is accepted as a parameter
-	function 'SavoryData.Selection2List.Text2List_MaxNumberOfElements' =
-	        (pTextColumn : ANYREF EXPR, pMaxNumberOfElements : VAL) =>
-				VAR vTextColumnName = BLANK()
-				RETURN 
-				SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName(pTextColumn, pMaxNumberOfElements, vTextColumnName)
-
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
-
-	/// returns list of selected text values, only TextColumName is  accepted as a parameter
-	function 'SavoryData.Selection2List.Text2List_TextColumnName' =
-	        (pTextColumn : ANYREF EXPR, pTextColumnName : VAL) =>
-				VAR vMaxNumberOfElements = BLANK()
-				RETURN 
-				SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName(pTextColumn, vMaxNumberOfElements, pTextColumnName)
-
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
-
-	/// returns list of selected text values, uses the defaults for MaxNumberOfElements and TextColumName
-	function 'SavoryData.Selection2List.Text2List' =
-	        (pTextColumn : ANYREF EXPR) =>
-				VAR vMaxNumberOfElements = BLANK()
-				VAR vTextColumnName = BLANK()
-				RETURN 
-				SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName(pTextColumn, vMaxNumberOfElements, vTextColumnName)
-
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
-
-	/// returns list of selected dates/months/years
-	function 'SavoryData.Selection2List.Date2List' =
-	        (pYear : ANYREF EXPR, pMonth : ANYREF EXPR, pDate : ANYREF EXPR) =>
-	        	--VAR Limit = 3
-				--VAR LimitDates = Limit
-				--VAR LimitMonths = Limit
-				--VAR LimitYears = Limit
-				VAR vSelectedDates = VALUES(pDate)
-				VAR vSelectedMonths = VALUES(pMonth)
-				VAR vSelectedYears = VALUES(pYear)
-	        	VAR vCountOfDates = COUNTROWS(vSelectedDates)
-	        	VAR vCountOfMonths = COUNTROWS(vSelectedMonths)
-	        	VAR vCountOfYears = COUNTROWS(vSelectedYears)
-				VAR vCountOfAllYears = COUNTROWS(ALL(pYear))
-				VAR vCountOfDatesInMonths = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedMonths)
-				VAR vCountOfDatesInYears = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedYears)
-				VAR vCountOfMonthsInYears = CALCULATE(COUNTROWS(VALUES(pMonth)), ALL(pMonth), vSelectedYears)
-				VAR vMinDate = MIN(pDate)
-				VAR vMaxDate = MAX(pDate)
-				VAR vMinMonth = MIN(pMonth)
-				VAR vMaxMonth = MAX(pMonth)
-				VAR vMinYear = MIN(pYear)
-				VAR vMaxYear = MAX(pYear)
-				VAR vCountDateRange = CALCULATE(COUNTROWS(VALUES(pDate)), FILTER(ALL(pDate), pDate >= vMinDate && pDate <= vMaxDate))
-				VAR vCountMonthRange = CALCULATE(COUNTROWS(VALUES(pMonth)), FILTER(ALL(pMonth), pMonth >= vMinMonth && pMonth <= vMaxMonth))
-				VAR vCountYearRange = CALCULATE(COUNTROWS(VALUES(pYear)), FILTER(ALL(pYear), pYear >= vMinYear && pYear <= vMaxYear))
-				VAR vDateRangeText = FORMAT(vMinDate, SavoryData.Selection2List.Config_DateFormat()) & " - " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat())
-				VAR vMonthRangeText = vMinMonth & " - " & vMaxMonth
-				VAR vYearRangeText = vMinYear & " - " & vMaxYear
-	        	--VAR vBeyondLimitDates = vCountOfDates > Limit
-	        	--VAR vBeyondLimitMonths = vCountOfMonths > Limit
-	        	--VAR vBeyondLimitYears = vCountOfYears > Limit
-	        	
-				VAR Result =
-	        		SWITCH(
-	        			TRUE(),
-						vCountOfDates = 1,
-							FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()),
-						vCountOfDates = 2,
-							FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()) & " & " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat()), 
-						vCountOfDates < vCountOfDatesInMonths && vCountOfDates = vCountDateRange, // Certain days in a row are selected
-							vDateRangeText,
-						vCountOfDates < vCountOfDatesInMonths, // Certain independent days are selected
-							SavoryData.Selection2List.Text2List(pDate),
-						vCountOfMonths = 1,
-							CONVERT(vMinMonth, TEXT),
-						vCountOfMonths = 2,
-							vMinMonth & " & " & vMaxMonth,
-						vCountOfMonths < vCountOfMonthsInYears && vCountOfMonths = vCountMonthRange, // Certain months in a row are selected
-							vMonthRangeText,
-						vCountOfMonths < vCountOfMonthsInYears, // Certain independent months are selected
-							SavoryData.Selection2List.Text2List(pMonth),
-						vCountOfYears = 1,
-							CONVERT(vMinYear, TEXT),
-						vCountOfYears = 2,
-							vMinYear & " & " & vMaxYear,
-						vCountOfYears = vCountOfAllYears, // all years
-							"All Years",
-						vCountOfYears = vCountYearRange, // years in a row are selected
-							vYearRangeText,
-						SavoryData.Selection2List.Text2List(pYear)
-	        		)
+/// returns list of selected text values, MaxNumberOfElements and TextColumName are accepted as a parameter
+function 'SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName' =
+        (pTextColumn : ANYREF EXPR, pMaxNumberOfElements : VAL, pAllTextColumnName : VAL) => 
+        	VAR vCountOfSelection = COUNTROWS(VALUES(pTextColumn))
+        	VAR vBeyondLimit = vCountOfSelection > pMaxNumberOfElements
+			VAR vMaxNumberOfElements = COALESCE(pMaxNumberOfElements, SavoryData.Selection2List.Config_MaxNumberOfElements())
+        	VAR Result =
+        		SWITCH(
+        			TRUE(),
+        			NOT(ISCROSSFILTERED(pTextColumn)),   // all
+						COALESCE(pAllTextColumnName, SavoryData.Selection2List.Config_TextColumnName(), "All " & NAMEOF(pTextColumn), pAllTextColumnName), 
+        			vCountOfSelection = 1,               // only 1
+						CONVERT(VALUES(pTextColumn), TEXT), 
+        			vCountOfSelection = 2,               // only 2
+						CONCATENATEX(VALUES(pTextColumn), CONVERT(pTextColumn, TEXT), " & "), 
+        			vBeyondLimit,                        // beyond limit
+        				CONCATENATEX(TOPN(vMaxNumberOfElements, VALUES(pTextColumn)), CONVERT(pTextColumn, TEXT), ", ") & ", ...", 
+        			SELECTEDVALUE(                      // below limit
+        				pTextColumn, 
+        				CONCATENATEX(VALUES(pTextColumn), CONVERT(pTextColumn, TEXT), ", ") 
+					)
+        		)
 				
-	        	RETURN 
-					Result
-	
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
-
-	/// returns list of selected years/quarters/months/days
-	function 'SavoryData.Selection2List.YQMD2List' =
-	        (pYear : ANYREF EXPR, pQuarter : ANYREF EXPR, pMonth : ANYREF EXPR, pDate : ANYREF EXPR) =>
-	        	--VAR Limit = 3
-				--VAR LimitDates = Limit
-				--VAR LimitMonths = Limit
-				--VAR LimitYears = Limit
-				VAR vSelectedDates = VALUES(pDate)
-				VAR vSelectedMonths = VALUES(pMonth)
-				VAR vSelectedQuarters = VALUES(pQuarter)
-				VAR vSelectedYears = VALUES(pYear)
-	        	VAR vCountOfDates = COUNTROWS(vSelectedDates)
-	        	VAR vCountOfMonths = COUNTROWS(vSelectedMonths)
-	        	VAR vCountOfQuarters = COUNTROWS(vSelectedQuarters)
-	        	VAR vCountOfYears = COUNTROWS(vSelectedYears)
-				VAR vCountOfAllYears = COUNTROWS(ALL(pYear))
-				VAR vCountOfDatesInMonths = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedMonths)
-				VAR vCountOfDatesInYears = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedYears)
-				VAR vCountOfMonthsInQuarters = CALCULATE(COUNTROWS(VALUES(pMonth)), ALL(pMonth), vSelectedQuarters)
-				VAR vCountOfMonthsInYears = CALCULATE(COUNTROWS(VALUES(pMonth)), ALL(pMonth), vSelectedYears)
-				VAR vCountOfQuartersInYears = CALCULATE(COUNTROWS(VALUES(pQuarter)), ALL(pQuarter), vSelectedYears)
-				VAR vMinDate = MIN(pDate)
-				VAR vMaxDate = MAX(pDate)
-				VAR vMinMonth = MIN(pMonth)
-				VAR vMaxMonth = MAX(pMonth)
-				VAR vMinQuarter = MIN(pQuarter)
-				VAR vMaxQuarter = MAX(pQuarter)
-				VAR vMinYear = MIN(pYear)
-				VAR vMaxYear = MAX(pYear)
-				VAR vCountDateRange = CALCULATE(COUNTROWS(VALUES(pDate)), FILTER(ALL(pDate), pDate >= vMinDate && pDate <= vMaxDate))
-				VAR vCountMonthRange = CALCULATE(COUNTROWS(VALUES(pMonth)), FILTER(ALL(pMonth), pMonth >= vMinMonth && pMonth <= vMaxMonth))
-				VAR vCountQuarterRange = CALCULATE(COUNTROWS(VALUES(pQuarter)), FILTER(ALL(pQuarter), pQuarter >= vMinQuarter && pQuarter <= vMaxQuarter))
-				VAR vCountYearRange = CALCULATE(COUNTROWS(VALUES(pYear)), FILTER(ALL(pYear), pYear >= vMinYear && pYear <= vMaxYear))
-				VAR vDateRangeText = FORMAT(vMinDate, SavoryData.Selection2List.Config_DateFormat()) & " - " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat())
-				VAR vMonthRangeText = vMinMonth & " - " & vMaxMonth
-				VAR vQuarterRangeText = vMinQuarter & " - " & vMaxQuarter
-				VAR vYearRangeText = vMinYear & " - " & vMaxYear
-	        	--VAR vBeyondLimitDates = vCountOfDates > Limit
-	        	--VAR vBeyondLimitMonths = vCountOfMonths > Limit
-	        	--VAR vBeyondLimitYears = vCountOfYears > Limit
-	        	
-				VAR Result =
-	        		SWITCH(
-	        			TRUE(),
-						vCountOfDates = 1,
-							FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()),
-						vCountOfDates = 2,
-							FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()) & " & " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat()), 
-						vCountOfDates < vCountOfDatesInMonths && vCountOfDates = vCountDateRange, // Certain days in a row are selected
-							vDateRangeText,
-						vCountOfDates < vCountOfDatesInMonths, // Certain independent days are selected
-							SavoryData.Selection2List.Text2List(pDate),
-						vCountOfMonths = 1,
-							CONVERT(vMinMonth, TEXT),
-						vCountOfMonths = 2,
-							vMinMonth & " & " & vMaxMonth,
-						vCountOfMonths < vCountOfMonthsInQuarters && vCountOfMonths = vCountMonthRange, // Certain months in a row are selected
-							vMonthRangeText,
-						vCountOfMonths < vCountOfMonthsInQuarters, // Certain independent months are selected
-							SavoryData.Selection2List.Text2List(pMonth),
-						vCountOfQuarters = 1,
-							CONVERT(vMinQuarter, TEXT),
-						vCountOfQuarters = 2,
-							vMinQuarter & " & " & vMaxQuarter,
-						vCountOfQuarters < vCountOfQuartersInYears && vCountOfQuarters = vCountQuarterRange, // Certain months in a row are selected
-							vQuarterRangeText,
-						vCountOfQuarters < vCountOfQuartersInYears, // Certain independent months are selected
-							SavoryData.Selection2List.Text2List(pQuarter),
-						vCountOfYears = 1,
-							CONVERT(vMinYear, TEXT),
-						vCountOfYears = 2,
-							vMinYear & " & " & vMaxYear,
-						vCountOfYears = vCountOfAllYears, // all years
-							"All Years",
-						vCountOfYears = vCountYearRange, // years in a row are selected
-							vYearRangeText,
-						SavoryData.Selection2List.Text2List(pYear)
-	        		)
+        	RETURN CONVERT(Result, TEXT) 
 				
-	        	RETURN 
-					Result
-					//CONVERT(vCountOfQuarters,TEXT)
-	
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
 
-	/// returns list of selected years/weeks/days
-	function 'SavoryData.Selection2List.YWD2List' =
-	        (pYear : ANYREF EXPR, pWeek : ANYREF EXPR, pDate : ANYREF EXPR) =>
-	        	--VAR Limit = 3
-				--VAR LimitDates = Limit
-				--VAR LimitMonths = Limit
-				--VAR LimitYears = Limit
-				VAR vSelectedDates = VALUES(pDate)
-				VAR vSelectedWeeks = VALUES(pWeek)
-				VAR vSelectedYears = VALUES(pYear)
-	        	VAR vCountOfDates = COUNTROWS(vSelectedDates)
-	        	VAR vCountOfWeeks = COUNTROWS(vSelectedWeeks)
-	        	VAR vCountOfYears = COUNTROWS(vSelectedYears)
-				VAR vCountOfAllYears = COUNTROWS(ALL(pYear))
-				VAR vCountOfDatesInWeeks = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedWeeks)
-				VAR vCountOfWeeksInYears = CALCULATE(COUNTROWS(VALUES(pWeek)), ALL(pWeek), vSelectedYears)
-				VAR vMinDate = MIN(pDate)
-				VAR vMaxDate = MAX(pDate)
-				VAR vMinWeek = MIN(pWeek)
-				VAR vMaxWeek = MAX(pWeek)
-				VAR vMinYear = MIN(pYear)
-				VAR vMaxYear = MAX(pYear)
-				VAR vCountDateRange = CALCULATE(COUNTROWS(VALUES(pDate)), FILTER(ALL(pDate), pDate >= vMinDate && pDate <= vMaxDate))
-				VAR vCountWeekRange = CALCULATE(COUNTROWS(VALUES(pWeek)), FILTER(ALL(pWeek), pWeek >= vMinWeek && pWeek <= vMaxWeek))
-				VAR vCountYearRange = CALCULATE(COUNTROWS(VALUES(pYear)), FILTER(ALL(pYear), pYear >= vMinYear && pYear <= vMaxYear))
-				VAR vDateRangeText = FORMAT(vMinDate, SavoryData.Selection2List.Config_DateFormat()) & " - " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat())
-				VAR vWeekRangeText = vMinWeek & " - " & vMaxWeek
-				VAR vYearRangeText = vMinYear & " - " & vMaxYear
-	        	--VAR vBeyondLimitDates = vCountOfDates > Limit
-	        	--VAR vBeyondLimitMonths = vCountOfMonths > Limit
-	        	--VAR vBeyondLimitYears = vCountOfYears > Limit
-	        	
-				VAR Result =
-	        		SWITCH(
-	        			TRUE(),
-						vCountOfDates = 1,
-							FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()),
-						vCountOfDates = 2,
-							FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()) & " & " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat()), 
-						vCountOfDates < vCountOfDatesInWeeks && vCountOfDates = vCountDateRange, // Certain days in a row are selected
-							vDateRangeText,
-						vCountOfDates < vCountOfDatesInWeeks, // Certain independent days are selected
-							SavoryData.Selection2List.Text2List(pDate),
-						vCountOfWeeks = 1,
-							CONVERT(vMinWeek, TEXT),
-						vCountOfWeeks = 2,
-							vMinWeek & " & " & vMaxWeek,
-						vCountOfWeeks < vCountOfWeeksInYears && vCountOfWeeks = vCountWeekRange, // Certain months in a row are selected
-							vWeekRangeText,
-						vCountOfWeeks < vCountOfWeeksInYears, // Certain independent months are selected
-							SavoryData.Selection2List.Text2List(pWeek),
-						vCountOfYears = 1,
-							CONVERT(vMinYear, TEXT),
-						vCountOfYears = 2,
-							vMinYear & " & " & vMaxYear,
-						vCountOfYears = vCountOfAllYears, // all years
-							"All Years",
-						vCountOfYears = vCountYearRange, // years in a row are selected
-							vYearRangeText,
-						SavoryData.Selection2List.Text2List(pYear)
-	        		)
-				
-	        	RETURN 
-					Result
-	
-	    annotation DAXLIB_PackageId = SavoryData.Selection2List
-	
-	    annotation DAXLIB_PackageVersion = 0.1.2-beta
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// returns list of selected text values, only MaxNumberOfElements is accepted as a parameter
+function 'SavoryData.Selection2List.Text2List_MaxNumberOfElements' =
+        (pTextColumn : ANYREF EXPR, pMaxNumberOfElements : VAL) =>
+			VAR vTextColumnName = BLANK()
+			RETURN 
+			SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName(pTextColumn, pMaxNumberOfElements, vTextColumnName)
+
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// returns list of selected text values, only TextColumName is  accepted as a parameter
+function 'SavoryData.Selection2List.Text2List_TextColumnName' =
+        (pTextColumn : ANYREF EXPR, pTextColumnName : VAL) =>
+			VAR vMaxNumberOfElements = BLANK()
+			RETURN 
+			SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName(pTextColumn, vMaxNumberOfElements, pTextColumnName)
+
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// returns list of selected text values, uses the defaults for MaxNumberOfElements and TextColumName
+function 'SavoryData.Selection2List.Text2List' =
+        (pTextColumn : ANYREF EXPR) =>
+			VAR vMaxNumberOfElements = BLANK()
+			VAR vTextColumnName = BLANK()
+			RETURN 
+			SavoryData.Selection2List.Text2List_MaxNumberOfElements_TextColumnName(pTextColumn, vMaxNumberOfElements, vTextColumnName)
+
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// returns list of selected dates/months/years
+function 'SavoryData.Selection2List.Date2List' =
+        (pYear : ANYREF EXPR, pMonth : ANYREF EXPR, pDate : ANYREF EXPR) =>
+        	--VAR Limit = 3
+			--VAR LimitDates = Limit
+			--VAR LimitMonths = Limit
+			--VAR LimitYears = Limit
+			VAR vSelectedDates = VALUES(pDate)
+			VAR vSelectedMonths = VALUES(pMonth)
+			VAR vSelectedYears = VALUES(pYear)
+        	VAR vCountOfDates = COUNTROWS(vSelectedDates)
+        	VAR vCountOfMonths = COUNTROWS(vSelectedMonths)
+        	VAR vCountOfYears = COUNTROWS(vSelectedYears)
+			VAR vCountOfAllYears = COUNTROWS(ALL(pYear))
+			VAR vCountOfDatesInMonths = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedMonths)
+			VAR vCountOfDatesInYears = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedYears)
+			VAR vCountOfMonthsInYears = CALCULATE(COUNTROWS(VALUES(pMonth)), ALL(pMonth), vSelectedYears)
+			VAR vMinDate = MIN(pDate)
+			VAR vMaxDate = MAX(pDate)
+			VAR vMinMonth = MIN(pMonth)
+			VAR vMaxMonth = MAX(pMonth)
+			VAR vMinYear = MIN(pYear)
+			VAR vMaxYear = MAX(pYear)
+			VAR vCountDateRange = CALCULATE(COUNTROWS(VALUES(pDate)), FILTER(ALL(pDate), pDate >= vMinDate && pDate <= vMaxDate))
+			VAR vCountMonthRange = CALCULATE(COUNTROWS(VALUES(pMonth)), FILTER(ALL(pMonth), pMonth >= vMinMonth && pMonth <= vMaxMonth))
+			VAR vCountYearRange = CALCULATE(COUNTROWS(VALUES(pYear)), FILTER(ALL(pYear), pYear >= vMinYear && pYear <= vMaxYear))
+			VAR vDateRangeText = FORMAT(vMinDate, SavoryData.Selection2List.Config_DateFormat()) & " - " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat())
+			VAR vMonthRangeText = vMinMonth & " - " & vMaxMonth
+			VAR vYearRangeText = vMinYear & " - " & vMaxYear
+        	--VAR vBeyondLimitDates = vCountOfDates > Limit
+        	--VAR vBeyondLimitMonths = vCountOfMonths > Limit
+        	--VAR vBeyondLimitYears = vCountOfYears > Limit
+        	
+			VAR Result =
+        		SWITCH(
+        			TRUE(),
+					vCountOfDates = 1,
+						FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()),
+					vCountOfDates = 2,
+						FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()) & " & " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat()), 
+					vCountOfDates < vCountOfDatesInMonths && vCountOfDates = vCountDateRange, // Certain days in a row are selected
+						vDateRangeText,
+					vCountOfDates < vCountOfDatesInMonths, // Certain independent days are selected
+						SavoryData.Selection2List.Text2List(pDate),
+					vCountOfMonths = 1,
+						CONVERT(vMinMonth, TEXT),
+					vCountOfMonths = 2,
+						vMinMonth & " & " & vMaxMonth,
+					vCountOfMonths < vCountOfMonthsInYears && vCountOfMonths = vCountMonthRange, // Certain months in a row are selected
+						vMonthRangeText,
+					vCountOfMonths < vCountOfMonthsInYears, // Certain independent months are selected
+						SavoryData.Selection2List.Text2List(pMonth),
+					vCountOfYears = 1,
+						CONVERT(vMinYear, TEXT),
+					vCountOfYears = 2,
+						vMinYear & " & " & vMaxYear,
+					vCountOfYears = vCountOfAllYears, // all years
+						"All Years",
+					vCountOfYears = vCountYearRange, // years in a row are selected
+						vYearRangeText,
+					SavoryData.Selection2List.Text2List(pYear)
+        		)
+			
+        	RETURN 
+				Result
+
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// returns list of selected years/quarters/months/days
+function 'SavoryData.Selection2List.YQMD2List' =
+        (pYear : ANYREF EXPR, pQuarter : ANYREF EXPR, pMonth : ANYREF EXPR, pDate : ANYREF EXPR) =>
+        	--VAR Limit = 3
+			--VAR LimitDates = Limit
+			--VAR LimitMonths = Limit
+			--VAR LimitYears = Limit
+			VAR vSelectedDates = VALUES(pDate)
+			VAR vSelectedMonths = VALUES(pMonth)
+			VAR vSelectedQuarters = VALUES(pQuarter)
+			VAR vSelectedYears = VALUES(pYear)
+        	VAR vCountOfDates = COUNTROWS(vSelectedDates)
+        	VAR vCountOfMonths = COUNTROWS(vSelectedMonths)
+        	VAR vCountOfQuarters = COUNTROWS(vSelectedQuarters)
+        	VAR vCountOfYears = COUNTROWS(vSelectedYears)
+			VAR vCountOfAllYears = COUNTROWS(ALL(pYear))
+			VAR vCountOfDatesInMonths = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedMonths)
+			VAR vCountOfDatesInYears = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedYears)
+			VAR vCountOfMonthsInQuarters = CALCULATE(COUNTROWS(VALUES(pMonth)), ALL(pMonth), vSelectedQuarters)
+			VAR vCountOfMonthsInYears = CALCULATE(COUNTROWS(VALUES(pMonth)), ALL(pMonth), vSelectedYears)
+			VAR vCountOfQuartersInYears = CALCULATE(COUNTROWS(VALUES(pQuarter)), ALL(pQuarter), vSelectedYears)
+			VAR vMinDate = MIN(pDate)
+			VAR vMaxDate = MAX(pDate)
+			VAR vMinMonth = MIN(pMonth)
+			VAR vMaxMonth = MAX(pMonth)
+			VAR vMinQuarter = MIN(pQuarter)
+			VAR vMaxQuarter = MAX(pQuarter)
+			VAR vMinYear = MIN(pYear)
+			VAR vMaxYear = MAX(pYear)
+			VAR vCountDateRange = CALCULATE(COUNTROWS(VALUES(pDate)), FILTER(ALL(pDate), pDate >= vMinDate && pDate <= vMaxDate))
+			VAR vCountMonthRange = CALCULATE(COUNTROWS(VALUES(pMonth)), FILTER(ALL(pMonth), pMonth >= vMinMonth && pMonth <= vMaxMonth))
+			VAR vCountQuarterRange = CALCULATE(COUNTROWS(VALUES(pQuarter)), FILTER(ALL(pQuarter), pQuarter >= vMinQuarter && pQuarter <= vMaxQuarter))
+			VAR vCountYearRange = CALCULATE(COUNTROWS(VALUES(pYear)), FILTER(ALL(pYear), pYear >= vMinYear && pYear <= vMaxYear))
+			VAR vDateRangeText = FORMAT(vMinDate, SavoryData.Selection2List.Config_DateFormat()) & " - " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat())
+			VAR vMonthRangeText = vMinMonth & " - " & vMaxMonth
+			VAR vQuarterRangeText = vMinQuarter & " - " & vMaxQuarter
+			VAR vYearRangeText = vMinYear & " - " & vMaxYear
+        	--VAR vBeyondLimitDates = vCountOfDates > Limit
+        	--VAR vBeyondLimitMonths = vCountOfMonths > Limit
+        	--VAR vBeyondLimitYears = vCountOfYears > Limit
+        	
+			VAR Result =
+        		SWITCH(
+        			TRUE(),
+					vCountOfDates = 1,
+						FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()),
+					vCountOfDates = 2,
+						FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()) & " & " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat()), 
+					vCountOfDates < vCountOfDatesInMonths && vCountOfDates = vCountDateRange, // Certain days in a row are selected
+						vDateRangeText,
+					vCountOfDates < vCountOfDatesInMonths, // Certain independent days are selected
+						SavoryData.Selection2List.Text2List(pDate),
+					vCountOfMonths = 1,
+						CONVERT(vMinMonth, TEXT),
+					vCountOfMonths = 2,
+						vMinMonth & " & " & vMaxMonth,
+					vCountOfMonths < vCountOfMonthsInQuarters && vCountOfMonths = vCountMonthRange, // Certain months in a row are selected
+						vMonthRangeText,
+					vCountOfMonths < vCountOfMonthsInQuarters, // Certain independent months are selected
+						SavoryData.Selection2List.Text2List(pMonth),
+					vCountOfQuarters = 1,
+						CONVERT(vMinQuarter, TEXT),
+					vCountOfQuarters = 2,
+						vMinQuarter & " & " & vMaxQuarter,
+					vCountOfQuarters < vCountOfQuartersInYears && vCountOfQuarters = vCountQuarterRange, // Certain months in a row are selected
+						vQuarterRangeText,
+					vCountOfQuarters < vCountOfQuartersInYears, // Certain independent months are selected
+						SavoryData.Selection2List.Text2List(pQuarter),
+					vCountOfYears = 1,
+						CONVERT(vMinYear, TEXT),
+					vCountOfYears = 2,
+						vMinYear & " & " & vMaxYear,
+					vCountOfYears = vCountOfAllYears, // all years
+						"All Years",
+					vCountOfYears = vCountYearRange, // years in a row are selected
+						vYearRangeText,
+					SavoryData.Selection2List.Text2List(pYear)
+        		)
+			
+        	RETURN 
+				Result
+				//CONVERT(vCountOfQuarters,TEXT)
+
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
+
+/// returns list of selected years/weeks/days
+function 'SavoryData.Selection2List.YWD2List' =
+        (pYear : ANYREF EXPR, pWeek : ANYREF EXPR, pDate : ANYREF EXPR) =>
+        	--VAR Limit = 3
+			--VAR LimitDates = Limit
+			--VAR LimitMonths = Limit
+			--VAR LimitYears = Limit
+			VAR vSelectedDates = VALUES(pDate)
+			VAR vSelectedWeeks = VALUES(pWeek)
+			VAR vSelectedYears = VALUES(pYear)
+        	VAR vCountOfDates = COUNTROWS(vSelectedDates)
+        	VAR vCountOfWeeks = COUNTROWS(vSelectedWeeks)
+        	VAR vCountOfYears = COUNTROWS(vSelectedYears)
+			VAR vCountOfAllYears = COUNTROWS(ALL(pYear))
+			VAR vCountOfDatesInWeeks = CALCULATE(COUNTROWS(VALUES(pDate)), ALL(pDate), vSelectedWeeks)
+			VAR vCountOfWeeksInYears = CALCULATE(COUNTROWS(VALUES(pWeek)), ALL(pWeek), vSelectedYears)
+			VAR vMinDate = MIN(pDate)
+			VAR vMaxDate = MAX(pDate)
+			VAR vMinWeek = MIN(pWeek)
+			VAR vMaxWeek = MAX(pWeek)
+			VAR vMinYear = MIN(pYear)
+			VAR vMaxYear = MAX(pYear)
+			VAR vCountDateRange = CALCULATE(COUNTROWS(VALUES(pDate)), FILTER(ALL(pDate), pDate >= vMinDate && pDate <= vMaxDate))
+			VAR vCountWeekRange = CALCULATE(COUNTROWS(VALUES(pWeek)), FILTER(ALL(pWeek), pWeek >= vMinWeek && pWeek <= vMaxWeek))
+			VAR vCountYearRange = CALCULATE(COUNTROWS(VALUES(pYear)), FILTER(ALL(pYear), pYear >= vMinYear && pYear <= vMaxYear))
+			VAR vDateRangeText = FORMAT(vMinDate, SavoryData.Selection2List.Config_DateFormat()) & " - " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat())
+			VAR vWeekRangeText = vMinWeek & " - " & vMaxWeek
+			VAR vYearRangeText = vMinYear & " - " & vMaxYear
+        	--VAR vBeyondLimitDates = vCountOfDates > Limit
+        	--VAR vBeyondLimitMonths = vCountOfMonths > Limit
+        	--VAR vBeyondLimitYears = vCountOfYears > Limit
+        	
+			VAR Result =
+        		SWITCH(
+        			TRUE(),
+					vCountOfDates = 1,
+						FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()),
+					vCountOfDates = 2,
+						FORMAT(vMinDate,  SavoryData.Selection2List.Config_DateFormat()) & " & " & FORMAT(vMaxDate, SavoryData.Selection2List.Config_DateFormat()), 
+					vCountOfDates < vCountOfDatesInWeeks && vCountOfDates = vCountDateRange, // Certain days in a row are selected
+						vDateRangeText,
+					vCountOfDates < vCountOfDatesInWeeks, // Certain independent days are selected
+						SavoryData.Selection2List.Text2List(pDate),
+					vCountOfWeeks = 1,
+						CONVERT(vMinWeek, TEXT),
+					vCountOfWeeks = 2,
+						vMinWeek & " & " & vMaxWeek,
+					vCountOfWeeks < vCountOfWeeksInYears && vCountOfWeeks = vCountWeekRange, // Certain months in a row are selected
+						vWeekRangeText,
+					vCountOfWeeks < vCountOfWeeksInYears, // Certain independent months are selected
+						SavoryData.Selection2List.Text2List(pWeek),
+					vCountOfYears = 1,
+						CONVERT(vMinYear, TEXT),
+					vCountOfYears = 2,
+						vMinYear & " & " & vMaxYear,
+					vCountOfYears = vCountOfAllYears, // all years
+						"All Years",
+					vCountOfYears = vCountYearRange, // years in a row are selected
+						vYearRangeText,
+					SavoryData.Selection2List.Text2List(pYear)
+        		)
+			
+        	RETURN 
+				Result
+
+    annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+    annotation DAXLIB_PackageVersion = 0.1.2-beta
