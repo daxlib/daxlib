@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "SavoryData.Selection2List",
+  "version": "0.1.0-beta",
+  "authors": "Savory Data, Markus Ehrenmueller-Jensen",
+  "description": "A set of functions that can be used to show the selected values as a list of items.",
+  "tags": "DAX,UDF,FUNCTION,LIB,SLICER",
+  "releaseNotes": "Initial beta release of SavoryData.Selection2List library. Provides functions to display the selected items as a text string.",
+  "icon": "/icon.png"
+}

@@ -1,0 +1,24 @@
+/// returns list of selected text values
+function 'SavoryData.Selection2List.Text2List' =
+		(myColumn : ANYREF EXPR) =>
+			VAR Limit = 3
+			VAR CountOfSelection = COUNTROWS(VALUES(myColumn))
+			VAR BeyondLimit = CountOfSelection > Limit
+			VAR Result =
+				SWITCH(
+					TRUE(),
+					NOT(ISCROSSFILTERED(myColumn)), "All Products", // all
+					CountOfSelection = 2, CONCATENATEX(VALUES(myColumn), myColumn, " & "), // only 2
+					BeyondLimit, 
+						//"More than " & Limit & " Products", // beyond limit V1
+						CONCATENATEX(TOPN(Limit, VALUES(myColumn)), myColumn, ", ") & ", ...", // beyond limit V2
+					SELECTEDVALUE(
+						myColumn, // 1
+						CONCATENATEX(VALUES(myColumn), myColumn, ", ") // until limit
+					)
+				)
+			RETURN Result
+
+	annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
