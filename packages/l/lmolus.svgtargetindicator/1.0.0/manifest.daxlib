@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "lmolus.SVGTargetIndicator",
+  "version": "1.0.0",
+  "authors": "Lukasz Molus",
+  "description": "This functions generates SVG target indicators (show the status of goal completion in a clear graphical form).",
+  "tags": "DAX,UDF,SVG,Visualization",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/l/lmolus.svgtargetindicator",
+  "releaseNotes": "Initial release of SVGTargetIndicator UDF.",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
