@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
-  "id": "lmolus.SVGTargetInidicator",
+  "id": "lmolus.SVGTargetIndicator",
   "version": "1.0.0",
   "authors": "Lukasz Molus",
   "description": "This functions generates SVG target inidicators.",
