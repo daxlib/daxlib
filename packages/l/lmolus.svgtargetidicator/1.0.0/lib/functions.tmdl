@@ -172,3 +172,7 @@ FUNCTION  'lmolus.SVGTargetIndicatorStaticTargetValue' =
 					)
 				RETURN
 					Result
+
+			annotation DAXLIB_PackageId = lmolus.SvgTargetIndicator
+
+			annotation DAXLIB_PackageVersion = 1.0.0
