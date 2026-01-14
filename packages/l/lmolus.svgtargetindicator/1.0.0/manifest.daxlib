@@ -3,7 +3,7 @@
   "id": "lmolus.SVGTargetIndicator",
   "version": "1.0.0",
   "authors": "Lukasz Molus",
-  "description": "This functions generates SVG target inidicators.",
+  "description": "This functions generates SVG target inidicators (show the status of goal completion in a clear graphical form).",
   "tags": "DAX,UDF,SVG,Visualization",
   "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/l/lmolus.svgtargetindicator",
   "releaseNotes": "Initial release of SVGTargetInidicator UDF.",
