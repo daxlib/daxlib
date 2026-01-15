@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DataGoblins.SampleData",
+  "version": "0.2.0-beta",
+  "authors": "Kurt Buhler",
+  "description": "A set of functions that can be used in calculated tables to generate random sample data for experimentation, prototypes, and testing. During beta, functions and parameters are likely to evolve and change dramatically.",
+  "tags": "DAX,UDF,FUNCTION,LIB,SAMPLE DATA,DATA",
+  "releaseNotes": "Added README.md",
+  "projectUrl": "https://github.com/data-goblin/DataGoblin.SampleData",
+  "repositoryUrl": "https://github.com/data-goblin/DataGoblin.SampleData",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
