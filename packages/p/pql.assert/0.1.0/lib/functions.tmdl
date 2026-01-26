@@ -91,6 +91,9 @@ function 'PQL.Assert.ShouldBeNullOrBlank' =
 		        "Passed", _Passed
 		    )
 
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.0
+
 /// Asserts that a value is not NULL and not BLANK (has actual content).
 function 'PQL.Assert.ShouldNotBeNullOrBlank' =
 		(testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
