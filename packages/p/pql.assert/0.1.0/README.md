@@ -75,7 +75,7 @@ EVALUATE PQL.Assert.ShouldEqual("Test 1: 2+2 should equal 4", 4, 2+2)
 
 ### Test Discovery
 
-- `PQL.Tests.Retrieve()` - Returns all test functions (ending with .test or .tests)
+- `PQL.Assert.RetrieveTests()` - Returns all test functions (ending with .test or .tests)
 
 ## 🏗️ Workspace Governance & Environments
 
@@ -204,16 +204,16 @@ Use the test discovery function to find all available test functions:
 
 ```dax
 // Find all test functions
-EVALUATE PQL.Tests.Retrieve()
+EVALUATE PQL.Assert.RetrieveTests()
 
 // Find DEV environment tests
-EVALUATE FILTER(PQL.Tests.Retrieve(), CONTAINSSTRING([FUNCTION_NAME], ".DEV."))
+EVALUATE FILTER(PQL.Assert.RetrieveTests(), CONTAINSSTRING([FUNCTION_NAME], ".DEV."))
 
 // Find PROD environment tests
-EVALUATE FILTER(PQL.Tests.Retrieve(), CONTAINSSTRING([FUNCTION_NAME], ".PROD."))
+EVALUATE FILTER(PQL.Assert.RetrieveTests(), CONTAINSSTRING([FUNCTION_NAME], ".PROD."))
 
 // Find tests for all environments
-EVALUATE FILTER(PQL.Tests.Retrieve(), CONTAINSSTRING([FUNCTION_NAME], ".ALL."))
+EVALUATE FILTER(PQL.Assert.RetrieveTests(), CONTAINSSTRING([FUNCTION_NAME], ".ALL."))
 ```
 
 This returns a table of all functions ending with `.test` or `.tests`, making it easy to identify and run your test suites by environment.
@@ -315,10 +315,10 @@ EVALUATE DataQuality.ALL.Tests()
 EVALUATE BusinessLogic.DEV.Tests()
 
 // Discover all available test functions
-EVALUATE PQL.Tests.Retrieve()
+EVALUATE PQL.Assert.RetrieveTests()
 
 // Discover tests by environment
-EVALUATE FILTER(PQL.Tests.Retrieve(), CONTAINSSTRING([FUNCTION_NAME], ".DEV."))
+EVALUATE FILTER(PQL.Assert.RetrieveTests(), CONTAINSSTRING([FUNCTION_NAME], ".DEV."))
 ```
 
 ## Documentation
