@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "PQL.Assert",
+  "version": "0.1.1",
+  "authors": "John Kerski",
+  "description": "A library providing assertion functions for DAX enabled the DAX Query View Testing Pattern.",
+  "tags": "DQV, Testing, Assert, Validation",
+  "projectUrl": "https://github.com/clientfirsttech/PQL.Assert",
+  "repositoryUrl": "https://github.com/clientfirsttech/PQL.Assert",
+  "readme": "/README.md"
+}
