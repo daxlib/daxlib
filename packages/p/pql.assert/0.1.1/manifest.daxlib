@@ -7,5 +7,6 @@
   "tags": "DQV, Testing, Assert, Validation",
   "projectUrl": "https://github.com/clientfirsttech/PQL.Assert",
   "repositoryUrl": "https://github.com/clientfirsttech/PQL.Assert",
-  "readme": "/README.md"
+  "readme": "/README.md",
+  "icon": "/icon.png"
 }
