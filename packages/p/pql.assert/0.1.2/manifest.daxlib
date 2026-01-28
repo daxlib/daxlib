@@ -3,7 +3,7 @@
   "id": "PQL.Assert",
   "version": "0.1.2",
   "authors": "John Kerski",
-  "description": "A library providing assertion functions for DAX enabled the DAX Query View Testing Pattern.",
+  "description": "A library that provides assertion functions to enable standardized testing of semantic models.",
   "tags": "DQV, Testing, Assert, Validation",
   "projectUrl": "https://github.com/clientfirsttech/PQL.Assert",
   "repositoryUrl": "https://github.com/clientfirsttech/PQL.Assert",
