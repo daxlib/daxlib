@@ -1,0 +1,11 @@
+{
+    "$schema": "https://raw.githubusercontent.com/sql-bi/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+    "id": "AnkushToolkit",
+    "version": "1.0.0",
+    "authors": "Ankush Sharma",
+    "description": "A comprehensive toolkit for auditing and debugging Power BI semantic models ",
+    "tags": "DAX,UDF",
+    "projectUrl": "", // optional
+    "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/a/AnkushToolkit",
+    "icon": "/icon.png"
+}
