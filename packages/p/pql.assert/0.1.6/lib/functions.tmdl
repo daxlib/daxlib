@@ -687,7 +687,6 @@ function 'PQL.Assert.BP.CheckErrorPrevention' =
 /// Formatting Best Practice Validation Functions
 /// Publisher: PQL (Power Query Lint)
 /// These functions validate semantic models against formatting best practices
-
 /// Asserts that visible measures should have their format string property assigned.
 /// Measures without format strings may display inconsistently and make reports harder to understand.
 function 'PQL.Assert.BP.ShouldProvideFormatStringForMeasures' =
