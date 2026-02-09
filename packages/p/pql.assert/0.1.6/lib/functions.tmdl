@@ -919,11 +919,12 @@ function 'PQL.Assert.BP.ShouldMarkPrimaryKeys' =
 		    VAR _Relationships = INFO.RELATIONSHIPS()
 		    
 		    // Get columns that are on the "One" side of relationships (primary keys)
+		    // ToCardinality is Int64: 1 = One, 2 = Many
 		    VAR _PrimaryKeyColumns = 
 		        ADDCOLUMNS(
 		            FILTER(
 		                _Relationships,
-		                [ToCardinality] = "One"
+		                [ToCardinality] = 1
 		            ),
 		            "@ToTableID", [ToTableID],
 		            "@ToColumnID", [ToColumnID]
@@ -940,13 +941,13 @@ function 'PQL.Assert.BP.ShouldMarkPrimaryKeys' =
 		            
 		            // Get table information
 		            VAR _TableIsHidden = 
-		                MAXX(
+		                COUNTROWS(
 		                    FILTER(
 		                        _Tables,
 		                        [ID] = _TableID
-		                    ),
-		                    [IsHidden]
-		                ) = TRUE
+		                        && [IsHidden] = TRUE
+		                    )
+		                ) > 0
 		            
 		            VAR _TableDataCategory = 
 		                MAXX(
