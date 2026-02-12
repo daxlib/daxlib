@@ -1,0 +1,1455 @@
+function 'DataGoblins.SampleData.Orders' = ```
+		
+		-- Generate Goblin Marketplace orders fact table
+		-- Tracks order lines with SAP-style numbering and realistic line-level variations
+		(
+		    -- Number of orders to generate
+		    num_orders : INT64,
+		    
+		    -- Start date for orders
+		    start_date : DATETIME,
+		    
+		    -- End date for orders
+		    end_date : DATETIME,
+		    
+		    -- Number of unique customers
+		    num_customers : INT64,
+		    
+		    -- Number of unique products
+		    num_products : INT64,
+		    
+		    -- Number of store locations
+		    num_stores : INT64,
+		    
+		    -- Random seed for reproducibility
+		    seed : INT64
+		)
+		=>
+		    -- Configuration
+		    VAR _BaseAmount = 100
+		    VAR _MaxLinesPerOrder = 5
+		    
+		    VAR _OrderKeys = 
+		        GENERATESERIES( 1, num_orders, 1 )
+		    
+		    VAR _DateRange = 
+		        INT( end_date - start_date ) + 1
+		    
+		    -- Generate order headers with line count
+		    VAR _OrderHeaders =
+		        ADDCOLUMNS(
+		            _OrderKeys,
+		            "OrderInternalID", [Value],
+		            "OrderNumber", 4500000000 + [Value],
+		            "R1", MOD( [Value] * 7919 + seed, 32749 ),
+		            "R2", MOD( [Value] * 6271 + seed, 32749 ),
+		            "R3", MOD( [Value] * 5413 + seed, 32749 ),
+		            "R4", MOD( [Value] * 4517 + seed, 32749 )
+		        )
+		    
+		    VAR _OrderHeadersWithData =
+		        ADDCOLUMNS(
+		            _OrderHeaders,
+		            "NumLines", MAX( 1, MOD( [R1], _MaxLinesPerOrder ) + 1 ),
+		            "CustomerKey", MOD( [R2], num_customers ) + 1,
+		            "StoreKey", MOD( [R3], num_stores ) + 1,
+		            "OrderDate", start_date + MOD( [R4], _DateRange ),
+		            "DeliverySpeed", 
+		                SWITCH(
+		                    TRUE(),
+		                    MOD( [R1], 100 ) < 20, 2,
+		                    MOD( [R1], 100 ) < 70, 5,
+		                    7
+		                ),
+		            "Currency",
+		                SWITCH(
+		                    MOD( [R3], 7 ),
+		                    0, "EUR",
+		                    1, "CAD",
+		                    2, "GBP",
+		                    3, "SEK",
+		                    4, "NOK",
+		                    5, "AUD",
+		                    6, "NZD",
+		                    "EUR"
+		                )
+		        )
+		    
+		    -- Create line number series
+		    VAR _LineNumbers = SELECTCOLUMNS( GENERATESERIES( 1, _MaxLinesPerOrder, 1 ), "LineSeq", [Value] )
+		    
+		    -- Cross join orders with potential line numbers
+		    VAR _AllOrderLines = CROSSJOIN( _OrderHeadersWithData, _LineNumbers )
+		    
+		    -- Filter to actual number of lines per order
+		    VAR _ActualOrderLines = FILTER( _AllOrderLines, [LineSeq] <= [NumLines] )
+		    
+		    -- Generate order line details with line-specific dates
+		    VAR _OrderLines =
+		        ADDCOLUMNS(
+		            _ActualOrderLines,
+		            "OrderLineNumber", [LineSeq] * 10,
+		            "LineSeed", [OrderInternalID] * 100 + [LineSeq],
+		            "RequestedDeliveryDate", [OrderDate] + [DeliverySpeed]
+		        )
+		    
+		    VAR _OrderLinesWithDates =
+		        ADDCOLUMNS(
+		            _OrderLines,
+		            "LineR1", MOD( [LineSeed] * 2311, 32749 ),
+		            "LineR2", MOD( [LineSeed] * 1993, 32749 ),
+		            "LineR3", MOD( [LineSeed] * 1777, 32749 ),
+		            "LineR4", MOD( [LineSeed] * 1553, 32749 ),
+		            "ProductKey", MOD( [LineSeed] * 3571, num_products ) + 1,
+		            "Quantity", MAX( 1, MOD( [LineSeed] + [R1], 10 ) + 1 ),
+		            "VaryDates", MOD( [LineSeed], 100 ) < 25  -- 25% chance to vary dates
+		        )
+		    
+		    VAR _FinalOrderLines =
+		        SELECTCOLUMNS(
+		            _OrderLinesWithDates,
+		            "OrderNumber", [OrderNumber],
+		            "OrderLineNumber", [OrderLineNumber],
+		            "CustomerKey", [CustomerKey],
+		            "ProductKey", [ProductKey],
+		            "StoreKey", [StoreKey],
+		            "Currency", [Currency],
+		            "OrderDate", [OrderDate],
+		            "RequestedDeliveryDate", [RequestedDeliveryDate],
+		            
+		            -- Approved date - varies by line 25% of time
+		            "ApprovedDate",
+		                VAR _BaseApproved = 
+		                    IF( MOD( [R1], 100 ) > 5,
+		                        [OrderDate] + MOD( [R1], 2 ),
+		                        BLANK()
+		                    )
+		                VAR _LineVariation = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseApproved ),
+		                        MOD( [LineR1], 3 ) - 1,  -- -1 to +1 day variation
+		                        0
+		                    )
+		                RETURN 
+		                    IF( ISBLANK( _BaseApproved ), 
+		                        BLANK(), 
+		                        _BaseApproved + _LineVariation 
+		                    ),
+		            
+		            -- Fulfilled date - varies by line
+		            "FulfilledDate",
+		                VAR _BaseApproved = 
+		                    IF( MOD( [R1], 100 ) > 5,
+		                        [OrderDate] + MOD( [R1], 2 ),
+		                        BLANK()
+		                    )
+		                VAR _LineApproved = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseApproved ),
+		                        _BaseApproved + MOD( [LineR1], 3 ) - 1,
+		                        _BaseApproved
+		                    )
+		                VAR _BaseFulfilled = 
+		                    IF( NOT ISBLANK( _LineApproved ) && MOD( [R2], 100 ) > 10,
+		                        _LineApproved + MOD( [R2], 3 ) + 1,
+		                        BLANK()
+		                    )
+		                VAR _LineVariation = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseFulfilled ),
+		                        MOD( [LineR2], 4 ) - 1,  -- -1 to +2 day variation
+		                        0
+		                    )
+		                RETURN 
+		                    IF( ISBLANK( _BaseFulfilled ), 
+		                        BLANK(), 
+		                        _BaseFulfilled + _LineVariation 
+		                    ),
+		            
+		            -- Shipped date - varies by line
+		            "ShippedDate",
+		                VAR _BaseApproved = 
+		                    IF( MOD( [R1], 100 ) > 5,
+		                        [OrderDate] + MOD( [R1], 2 ),
+		                        BLANK()
+		                    )
+		                VAR _LineApproved = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseApproved ),
+		                        _BaseApproved + MOD( [LineR1], 3 ) - 1,
+		                        _BaseApproved
+		                    )
+		                VAR _LineFulfilled = 
+		                    IF( NOT ISBLANK( _LineApproved ) && MOD( [R2], 100 ) > 10,
+		                        _LineApproved + MOD( [R2], 3 ) + 1 + 
+		                        IF( [VaryDates], MOD( [LineR2], 4 ) - 1, 0 ),
+		                        BLANK()
+		                    )
+		                VAR _BaseShipped = 
+		                    IF( NOT ISBLANK( _LineFulfilled ) && MOD( [R3], 100 ) > 15,
+		                        _LineFulfilled + MOD( [R3], 2 ),
+		                        BLANK()
+		                    )
+		                VAR _LineVariation = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseShipped ),
+		                        MOD( [LineR3], 3 ),  -- 0 to +2 day variation
+		                        0
+		                    )
+		                RETURN 
+		                    IF( ISBLANK( _BaseShipped ), 
+		                        BLANK(), 
+		                        _BaseShipped + _LineVariation 
+		                    ),
+		            
+		            -- Delivered date - varies by line
+		            "DeliveredDate",
+		                VAR _BaseApproved = 
+		                    IF( MOD( [R1], 100 ) > 5,
+		                        [OrderDate] + MOD( [R1], 2 ),
+		                        BLANK()
+		                    )
+		                VAR _LineApproved = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseApproved ),
+		                        _BaseApproved + MOD( [LineR1], 3 ) - 1,
+		                        _BaseApproved
+		                    )
+		                VAR _LineFulfilled = 
+		                    IF( NOT ISBLANK( _LineApproved ) && MOD( [R2], 100 ) > 10,
+		                        _LineApproved + MOD( [R2], 3 ) + 1 + 
+		                        IF( [VaryDates], MOD( [LineR2], 4 ) - 1, 0 ),
+		                        BLANK()
+		                    )
+		                VAR _LineShipped = 
+		                    IF( NOT ISBLANK( _LineFulfilled ) && MOD( [R3], 100 ) > 15,
+		                        _LineFulfilled + MOD( [R3], 2 ) + 
+		                        IF( [VaryDates], MOD( [LineR3], 3 ), 0 ),
+		                        BLANK()
+		                    )
+		                VAR _BaseDelivered = 
+		                    IF( NOT ISBLANK( _LineShipped ) && MOD( [R4], 100 ) > 20,
+		                        _LineShipped + MOD( [R4], 5 ) + 1,
+		                        BLANK()
+		                    )
+		                VAR _LineVariation = 
+		                    IF( [VaryDates] && NOT ISBLANK( _BaseDelivered ),
+		                        MOD( [LineR4], 5 ) - 2,  -- -2 to +2 day variation
+		                        0
+		                    )
+		                RETURN 
+		                    IF( ISBLANK( _BaseDelivered ), 
+		                        BLANK(), 
+		                        _BaseDelivered + _LineVariation 
+		                    ),
+		            
+		            "OrderStatus",
+		                VAR _DeliveredCheck = 
+		                    VAR _BaseApproved = IF( MOD( [R1], 100 ) > 5, [OrderDate] + MOD( [R1], 2 ), BLANK() )
+		                    VAR _LineApproved = IF( [VaryDates] && NOT ISBLANK( _BaseApproved ), _BaseApproved + MOD( [LineR1], 3 ) - 1, _BaseApproved )
+		                    VAR _LineFulfilled = IF( NOT ISBLANK( _LineApproved ) && MOD( [R2], 100 ) > 10, _LineApproved + MOD( [R2], 3 ) + 1 + IF( [VaryDates], MOD( [LineR2], 4 ) - 1, 0 ), BLANK() )
+		                    VAR _LineShipped = IF( NOT ISBLANK( _LineFulfilled ) && MOD( [R3], 100 ) > 15, _LineFulfilled + MOD( [R3], 2 ) + IF( [VaryDates], MOD( [LineR3], 3 ), 0 ), BLANK() )
+		                    VAR _LineDelivered = IF( NOT ISBLANK( _LineShipped ) && MOD( [R4], 100 ) > 20, _LineShipped + MOD( [R4], 5 ) + 1 + IF( [VaryDates], MOD( [LineR4], 5 ) - 2, 0 ), BLANK() )
+		                    RETURN NOT ISBLANK( _LineDelivered )
+		                VAR _ShippedCheck = 
+		                    VAR _BaseApproved = IF( MOD( [R1], 100 ) > 5, [OrderDate] + MOD( [R1], 2 ), BLANK() )
+		                    VAR _LineApproved = IF( [VaryDates] && NOT ISBLANK( _BaseApproved ), _BaseApproved + MOD( [LineR1], 3 ) - 1, _BaseApproved )
+		                    VAR _LineFulfilled = IF( NOT ISBLANK( _LineApproved ) && MOD( [R2], 100 ) > 10, _LineApproved + MOD( [R2], 3 ) + 1 + IF( [VaryDates], MOD( [LineR2], 4 ) - 1, 0 ), BLANK() )
+		                    VAR _LineShipped = IF( NOT ISBLANK( _LineFulfilled ) && MOD( [R3], 100 ) > 15, _LineFulfilled + MOD( [R3], 2 ) + IF( [VaryDates], MOD( [LineR3], 3 ), 0 ), BLANK() )
+		                    RETURN NOT ISBLANK( _LineShipped )
+		                VAR _FulfilledCheck = 
+		                    VAR _BaseApproved = IF( MOD( [R1], 100 ) > 5, [OrderDate] + MOD( [R1], 2 ), BLANK() )
+		                    VAR _LineApproved = IF( [VaryDates] && NOT ISBLANK( _BaseApproved ), _BaseApproved + MOD( [LineR1], 3 ) - 1, _BaseApproved )
+		                    VAR _LineFulfilled = IF( NOT ISBLANK( _LineApproved ) && MOD( [R2], 100 ) > 10, _LineApproved + MOD( [R2], 3 ) + 1 + IF( [VaryDates], MOD( [LineR2], 4 ) - 1, 0 ), BLANK() )
+		                    RETURN NOT ISBLANK( _LineFulfilled )
+		                VAR _ApprovedCheck = 
+		                    VAR _BaseApproved = IF( MOD( [R1], 100 ) > 5, [OrderDate] + MOD( [R1], 2 ), BLANK() )
+		                    RETURN NOT ISBLANK( _BaseApproved )
+		                RETURN
+		                    SWITCH(
+		                        TRUE(),
+		                        _DeliveredCheck, "Delivered",
+		                        _ShippedCheck, "Shipped",
+		                        _FulfilledCheck, "Fulfilled",
+		                        _ApprovedCheck, "Approved",
+		                        "Pending"
+		                    ),
+		            
+		            "DeliverySpeed", [DeliverySpeed],
+		            "Quantity", [Quantity],
+		            "UnitPrice",
+		                VAR _ProdKey = [ProductKey]
+		                VAR _BasePrice = _BaseAmount * ( 0.5 + MOD( _ProdKey * 13, 30 ) / 10 )
+		                VAR _CurrencyMultiplier = 
+		                    SWITCH(
+		                        [Currency],
+		                        "EUR", 1.00,
+		                        "CAD", 1.45,
+		                        "GBP", 0.85,
+		                        "SEK", 11.50,
+		                        "NOK", 11.20,
+		                        "AUD", 1.65,
+		                        "NZD", 1.75,
+		                        1.00
+		                    )
+		                RETURN ROUND( _BasePrice * _CurrencyMultiplier, 2 )
+		        )
+		        
+		    RETURN
+		        _FinalOrderLines
+		```
+
+	annotation DAXLIB_PackageId = DataGoblins.SampleData
+
+	annotation DAXLIB_PackageVersion = 0.2.0-beta
+
+function 'DataGoblins.SampleData.Inventory' = ```
+		
+		-- Generate Goblin Warehouse inventory snapshot fact table
+		-- Weekly snapshots for past weeks, daily for current week
+		(
+		    -- Number of days to generate
+		    num_days : INT64,
+		    
+		    -- Start date for snapshots
+		    start_date : DATETIME,
+		    
+		    -- Number of products to track
+		    num_products : INT64,
+		    
+		    -- Number of warehouse locations
+		    num_warehouses : INT64,
+		    
+		    -- Random seed
+		    seed : INT64
+		)
+		=>
+		    -- Base configuration (will be varied by product/warehouse)
+		    VAR _BaseInitialStock = 500
+		    VAR _BaseSafetyStock = 100
+		    VAR _BaseReorderPoint = 150
+		    VAR _BaseReorderQuantity = 400
+		    VAR _BaseDailyDemand = 20
+		    
+		    -- Generate all dates then filter for weekly/daily pattern
+		    VAR _AllDates = 
+		        GENERATE(
+		            GENERATESERIES( 0, num_days - 1, 1 ),
+		            VAR _DayOffset = [Value]
+		            VAR _CurrentDate = start_date + _DayOffset
+		            VAR _WeekNum = INT( _DayOffset / 7 )
+		            VAR _DayOfWeek = WEEKDAY( _CurrentDate, 2 )  -- Monday = 1, Sunday = 7
+		            VAR _IsCurrentWeek = _CurrentDate >= TODAY() - WEEKDAY( TODAY(), 2 ) + 1
+		            VAR _IsSunday = _DayOfWeek = 7
+		            
+		            -- Include: Sundays for past weeks OR all days for current week
+		            VAR _IncludeDate = _IsSunday || _IsCurrentWeek
+		            
+		            RETURN 
+		                ROW(
+		                    "SnapshotDate", _CurrentDate,
+		                    "WeekNum", _WeekNum,
+		                    "DayInWeek", _DayOfWeek,
+		                    "IncludeDate", _IncludeDate
+		                )
+		        )
+		    
+		    -- Filter to only snapshot dates we want
+		    VAR _SnapshotDates = FILTER( _AllDates, [IncludeDate] )
+		    
+		    -- Create cartesian product of dates x products x warehouses
+		    VAR _BaseTable = 
+		        CROSSJOIN(
+		            _SnapshotDates,
+		            CROSSJOIN(
+		                SELECTCOLUMNS( GENERATESERIES( 1, num_products, 1 ), "ProductKey", [Value] ),
+		                SELECTCOLUMNS( GENERATESERIES( 1, num_warehouses, 1 ), "WarehouseKey", [Value] )
+		            )
+		        )
+		    
+		    -- Generate inventory data for each combination
+		    VAR _InventorySnapshots =
+		        ADDCOLUMNS(
+		            _BaseTable,
+		            "SnapshotDateKey", INT( [SnapshotDate] ),
+		            "OnHandQuantity",
+		                VAR _Product = [ProductKey]
+		                VAR _Warehouse = [WarehouseKey]
+		                VAR _Week = [WeekNum]
+		                VAR _Day = [DayInWeek]
+		
+		                -- Generate product/warehouse-specific seeds
+		                VAR _ProductSeed = MOD( _Product * 7919 + seed, 32749 )
+		                VAR _WarehouseSeed = MOD( _Warehouse * 6271 + seed, 32749 )
+		                VAR _CombinedSeed = MOD( _ProductSeed + _WarehouseSeed, 32749 )
+		
+		                -- Product-specific characteristics (much more variation)
+		                VAR _ProductType = MOD( _ProductSeed, 5 )  -- 0=Fast, 1=Medium, 2=Slow, 3=Seasonal, 4=Luxury
+		                VAR _DemandMultiplier =
+		                    SWITCH( _ProductType,
+		                        0, 2.0 + MOD( _ProductSeed, 30 ) / 10,     -- Fast movers: 2.0-5.0x
+		                        1, 1.0 + MOD( _ProductSeed, 20 ) / 10,     -- Medium: 1.0-3.0x
+		                        2, 0.2 + MOD( _ProductSeed, 15 ) / 20,     -- Slow: 0.2-0.95x
+		                        3, 0.8 + SIN( _Week * PI() / 6 ) * 1.5,    -- Seasonal: 0.8±1.5x
+		                        4, 0.1 + MOD( _ProductSeed, 8 ) / 20,      -- Luxury: 0.1-0.5x
+		                        1.0
+		                    )
+		
+		                -- Warehouse-specific efficiency
+		                VAR _WarehouseEfficiency = 0.7 + MOD( _WarehouseSeed, 30 ) / 100  -- 0.7-1.0
+		
+		                -- Product-specific stock levels
+		                VAR _InitialStock = ROUND( _BaseInitialStock * (0.3 + MOD( _ProductSeed, 70 ) / 100), 0 )  -- 30%-100% of base
+		                VAR _ReorderQuantity = ROUND( _BaseReorderQuantity * (0.4 + MOD( _ProductSeed + 100, 60 ) / 100), 0 )  -- 40%-100% of base
+		
+		                VAR _DailyDemand = _BaseDailyDemand * _DemandMultiplier * _WarehouseEfficiency
+		                VAR _WeeklyDemand = ROUND( _DailyDemand * 7, 0 )
+		
+		                -- Calculate stock level with weekly cycle and more variation
+		                VAR _BaseStock = _InitialStock + ( _ReorderQuantity * _Week )
+		                VAR _Depletion = _WeeklyDemand * _Week
+		
+		                -- Add realistic variance with product-specific patterns
+		                VAR _SeasonalVariance = SIN( (_Week + _ProductSeed / 100) * PI() / 13 ) * (50 + MOD( _ProductSeed, 100 ))
+		                VAR _DayVariance = COS( _Day * PI() / 7 ) * (10 + MOD( _WarehouseSeed, 30 ))
+		                VAR _RandomVariance = (MOD( _CombinedSeed + _Week, 100 ) - 50) * 2  -- ±100 random variance
+		
+		                RETURN MAX( 0, ROUND( _BaseStock - _Depletion + _SeasonalVariance + _DayVariance + _RandomVariance, 0 ) ),
+		            
+		            "ReservedQuantity",
+		                VAR _Product = [ProductKey]
+		                VAR _Warehouse = [WarehouseKey]
+		                VAR _Week = [WeekNum]
+		                VAR _Day = [DayInWeek]
+		
+		                -- Recalculate OnHandQuantity (same logic as above)
+		                VAR _ProductSeed = MOD( _Product * 7919 + seed, 32749 )
+		                VAR _WarehouseSeed = MOD( _Warehouse * 6271 + seed, 32749 )
+		                VAR _CombinedSeed = MOD( _ProductSeed + _WarehouseSeed, 32749 )
+		                VAR _ProductType = MOD( _ProductSeed, 5 )
+		                VAR _DemandMultiplier =
+		                    SWITCH( _ProductType,
+		                        0, 2.0 + MOD( _ProductSeed, 30 ) / 10,
+		                        1, 1.0 + MOD( _ProductSeed, 20 ) / 10,
+		                        2, 0.2 + MOD( _ProductSeed, 15 ) / 20,
+		                        3, 0.8 + SIN( _Week * PI() / 6 ) * 1.5,
+		                        4, 0.1 + MOD( _ProductSeed, 8 ) / 20,
+		                        1.0
+		                    )
+		                VAR _WarehouseEfficiency = 0.7 + MOD( _WarehouseSeed, 30 ) / 100
+		                VAR _InitialStock = ROUND( _BaseInitialStock * (0.3 + MOD( _ProductSeed, 70 ) / 100), 0 )
+		                VAR _ReorderQuantity = ROUND( _BaseReorderQuantity * (0.4 + MOD( _ProductSeed + 100, 60 ) / 100), 0 )
+		                VAR _DailyDemand = _BaseDailyDemand * _DemandMultiplier * _WarehouseEfficiency
+		                VAR _WeeklyDemand = ROUND( _DailyDemand * 7, 0 )
+		                VAR _BaseStock = _InitialStock + ( _ReorderQuantity * _Week )
+		                VAR _Depletion = _WeeklyDemand * _Week
+		                VAR _SeasonalVariance = SIN( (_Week + _ProductSeed / 100) * PI() / 13 ) * (50 + MOD( _ProductSeed, 100 ))
+		                VAR _DayVariance = COS( _Day * PI() / 7 ) * (10 + MOD( _WarehouseSeed, 30 ))
+		                VAR _RandomVariance = (MOD( _CombinedSeed + _Week, 100 ) - 50) * 2
+		                VAR _OnHandQty = MAX( 0, ROUND( _BaseStock - _Depletion + _SeasonalVariance + _DayVariance + _RandomVariance, 0 ) )
+		
+		                -- Base reservation percentage varies by product type and day
+		                VAR _BaseReservationPct =
+		                    SWITCH( _ProductType,
+		                        0, 0.25,  -- Fast movers: higher reservations
+		                        1, 0.15,  -- Medium
+		                        2, 0.08,  -- Slow movers: lower reservations
+		                        3, 0.12,  -- Seasonal
+		                        4, 0.05,  -- Luxury: very low reservations
+		                        0.15
+		                    )
+		
+		                -- Day-of-week variation (higher on weekdays)
+		                VAR _DayMultiplier = IF( _Day <= 5, 1.0 + (_Day / 10), 0.3 )
+		
+		                -- Warehouse efficiency affects reservations
+		                VAR _WhsMultiplier = 0.8 + MOD( _WarehouseSeed, 40 ) / 100  -- 0.8-1.2
+		
+		                VAR _ReservationPct = _BaseReservationPct * _DayMultiplier * _WhsMultiplier
+		                RETURN MAX( 0, ROUND( _OnHandQty * _ReservationPct, 0 ) ),
+		
+		            "InTransitQuantity",
+		                VAR _ProductSeed = MOD( [ProductKey] * 7919 + seed, 32749 )
+		                VAR _BaseReorderQty = ROUND( _BaseReorderQuantity * (0.4 + MOD( _ProductSeed + 100, 60 ) / 100), 0 )
+		                VAR _HasInTransit = IF( [DayInWeek] >= 5, 1, 0 )  -- Only Friday-Sunday
+		                VAR _InTransitVariation = 0.7 + MOD( _ProductSeed + [WarehouseKey], 60 ) / 100  -- 0.7-1.3
+		                RETURN ROUND( _BaseReorderQty * _InTransitVariation * _HasInTransit, 0 ),
+		
+		            "UnitCost",
+		                VAR _ProductSeed = MOD( [ProductKey] * 7919 + seed, 32749 )
+		                VAR _ProductType = MOD( _ProductSeed, 5 )
+		                VAR _BaseCost =
+		                    SWITCH( _ProductType,
+		                        0, 25,   -- Fast movers: lower cost
+		                        1, 50,   -- Medium
+		                        2, 35,   -- Slow movers
+		                        3, 40,   -- Seasonal
+		                        4, 150,  -- Luxury: higher cost
+		                        50
+		                    )
+		                VAR _CostVariation = 0.6 + MOD( _ProductSeed * 13, 80 ) / 100  -- 0.6-1.4
+		                RETURN ROUND( _BaseCost * _CostVariation, 2 )
+		        )
+		    
+		    -- Add final calculated columns
+		    VAR _FinalSnapshots =
+		        SELECTCOLUMNS(
+		            _InventorySnapshots,
+		            "SnapshotDateKey", [SnapshotDateKey],
+		            "ProductKey", [ProductKey],
+		            "WarehouseKey", [WarehouseKey],
+		            "OnHandQuantity", [OnHandQuantity],
+		            "ReservedQuantity", [ReservedQuantity],
+		            "AvailableQuantity", MAX( 0, [OnHandQuantity] - [ReservedQuantity] ),
+		            "InTransitQuantity", [InTransitQuantity],
+		            "ProjectedQuantity", [OnHandQuantity] + [InTransitQuantity] - [ReservedQuantity],
+		            "ReorderPoint",
+		                VAR _ProductSeed = MOD( [ProductKey] * 7919 + seed, 32749 )
+		                VAR _ProductReorderPoint = ROUND( _BaseReorderPoint * (0.5 + MOD( _ProductSeed + 200, 50 ) / 100), 0 )  -- 50%-100% of base
+		                RETURN _ProductReorderPoint,
+		            "SafetyStockLevel",
+		                VAR _ProductSeed = MOD( [ProductKey] * 7919 + seed, 32749 )
+		                VAR _ProductSafetyStock = ROUND( _BaseSafetyStock * (0.4 + MOD( _ProductSeed + 300, 60 ) / 100), 0 )  -- 40%-100% of base
+		                RETURN _ProductSafetyStock,
+		            "BelowReorderPoint",
+		                VAR _ProductSeed = MOD( [ProductKey] * 7919 + seed, 32749 )
+		                VAR _ProductReorderPoint = ROUND( _BaseReorderPoint * (0.5 + MOD( _ProductSeed + 200, 50 ) / 100), 0 )
+		                RETURN [OnHandQuantity] - [ReservedQuantity] < _ProductReorderPoint,
+		            "BelowSafetyStock",
+		                VAR _ProductSeed = MOD( [ProductKey] * 7919 + seed, 32749 )
+		                VAR _ProductSafetyStock = ROUND( _BaseSafetyStock * (0.4 + MOD( _ProductSeed + 300, 60 ) / 100), 0 )
+		                RETURN [OnHandQuantity] - [ReservedQuantity] < _ProductSafetyStock,
+		            "OutOfStock", [OnHandQuantity] - [ReservedQuantity] = 0,
+		            "UnitCost", [UnitCost],
+		            "InventoryValue", [OnHandQuantity] * [UnitCost]
+		        )
+		        
+		    RETURN
+		        _FinalSnapshots
+		```
+
+	annotation DAXLIB_PackageId = DataGoblins.SampleData
+
+	annotation DAXLIB_PackageVersion = 0.2.0-beta
+
+function 'DataGoblins.SampleData.Customer' = ```
+		
+		-- Generate Customer dimension table
+		-- Creates customer records based on CustomerKey values + extras
+		(
+		    -- Column containing CustomerKey values
+		    customer_keys : ANYREF,
+		    
+		    -- Number of RI violations (keys to randomly exclude)
+		    RI_violations : INT64,
+		    
+		    -- Whether to include missing values (10-25% per column)
+		    missing_values : BOOLEAN,
+		    
+		    -- Random seed
+		    seed : INT64
+		)
+		=>
+		    -- Generate customer keys based on RI_violations setting
+		    VAR _MaxKey = MAX( customer_keys )
+		    VAR _ExtraKeys = ROUND( _MaxKey * 0.2, 0 )
+		
+		    -- Create tables using FILTER to make them empty when not needed
+		    VAR _FullRangeKeys =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                GENERATESERIES( 1, _MaxKey + _ExtraKeys ),
+		                RI_violations = 0
+		            ),
+		            "CustKey", [Value]
+		        )
+		
+		    VAR _DistinctKeys =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                DISTINCT( customer_keys ),
+		                RI_violations > 0
+		            ),
+		            "CustKey", customer_keys
+		        )
+		
+		    VAR _ExtraKeysTable =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                GENERATESERIES( _MaxKey + 1, _MaxKey + _ExtraKeys ),
+		                RI_violations > 0 && MOD( [Value] * 7919 + seed, 100 ) < 80
+		            ),
+		            "CustKey", [Value]
+		        )
+		
+		    VAR _AllKeys = UNION( _FullRangeKeys, _DistinctKeys, _ExtraKeysTable )
+		    
+		    -- Generate customer attributes
+		    VAR _CustomersBase =
+		        GENERATE(
+		            _AllKeys,
+		            VAR _CustKey = [CustKey]
+		            VAR _R1 = MOD( _CustKey * 7919 + seed, 32749 )
+		            VAR _R2 = MOD( _CustKey * 6271 + seed, 32749 )
+		            VAR _R3 = MOD( _CustKey * 5413 + seed, 32749 )
+		            VAR _R4 = MOD( _CustKey * 4517 + seed, 32749 )
+		            VAR _R5 = MOD( _CustKey * 3571 + seed, 32749 )
+		            VAR _R6 = MOD( _CustKey * 2999 + seed, 32749 )
+		            VAR _IsCompany = MOD( _R1, 100 ) < 30
+		            
+		            VAR _CompanyPrefix = 
+		                SWITCH(
+		                    MOD( _R1, 15 ),
+		                    0, "Goblin", 1, "Dragon", 2, "Mystic", 3, "Shadow", 4, "Crystal",
+		                    5, "Phoenix", 6, "Titan", 7, "Aurora", 8, "Nexus", 9, "Stellar",
+		                    10, "Ethereal", 11, "Cosmic", 12, "Arcane", 13, "Primal", 14, "Eldritch",
+		                    "Generic"
+		                )
+		            
+		            VAR _CompanySuffix = 
+		                SWITCH(
+		                    MOD( _R2, 12 ),
+		                    0, "Industries", 1, "Corp", 2, "Holdings", 3, "Enterprises", 4, "Systems",
+		                    5, "Group", 6, "Solutions", 7, "Tech", 8, "Partners", 9, "Dynamics",
+		                    10, "Ventures", 11, "Labs",
+		                    "Co"
+		                )
+		            
+		            VAR _CompanyName = _CompanyPrefix & " " & _CompanySuffix & " " & FORMAT( _CustKey, "000" )
+		            
+		            VAR _FirstName = 
+		                SWITCH(
+		                    MOD( _R2, 20 ),
+		                    0, "Grax", 1, "Zara", 2, "Finn", 3, "Luna", 4, "Rex",
+		                    5, "Nova", 6, "Kai", 7, "Aria", 8, "Leo", 9, "Sage",
+		                    10, "Raven", 11, "Ash", 12, "Storm", 13, "Vale", 14, "Onyx",
+		                    15, "Echo", 16, "Jade", 17, "Flint", 18, "Dawn", 19, "Crow",
+		                    "Alex"
+		                )
+		            
+		            VAR _LastNameAdj = 
+		                SWITCH(
+		                    MOD( _R3, 20 ),
+		                    0, "Iron", 1, "Gold", 2, "Storm", 3, "Dark", 4, "Bright",
+		                    5, "Swift", 6, "Strong", 7, "Wise", 8, "Silver", 9, "Fire",
+		                    10, "Shadow", 11, "Moon", 12, "Sun", 13, "Star", 14, "Wild",
+		                    15, "Frost", 16, "Thunder", 17, "Crystal", 18, "Ember", 19, "Mist",
+		                    "True"
+		                )
+		            
+		            VAR _LastNameNoun = 
+		                SWITCH(
+		                    MOD( _R5, 20 ),
+		                    0, "foot", 1, "seeker", 2, "wind", 3, "blade", 4, "star",
+		                    5, "arrow", 6, "arm", 7, "heart", 8, "tongue", 9, "forge",
+		                    10, "hammer", 11, "shield", 12, "song", 13, "walker", 14, "rider",
+		                    15, "keeper", 16, "bringer", 17, "caller", 18, "weaver", 19, "dancer",
+		                    "smith"
+		                )
+		            
+		            VAR _LastName = _LastNameAdj & _LastNameNoun
+		            
+		            VAR _CustomerName = IF( _IsCompany, _CompanyName, _FirstName & " " & _LastName )
+		            
+		            VAR _CustomerType = 
+		                IF( _IsCompany, "B2B", IF( MOD( _R1, 100 ) < 80, "B2C", "Partner" ) )
+		            
+		            VAR _CustomerSegment = 
+		                SWITCH(
+		                    MOD( _R2, 4 ),
+		                    0, "Premium",
+		                    1, "Standard",
+		                    2, "Basic",
+		                    3, "Enterprise",
+		                    "Standard"
+		                )
+		            
+		            VAR _Industry = 
+		                IF( _IsCompany,
+		                    SWITCH(
+		                        MOD( _R3, 8 ),
+		                        0, "Technology",
+		                        1, "Manufacturing",
+		                        2, "Retail",
+		                        3, "Healthcare",
+		                        4, "Finance",
+		                        5, "Education",
+		                        6, "Government",
+		                        7, "Services",
+		                        "Other"
+		                    ),
+		                    "Individual"
+		                )
+		            
+		            VAR _Country = 
+		                SWITCH(
+		                    MOD( _R4, 10 ),
+		                    0, "USA",
+		                    1, "Canada",
+		                    2, "UK",
+		                    3, "Germany",
+		                    4, "France",
+		                    5, "Australia",
+		                    6, "Japan",
+		                    7, "Brazil",
+		                    8, "India",
+		                    9, "Mexico",
+		                    "USA"
+		                )
+		            
+		            VAR _Region = 
+		                SWITCH(
+		                    MOD( _R4, 10 ),
+		                    0, "North America",
+		                    1, "North America",
+		                    2, "Europe",
+		                    3, "Europe",
+		                    4, "Europe",
+		                    5, "Asia-Pacific",
+		                    6, "Asia-Pacific",
+		                    7, "South America",
+		                    8, "Asia-Pacific",
+		                    9, "North America",
+		                    "North America"
+		                )
+		            
+		            VAR _City = 
+		                IF( MOD( _R4, 10 ) = 0,
+		                    SWITCH( MOD( _R6, 5 ), 0, "New York", 1, "Los Angeles", 2, "Chicago", 3, "Houston", 4, "Phoenix", "Miami" ),
+		                IF( MOD( _R4, 10 ) = 1,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Toronto", 1, "Vancouver", 2, "Montreal", 3, "Calgary", 4, "Ottawa", "Edmonton" ),
+		                IF( MOD( _R4, 10 ) = 2,
+		                    SWITCH( MOD( _R6, 5 ), 0, "London", 1, "Manchester", 2, "Birmingham", 3, "Glasgow", 4, "Liverpool", "Edinburgh" ),
+		                IF( MOD( _R4, 10 ) = 3,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Berlin", 1, "Munich", 2, "Hamburg", 3, "Frankfurt", 4, "Cologne", "Stuttgart" ),
+		                IF( MOD( _R4, 10 ) = 4,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Paris", 1, "Lyon", 2, "Marseille", 3, "Toulouse", 4, "Nice", "Bordeaux" ),
+		                IF( MOD( _R4, 10 ) = 5,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Sydney", 1, "Melbourne", 2, "Brisbane", 3, "Perth", 4, "Adelaide", "Canberra" ),
+		                IF( MOD( _R4, 10 ) = 6,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Tokyo", 1, "Osaka", 2, "Kyoto", 3, "Yokohama", 4, "Nagoya", "Kobe" ),
+		                IF( MOD( _R4, 10 ) = 7,
+		                    SWITCH( MOD( _R6, 5 ), 0, "São Paulo", 1, "Rio de Janeiro", 2, "Brasília", 3, "Salvador", 4, "Fortaleza", "Belo Horizonte" ),
+		                IF( MOD( _R4, 10 ) = 8,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Mumbai", 1, "Delhi", 2, "Bangalore", 3, "Chennai", 4, "Kolkata", "Hyderabad" ),
+		                "Mexico City" )))))))))
+		            
+		            VAR _LifetimeValue = ROUND( 1000 * ( 1 + MOD( _R1 + _R2, 100 ) / 10 ), 2 )
+		            
+		            VAR _CreditLimit = 
+		                SWITCH(
+		                    MOD( _R2, 4 ),
+		                    0, 100000,
+		                    1, 50000,
+		                    2, 10000,
+		                    3, 500000,
+		                    25000
+		                )
+		            
+		            VAR _AccountOpenDate = DATE( 2020, 1, 1 ) + MOD( _R3, 1825 )
+		            
+		            VAR _Status = 
+		                IF( MOD( _R4, 100 ) < 75, "Active",
+		                IF( MOD( _R4, 100 ) < 90, "Inactive",
+		                IF( MOD( _R4, 100 ) < 95, "Suspended",
+		                "Closed" )))
+		            
+		            RETURN
+		                ROW(
+		                    "CustomerKey", _CustKey,
+		                    "CustomerName", 
+		                        IF( missing_values && MOD( _CustKey * 2311, 100 ) < 15, BLANK(), _CustomerName ),
+		                    "CustomerType", _CustomerType,
+		                    "CustomerSegment", _CustomerSegment,
+		                    "Industry",
+		                        IF( missing_values && MOD( _CustKey * 1993, 100 ) < 20, BLANK(), _Industry ),
+		                    "Country", _Country,
+		                    "Region", _Region,
+		                    "City",
+		                        IF( missing_values && MOD( _CustKey * 1777, 100 ) < 12, BLANK(), _City ),
+		                    "LifetimeValue",
+		                        IF( missing_values && MOD( _CustKey * 1553, 100 ) < 18, BLANK(), _LifetimeValue ),
+		                    "CreditLimit",
+		                        IF( missing_values && MOD( _CustKey * 1319, 100 ) < 25, BLANK(), _CreditLimit ),
+		                    "AccountOpenDate",
+		                        IF( missing_values && MOD( _CustKey * 1117, 100 ) < 10, BLANK(), _AccountOpenDate ),
+		                    "Status", _Status
+		                )
+		        )
+		    
+		    -- Apply RI violations (remove random keys)
+		    VAR _TotalCustomers = COUNTROWS( _CustomersBase )
+		    VAR _FinalCustomers =
+		        FILTER(
+		            _CustomersBase,
+		            RI_violations = 0 || MOD( [CustomerKey] * 3571 + seed, _TotalCustomers ) >= RI_violations
+		        )
+		        
+		    RETURN
+		        _FinalCustomers
+		```
+
+	annotation DAXLIB_PackageId = DataGoblins.SampleData
+
+	annotation DAXLIB_PackageVersion = 0.2.0-beta
+
+function 'DataGoblins.SampleData.Product' = ```
+		
+		-- Generate Product dimension table
+		-- Creates product records based on ProductKey values + extras
+		(
+		    -- Column containing ProductKey values
+		    product_keys : ANYREF,
+		    
+		    -- Number of RI violations (keys to randomly exclude)
+		    RI_violations : INT64,
+		    
+		    -- Whether to include missing values (10-25% per column)
+		    missing_values : BOOLEAN,
+		    
+		    -- Random seed
+		    seed : INT64
+		)
+		=>
+		    -- Generate product keys based on RI_violations setting
+		    VAR _MaxKey = MAX( product_keys )
+		    VAR _ExtraKeys = ROUND( _MaxKey * 0.2, 0 )
+		
+		    -- Create tables using FILTER to make them empty when not needed
+		    VAR _FullRangeKeys =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                GENERATESERIES( 1, _MaxKey + _ExtraKeys ),
+		                RI_violations = 0
+		            ),
+		            "ProdKey", [Value]
+		        )
+		
+		    VAR _DistinctKeys =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                DISTINCT( product_keys ),
+		                RI_violations > 0
+		            ),
+		            "ProdKey", product_keys
+		        )
+		
+		    VAR _ExtraKeysTable =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                GENERATESERIES( _MaxKey + 1, _MaxKey + _ExtraKeys ),
+		                RI_violations > 0 && MOD( [Value] * 7919 + seed, 100 ) < 80
+		            ),
+		            "ProdKey", [Value]
+		        )
+		
+		    VAR _AllKeys = UNION( _FullRangeKeys, _DistinctKeys, _ExtraKeysTable )
+		    
+		    -- Generate product attributes
+		    VAR _ProductsBase =
+		        GENERATE(
+		            _AllKeys,
+		            VAR _ProdKey = [ProdKey]
+		            VAR _R1 = MOD( _ProdKey * 7919 + seed, 32749 )
+		            VAR _R2 = MOD( _ProdKey * 6271 + seed, 32749 )
+		            VAR _R3 = MOD( _ProdKey * 5413 + seed, 32749 )
+		            VAR _R4 = MOD( _ProdKey * 4517 + seed, 32749 )
+		            VAR _R5 = MOD( _ProdKey * 3571 + seed, 32749 )
+		            VAR _R6 = MOD( _ProdKey * 2999 + seed, 32749 )
+		            
+		            -- Product hierarchy: Category > Subcategory > Product
+		            VAR _ProductCategory = 
+		                SWITCH(
+		                    MOD( _R1, 5 ),
+		                    0, "Electronics",
+		                    1, "Clothing",
+		                    2, "Home & Garden",
+		                    3, "Sports & Outdoors",
+		                    4, "Books & Media",
+		                    "General"
+		                )
+		            
+		            VAR _ProductSubcategory = 
+		                IF( MOD( _R1, 5 ) = 0,
+		                    SWITCH( MOD( _R2, 5 ), 0, "Computers", 1, "Mobile Devices", 2, "Audio", 3, "Smart Home", 4, "Gaming", "Accessories" ),
+		                IF( MOD( _R1, 5 ) = 1,
+		                    SWITCH( MOD( _R2, 5 ), 0, "Men's Wear", 1, "Women's Wear", 2, "Kids", 3, "Shoes", 4, "Accessories", "Sportswear" ),
+		                IF( MOD( _R1, 5 ) = 2,
+		                    SWITCH( MOD( _R2, 5 ), 0, "Furniture", 1, "Kitchen", 2, "Garden", 3, "Decor", 4, "Tools", "Lighting" ),
+		                IF( MOD( _R1, 5 ) = 3,
+		                    SWITCH( MOD( _R2, 5 ), 0, "Fitness", 1, "Outdoor Gear", 2, "Team Sports", 3, "Water Sports", 4, "Winter Sports", "Cycling" ),
+		                IF( MOD( _R1, 5 ) = 4,
+		                    SWITCH( MOD( _R2, 5 ), 0, "Fiction", 1, "Non-Fiction", 2, "Music", 3, "Movies", 4, "Games", "Educational" ),
+		                "Miscellaneous" )))))
+		            
+		            -- More varied product names using multiple components
+		            VAR _ProductQuality = 
+		                SWITCH(
+		                    MOD( _R2, 15 ),
+		                    0, "Ultra", 1, "Pro", 2, "Elite", 3, "Premium", 4, "Deluxe",
+		                    5, "Advanced", 6, "Professional", 7, "Master", 8, "Supreme", 9, "Platinum",
+		                    10, "Essential", 11, "Classic", 12, "Standard", 13, "Basic", 14, "Value",
+		                    "Generic"
+		                )
+		            
+		            VAR _ProductModifier = 
+		                SWITCH(
+		                    MOD( _R3, 15 ),
+		                    0, "Turbo", 1, "Max", 2, "Plus", 3, "X", 4, "Z",
+		                    5, "Alpha", 6, "Beta", 7, "Omega", 8, "Quantum", 9, "Fusion",
+		                    10, "Hybrid", 11, "Smart", 12, "Eco", 13, "Compact", 14, "Wireless",
+		                    ""
+		                )
+		            
+		            VAR _ProductType = 
+		                SWITCH(
+		                    MOD( _R5, 20 ),
+		                    0, "Widget", 1, "Gadget", 2, "Device", 3, "Tool", 4, "System",
+		                    5, "Kit", 6, "Set", 7, "Pack", 8, "Unit", 9, "Module",
+		                    10, "Component", 11, "Solution", 12, "Package", 13, "Bundle", 14, "Collection",
+		                    15, "Series", 16, "Edition", 17, "Model", 18, "Version", 19, "Item",
+		                    "Product"
+		                )
+		            
+		            VAR _ProductName = 
+		                _ProductQuality & 
+		                IF( LEN( _ProductModifier ) > 0, " " & _ProductModifier, "" ) &
+		                " " & _ProductType & " " & FORMAT( _ProdKey, "000" )
+		            
+		            VAR _SKU = 
+		                VAR _CatCode = 
+		                    SWITCH( MOD( _R1, 5 ), 
+		                        0, "ELE", 1, "CLO", 2, "HOM", 3, "SPO", 4, "BOO", "GEN" 
+		                    )
+		                RETURN _CatCode & "-" & FORMAT( _ProdKey, "00000" )
+		            
+		            VAR _Brand = 
+		                SWITCH(
+		                    MOD( _R4, 20 ),
+		                    0, "GoblinTech", 1, "DragonForge", 2, "MysticBrand", 3, "TitanWorks", 4, "PhoenixCo",
+		                    5, "StellarMfg", 6, "AuroraPro", 7, "NexusInc", 8, "CrystalCraft", 9, "ShadowWorks",
+		                    10, "EliteBrands", 11, "PrimeTech", 12, "ApexGoods", 13, "NovaProducts", 14, "ZenithCorp",
+		                    15, "VortexMfg", 16, "QuantumBrands", 17, "FusionTech", 18, "OmegaWorks", 19, "AlphaGoods",
+		                    "Generic"
+		                )
+		            
+		            -- Product attributes with more variety
+		            VAR _Color = 
+		                SWITCH(
+		                    MOD( _R2 + _R3, 15 ),
+		                    0, "Black", 1, "White", 2, "Red", 3, "Blue", 4, "Green",
+		                    5, "Yellow", 6, "Silver", 7, "Gold", 8, "Purple", 9, "Orange",
+		                    10, "Gray", 11, "Navy", 12, "Burgundy", 13, "Teal", 14, "Rose Gold",
+		                    "Multi"
+		                )
+		            
+		            VAR _Size = 
+		                SWITCH(
+		                    MOD( _R3, 7 ),
+		                    0, "XS", 1, "S", 2, "M", 3, "L", 4, "XL", 5, "XXL", 6, "XXXL",
+		                    "Standard"
+		                )
+		            
+		            VAR _Weight = ROUND( 0.1 + MOD( _R1 + _R2, 100 ) / 10, 2 )
+		            
+		            VAR _StandardCost = ROUND( 10 + MOD( _R1 * _R2, 500 ), 2 )
+		            
+		            VAR _ListPrice = 
+		                VAR _Markup = 1.5 + MOD( _R3, 10 ) / 10
+		                RETURN ROUND( _StandardCost * _Markup, 2 )
+		            
+		            VAR _ProductStatus = 
+		                IF( MOD( _R4, 100 ) < 70, "Active",
+		                IF( MOD( _R4, 100 ) < 85, "Discontinued",
+		                IF( MOD( _R4, 100 ) < 95, "Out of Stock",
+		                "Pending" )))
+		            
+		            VAR _LaunchDate = DATE( 2020, 1, 1 ) + MOD( _R3, 1825 )
+		            
+		            VAR _DiscontinuedDate = 
+		                IF( _ProductStatus = "Discontinued",
+		                    DATE( 2023, 1, 1 ) + MOD( _R4, 730 ),
+		                    BLANK()
+		                )
+		            
+		            RETURN
+		                ROW(
+		                    "ProductKey", _ProdKey,
+		                    "SKU", _SKU,
+		                    "ProductName",
+		                        IF( missing_values && MOD( _ProdKey * 2311, 100 ) < 15, BLANK(), _ProductName ),
+		                    "ProductCategory", _ProductCategory,
+		                    "ProductSubcategory", _ProductSubcategory,
+		                    "Brand",
+		                        IF( missing_values && MOD( _ProdKey * 1993, 100 ) < 20, BLANK(), _Brand ),
+		                    "Color",
+		                        IF( missing_values && MOD( _ProdKey * 1777, 100 ) < 18, BLANK(), _Color ),
+		                    "Size",
+		                        IF( missing_values && MOD( _ProdKey * 1553, 100 ) < 25, BLANK(), _Size ),
+		                    "Weight",
+		                        IF( missing_values && MOD( _ProdKey * 1319, 100 ) < 12, BLANK(), _Weight ),
+		                    "StandardCost", _StandardCost,
+		                    "ListPrice", _ListPrice,
+		                    "ProductStatus", _ProductStatus,
+		                    "LaunchDate",
+		                        IF( missing_values && MOD( _ProdKey * 1117, 100 ) < 10, BLANK(), _LaunchDate ),
+		                    "DiscontinuedDate", _DiscontinuedDate
+		                )
+		        )
+		    
+		    -- Apply RI violations (remove random keys)
+		    VAR _TotalProducts = COUNTROWS( _ProductsBase )
+		    VAR _FinalProducts =
+		        FILTER(
+		            _ProductsBase,
+		            RI_violations = 0 || MOD( [ProductKey] * 3571 + seed, _TotalProducts ) >= RI_violations
+		        )
+		        
+		    RETURN
+		        _FinalProducts
+		```
+
+	annotation DAXLIB_PackageId = DataGoblins.SampleData
+
+	annotation DAXLIB_PackageVersion = 0.2.0-beta
+
+function 'DataGoblins.SampleData.Store' = ```
+		
+		-- Generate Store dimension table
+		-- Creates store records based on StoreKey values + extras
+		(
+		    -- Column containing StoreKey values
+		    store_keys : ANYREF,
+		    
+		    -- Number of RI violations (keys to randomly exclude)
+		    RI_violations : INT64,
+		    
+		    -- Whether to include missing values (10-25% per column)
+		    missing_values : BOOLEAN,
+		    
+		    -- Random seed
+		    seed : INT64
+		)
+		=>
+		    -- Generate store keys based on RI_violations setting
+		    VAR _MaxKey = MAX( store_keys )
+		    VAR _ExtraKeys = ROUND( _MaxKey * 0.2, 0 )
+		
+		    -- Create tables using FILTER to make them empty when not needed
+		    VAR _FullRangeKeys =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                GENERATESERIES( 1, _MaxKey + _ExtraKeys ),
+		                RI_violations = 0
+		            ),
+		            "StrKey", [Value]
+		        )
+		
+		    VAR _DistinctKeys =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                DISTINCT( store_keys ),
+		                RI_violations > 0
+		            ),
+		            "StrKey", store_keys
+		        )
+		
+		    VAR _ExtraKeysTable =
+		        SELECTCOLUMNS(
+		            FILTER(
+		                GENERATESERIES( _MaxKey + 1, _MaxKey + _ExtraKeys ),
+		                RI_violations > 0 && MOD( [Value] * 7919 + seed, 100 ) < 80
+		            ),
+		            "StrKey", [Value]
+		        )
+		
+		    VAR _AllKeys = UNION( _FullRangeKeys, _DistinctKeys, _ExtraKeysTable )
+		    
+		    -- Generate store attributes
+		    VAR _StoresBase =
+		        GENERATE(
+		            _AllKeys,
+		            VAR _StrKey = [StrKey]
+		            VAR _R1 = MOD( _StrKey * 7919 + seed, 32749 )
+		            VAR _R2 = MOD( _StrKey * 6271 + seed, 32749 )
+		            VAR _R3 = MOD( _StrKey * 5413 + seed, 32749 )
+		            VAR _R4 = MOD( _StrKey * 4517 + seed, 32749 )
+		            VAR _R5 = MOD( _StrKey * 3571 + seed, 32749 )
+		            VAR _R6 = MOD( _StrKey * 2999 + seed, 32749 )
+		            
+		            VAR _StoreCode = "ST" & FORMAT( _StrKey, "000" )
+		            
+		            -- More varied store names
+		            VAR _StoreType = 
+		                SWITCH(
+		                    MOD( _R1, 6 ),
+		                    0, "Flagship",
+		                    1, "Express",
+		                    2, "Outlet",
+		                    3, "Warehouse",
+		                    4, "Boutique",
+		                    5, "Mega",
+		                    "Standard"
+		                )
+		            
+		            VAR _StoreLocationPrefix = 
+		                SWITCH(
+		                    MOD( _R2, 15 ),
+		                    0, "Downtown", 1, "Mall", 2, "Airport", 3, "Station", 4, "Plaza",
+		                    5, "Center", 6, "Square", 7, "Park", 8, "Market", 9, "District",
+		                    10, "Commons", 11, "Crossing", 12, "Heights", 13, "Village", 14, "Gateway",
+		                    "Location"
+		                )
+		            
+		            VAR _StoreLocationSuffix = 
+		                SWITCH(
+		                    MOD( _R5, 10 ),
+		                    0, "North", 1, "South", 2, "East", 3, "West", 4, "Central",
+		                    5, "Upper", 6, "Lower", 7, "Grand", 8, "Royal", 9, "Prime",
+		                    ""
+		                )
+		            
+		            VAR _StoreName = 
+		                _StoreType & " " & 
+		                IF( LEN( _StoreLocationSuffix ) > 0, _StoreLocationSuffix & " ", "" ) &
+		                _StoreLocationPrefix & " #" & FORMAT( _StrKey, "00" )
+		            
+		            -- Store hierarchy: Region > District > Store
+		            VAR _StoreRegion = 
+		                SWITCH(
+		                    MOD( _R3, 5 ),
+		                    0, "North",
+		                    1, "South",
+		                    2, "East",
+		                    3, "West",
+		                    4, "Central",
+		                    "Unknown"
+		                )
+		            
+		            VAR _StoreDistrict = 
+		                VAR _Region = MOD( _R3, 5 )
+		                VAR _District = MOD( _R4, 4 )
+		                RETURN _StoreRegion & "-" & FORMAT( _District + 1, "0" )
+		            
+		            VAR _StoreFormat = 
+		                SWITCH(
+		                    MOD( _R2, 4 ),
+		                    0, "Physical",
+		                    1, "Online",
+		                    2, "Hybrid",
+		                    3, "Pop-up",
+		                    "Physical"
+		                )
+		            
+		            -- Location details with more variety
+		            VAR _Country = 
+		                SWITCH(
+		                    MOD( _R4, 10 ),
+		                    0, "USA",
+		                    1, "Canada",
+		                    2, "UK",
+		                    3, "Germany",
+		                    4, "France",
+		                    5, "Australia",
+		                    6, "Japan",
+		                    7, "Spain",
+		                    8, "Italy",
+		                    9, "Netherlands",
+		                    "USA"
+		                )
+		            
+		            VAR _State = 
+		                IF( MOD( _R4, 10 ) = 0,  -- USA
+		                    SWITCH(
+		                        MOD( _R1 + _R2, 15 ),
+		                        0, "CA", 1, "TX", 2, "NY", 3, "FL", 4, "IL",
+		                        5, "PA", 6, "OH", 7, "GA", 8, "NC", 9, "MI",
+		                        10, "WA", 11, "MA", 12, "AZ", 13, "CO", 14, "VA",
+		                        "CA"
+		                    ),
+		                    "N/A"
+		                )
+		            
+		            VAR _City = 
+		                IF( MOD( _R4, 10 ) = 0,
+		                    SWITCH( MOD( _R6, 8 ), 0, "New York", 1, "Los Angeles", 2, "Chicago", 3, "Houston", 
+		                            4, "Phoenix", 5, "Philadelphia", 6, "San Antonio", 7, "San Diego", "Dallas" ),
+		                IF( MOD( _R4, 10 ) = 1,
+		                    SWITCH( MOD( _R6, 6 ), 0, "Toronto", 1, "Vancouver", 2, "Montreal", 3, "Calgary", 
+		                            4, "Ottawa", 5, "Edmonton", "Winnipeg" ),
+		                IF( MOD( _R4, 10 ) = 2,
+		                    SWITCH( MOD( _R6, 8 ), 0, "London", 1, "Manchester", 2, "Birmingham", 3, "Glasgow", 
+		                            4, "Liverpool", 5, "Edinburgh", 6, "Bristol", 7, "Leeds", "Sheffield" ),
+		                IF( MOD( _R4, 10 ) = 3,
+		                    SWITCH( MOD( _R6, 7 ), 0, "Berlin", 1, "Munich", 2, "Hamburg", 3, "Frankfurt", 
+		                            4, "Cologne", 5, "Stuttgart", 6, "Düsseldorf", "Dresden" ),
+		                IF( MOD( _R4, 10 ) = 4,
+		                    SWITCH( MOD( _R6, 6 ), 0, "Paris", 1, "Lyon", 2, "Marseille", 3, "Toulouse", 
+		                            4, "Nice", 5, "Bordeaux", "Lille" ),
+		                IF( MOD( _R4, 10 ) = 5,
+		                    SWITCH( MOD( _R6, 6 ), 0, "Sydney", 1, "Melbourne", 2, "Brisbane", 3, "Perth", 
+		                            4, "Adelaide", 5, "Gold Coast", "Canberra" ),
+		                IF( MOD( _R4, 10 ) = 6,
+		                    SWITCH( MOD( _R6, 7 ), 0, "Tokyo", 1, "Osaka", 2, "Kyoto", 3, "Yokohama", 
+		                            4, "Nagoya", 5, "Kobe", 6, "Fukuoka", "Sapporo" ),
+		                IF( MOD( _R4, 10 ) = 7,
+		                    SWITCH( MOD( _R6, 5 ), 0, "Madrid", 1, "Barcelona", 2, "Valencia", 3, "Seville", 
+		                            4, "Bilbao", "Málaga" ),
+		                IF( MOD( _R4, 10 ) = 8,
+		                    SWITCH( MOD( _R6, 6 ), 0, "Rome", 1, "Milan", 2, "Naples", 3, "Turin", 
+		                            4, "Florence", 5, "Venice", "Bologna" ),
+		                "Amsterdam" )))))))))
+		            
+		            VAR _PostalCode = FORMAT( 10000 + MOD( _R1 * _R2, 89999 ), "00000" )
+		            
+		            -- Store metrics
+		            VAR _SquareFootage = ROUND( 1000 + MOD( _R1 + _R2, 50 ) * 1000, 0 )
+		            VAR _EmployeeCount = 10 + MOD( _R2, 100 )
+		            VAR _ParkingSpaces = 
+		                IF( _StoreFormat <> "Online", 50 + MOD( _R3, 200 ), 0 )
+		            
+		            -- Manager names with more variety
+		            VAR _ManagerFirstName = 
+		                SWITCH(
+		                    MOD( _R3 + _R4, 20 ),
+		                    0, "John", 1, "Sarah", 2, "Mike", 3, "Emma", 4, "David",
+		                    5, "Lisa", 6, "Tom", 7, "Amy", 8, "Chris", 9, "Kate",
+		                    10, "James", 11, "Maria", 12, "Robert", 13, "Jennifer", 14, "William",
+		                    15, "Patricia", 16, "Richard", 17, "Linda", 18, "Charles", 19, "Barbara",
+		                    "Pat"
+		                )
+		            
+		            VAR _ManagerLastName = 
+		                SWITCH(
+		                    MOD( _R1 + _R5, 20 ),
+		                    0, "Johnson", 1, "Williams", 2, "Brown", 3, "Jones", 4, "Garcia",
+		                    5, "Miller", 6, "Davis", 7, "Rodriguez", 8, "Martinez", 9, "Wilson",
+		                    10, "Anderson", 11, "Taylor", 12, "Thomas", 13, "Moore", 14, "Jackson",
+		                    15, "Martin", 16, "Lee", 17, "Thompson", 18, "White", 19, "Harris",
+		                    "Smith"
+		                )
+		            
+		            VAR _StoreManager = _ManagerFirstName & " " & _ManagerLastName
+		            
+		            VAR _OpenDate = DATE( 2015, 1, 1 ) + MOD( _R3, 3650 )
+		            
+		            VAR _LastRenovationDate = 
+		                IF( MOD( _R4, 100 ) < 40,
+		                    _OpenDate + MOD( _R4, 1825 ),
+		                    BLANK()
+		                )
+		            
+		            VAR _Status = 
+		                IF( MOD( _R1, 100 ) < 85, "Active",
+		                IF( MOD( _R1, 100 ) < 95, "Renovation",
+		                "Closed" ))
+		            
+		            RETURN
+		                ROW(
+		                    "StoreKey", _StrKey,
+		                    "StoreCode", _StoreCode,
+		                    "StoreName",
+		                        IF( missing_values && MOD( _StrKey * 2311, 100 ) < 12, BLANK(), _StoreName ),
+		                    "StoreRegion", _StoreRegion,
+		                    "StoreDistrict", _StoreDistrict,
+		                    "StoreType", _StoreType,
+		                    "StoreFormat", _StoreFormat,
+		                    "Country", _Country,
+		                    "State", _State,
+		                    "City",
+		                        IF( missing_values && MOD( _StrKey * 1777, 100 ) < 15, BLANK(), _City ),
+		                    "PostalCode",
+		                        IF( missing_values && MOD( _StrKey * 1553, 100 ) < 10, BLANK(), _PostalCode ),
+		                    "SquareFootage",
+		                        IF( missing_values && MOD( _StrKey * 1319, 100 ) < 18, BLANK(), _SquareFootage ),
+		                    "EmployeeCount", _EmployeeCount,
+		                    "ParkingSpaces", _ParkingSpaces,
+		                    "StoreManager",
+		                        IF( missing_values && MOD( _StrKey * 1993, 100 ) < 20, BLANK(), _StoreManager ),
+		                    "OpenDate", _OpenDate,
+		                    "LastRenovationDate",
+		                        IF( missing_values && MOD( _StrKey * 1117, 100 ) < 25, BLANK(), _LastRenovationDate ),
+		                    "Status", _Status
+		                )
+		        )
+		    
+		    -- Apply RI violations (remove random keys)
+		    VAR _TotalStores = COUNTROWS( _StoresBase )
+		    VAR _FinalStores =
+		        FILTER(
+		            _StoresBase,
+		            RI_violations = 0 || MOD( [StoreKey] * 3571 + seed, _TotalStores ) >= RI_violations
+		        )
+		        
+		    RETURN
+		        _FinalStores
+		```
+
+	annotation DAXLIB_PackageId = DataGoblins.SampleData
+
+	annotation DAXLIB_PackageVersion = 0.2.0-beta
+
+function 'DataGoblins.SampleData.Dates' = ```
+		
+		-- Generate Date dimension table
+		-- Creates a complete date table from full years based on input date columns
+		(
+		    -- Column containing earliest dates
+		    earliest_date_column : ANYREF,
+		    
+		    -- Column containing latest dates
+		    latest_date_column : ANYREF
+		)
+		=>
+		    -- Determine date range
+		    VAR _EarliestDate = MIN( earliest_date_column )
+		    VAR _LatestDate = MAX( latest_date_column )
+		    VAR _StartYear = YEAR( _EarliestDate )
+		    VAR _EndYear = YEAR( _LatestDate )
+		    VAR _StartDate = DATE( _StartYear, 1, 1 )
+		    VAR _EndDate = DATE( _EndYear, 12, 31 )
+		    
+		    VAR _DateRange = GENERATESERIES( INT( _StartDate ), INT( _EndDate ), 1 )
+		    
+		    VAR _Dates =
+		        GENERATE(
+		            _DateRange,
+		            VAR _DateKey = [Value]
+		            VAR _Date = DATE( 1899, 12, 30 ) + _DateKey  -- Convert back to date
+		            
+		            -- Basic date components
+		            VAR _Year = YEAR( _Date )
+		            VAR _Quarter = QUARTER( _Date )
+		            VAR _Month = MONTH( _Date )
+		            VAR _Week = WEEKNUM( _Date, 2 )  -- Week starts Monday
+		            VAR _Day = DAY( _Date )
+		            VAR _DayOfWeek = WEEKDAY( _Date, 2 )  -- Monday = 1
+		            VAR _DayOfYear = DATEDIFF( DATE( _Year, 1, 1 ), _Date, DAY ) + 1
+		            
+		            -- Names
+		            VAR _MonthName = 
+		                SWITCH(
+		                    _Month,
+		                    1, "January", 2, "February", 3, "March", 4, "April",
+		                    5, "May", 6, "June", 7, "July", 8, "August",
+		                    9, "September", 10, "October", 11, "November", 12, "December",
+		                    "Unknown"
+		                )
+		            
+		            VAR _MonthNameShort = 
+		                SWITCH(
+		                    _Month,
+		                    1, "Jan", 2, "Feb", 3, "Mar", 4, "Apr",
+		                    5, "May", 6, "Jun", 7, "Jul", 8, "Aug",
+		                    9, "Sep", 10, "Oct", 11, "Nov", 12, "Dec",
+		                    "Unk"
+		                )
+		            
+		            VAR _DayName = 
+		                SWITCH(
+		                    _DayOfWeek,
+		                    1, "Monday", 2, "Tuesday", 3, "Wednesday", 4, "Thursday",
+		                    5, "Friday", 6, "Saturday", 7, "Sunday",
+		                    "Unknown"
+		                )
+		            
+		            VAR _DayNameShort = 
+		                SWITCH(
+		                    _DayOfWeek,
+		                    1, "Mon", 2, "Tue", 3, "Wed", 4, "Thu",
+		                    5, "Fri", 6, "Sat", 7, "Sun",
+		                    "Unk"
+		                )
+		            
+		            VAR _QuarterName = "Q" & _Quarter
+		            
+		            -- Formatted strings
+		            VAR _YearMonth = FORMAT( _Date, "yyyy-MM" )
+		            VAR _YearMonthName = _MonthNameShort & " " & FORMAT( _Year, "0000" )
+		            VAR _YearQuarter = FORMAT( _Year, "0000" ) & "-Q" & _Quarter
+		            VAR _YearWeek = FORMAT( _Year, "0000" ) & "-W" & FORMAT( _Week, "00" )
+		            VAR _DateFormatted = FORMAT( _Date, "yyyy-MM-dd" )
+		            
+		            -- Fiscal periods (assuming July 1 fiscal year start)
+		            VAR _FiscalYearOffset = IF( _Month >= 7, 1, 0 )
+		            VAR _FiscalYear = _Year + _FiscalYearOffset
+		            VAR _FiscalMonth = MOD( _Month - 7, 12 ) + 1
+		            VAR _FiscalQuarter = ROUNDUP( _FiscalMonth / 3, 0 )
+		            
+		            -- Flags
+		            VAR _IsWeekend = _DayOfWeek >= 6
+		            VAR _IsWeekday = NOT _IsWeekend
+		            VAR _IsMonthStart = _Day = 1
+		            VAR _IsMonthEnd = _Day = DAY( EOMONTH( _Date, 0 ) )
+		            VAR _IsQuarterStart = _Day = 1 && _Month IN { 1, 4, 7, 10 }
+		            VAR _IsQuarterEnd = _IsMonthEnd && _Month IN { 3, 6, 9, 12 }
+		            VAR _IsYearStart = _Month = 1 && _Day = 1
+		            VAR _IsYearEnd = _Month = 12 && _Day = 31
+		            
+		            -- Relative dates
+		            VAR _Today = TODAY()
+		            VAR _IsToday = _Date = _Today
+		            VAR _IsCurrentMonth = _Month = MONTH( _Today ) && _Year = YEAR( _Today )
+		            VAR _IsCurrentQuarter = _Quarter = QUARTER( _Today ) && _Year = YEAR( _Today )
+		            VAR _IsCurrentYear = _Year = YEAR( _Today )
+		            VAR _IsPast = _Date < _Today
+		            VAR _IsFuture = _Date > _Today
+		            
+		            RETURN
+		                ROW(
+		                    "Date", _Date,
+		                    "DateKey", _DateKey,
+		                    "DateFormatted", _DateFormatted,
+		                    
+		                    -- Calendar periods
+		                    "Year", _Year,
+		                    "Quarter", _Quarter,
+		                    "QuarterName", _QuarterName,
+		                    "Month", _Month,
+		                    "MonthName", _MonthName,
+		                    "MonthNameShort", _MonthNameShort,
+		                    "Week", _Week,
+		                    "Day", _Day,
+		                    "DayOfWeek", _DayOfWeek,
+		                    "DayOfYear", _DayOfYear,
+		                    "DayName", _DayName,
+		                    "DayNameShort", _DayNameShort,
+		                    
+		                    -- Sort columns
+		                    "MonthSort", _Month,
+		                    "DaySort", _DayOfWeek,
+		                    "QuarterSort", _Quarter,
+		                    
+		                    -- Formatted strings
+		                    "YearMonth", _YearMonth,
+		                    "YearMonthName", _YearMonthName,
+		                    "YearQuarter", _YearQuarter,
+		                    "YearWeek", _YearWeek,
+		                    
+		                    -- Fiscal periods
+		                    "FiscalYear", _FiscalYear,
+		                    "FiscalQuarter", _FiscalQuarter,
+		                    "FiscalMonth", _FiscalMonth,
+		                    
+		                    -- Flags
+		                    "IsWeekend", _IsWeekend,
+		                    "IsWeekday", _IsWeekday,
+		                    "IsMonthStart", _IsMonthStart,
+		                    "IsMonthEnd", _IsMonthEnd,
+		                    "IsQuarterStart", _IsQuarterStart,
+		                    "IsQuarterEnd", _IsQuarterEnd,
+		                    "IsYearStart", _IsYearStart,
+		                    "IsYearEnd", _IsYearEnd,
+		                    
+		                    -- Current period flags
+		                    "IsToday", _IsToday,
+		                    "IsCurrentMonth", _IsCurrentMonth,
+		                    "IsCurrentQuarter", _IsCurrentQuarter,
+		                    "IsCurrentYear", _IsCurrentYear,
+		                    "IsPast", _IsPast,
+		                    "IsFuture", _IsFuture
+		                )
+		        )
+		        
+		    RETURN
+		        _Dates
+		```
+
+	annotation DAXLIB_PackageId = DataGoblins.SampleData
+
+	annotation DAXLIB_PackageVersion = 0.2.0-beta
+
