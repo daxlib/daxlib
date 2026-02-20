@@ -96,5 +96,5 @@ function 'Fi.InfoView.Objects' = ```
             __Result
 		```
 
-		annotation DAXLIB_PackageId = Fi.InfoView.Objects
+		annotation DAXLIB_PackageId = Fi.InfoView
 		annotation DAXLIB_PackageVersion = 0.1.0
