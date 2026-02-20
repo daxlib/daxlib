@@ -1,4 +1,4 @@
-# Fi.InfoViewModel
+# Fi.InfoView.Objects
 
 Returns a table using INFO.VIEW functions for purposes of self-documentation, allowing details to be exposed to users.
 
