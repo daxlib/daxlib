@@ -7,7 +7,7 @@ Returns a table using INFO.VIEW functions for purposes of self-documentation, al
 ```dax
 EVALUATE
 {
-    Fi.InfoViewModel(
+    Fi.InfoView.ModelObjects(
         "Object Model", // Name of table to exclude from the output
         TRUE(), // Include tables
         TRUE(), // Include columns

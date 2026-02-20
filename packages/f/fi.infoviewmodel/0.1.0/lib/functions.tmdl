@@ -7,7 +7,7 @@
 /// showHidden                      Include objects marked as hidden.
 /// showObjectsWithoutDescription   Include objects which don't have any description.
 ///
-function 'Fi.InfoViewModel' = ```
+function 'Fi.InfoView.ModelObjects' = ```
 
 		( 
 			excludeTableName : STRING,
@@ -96,5 +96,5 @@ function 'Fi.InfoViewModel' = ```
             __Result
 		```
 
-		annotation DAXLIB_PackageId = Fi.InfoViewModel
+		annotation DAXLIB_PackageId = Fi.InfoView.ModelObjects
 		annotation DAXLIB_PackageVersion = 0.1.0
