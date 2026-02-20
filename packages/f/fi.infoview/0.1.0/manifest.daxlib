@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
-  "id": "Fi.InfoView.Objects",
+  "id": "Fi.InfoView",
   "version": "0.1.0",
   "authors": "Filip Kraus",
   "description": "Uses INFO.VIEW to generate an easy to understand all-in-one self-documentation output for users",
