@@ -101,7 +101,7 @@ function 'PowerofBI.IBCS.BarChart.AbsoluteValues' =
             // Enables sorting in Power BI by embedding a sortable rank inside the SVG code
             // Power BI sorts SVG images based on their text content, 
             //      so including the rank as a comment in the beginning of the SVG code ensures correct sorting by valueMain
-            VAR _Rank = 1000000000000 + ROUND ( valueMain, 0 )
+            VAR _Rank = 1000000000000 + ROUND ( valueMain + valueSecond, 0 )
 
             // Base bar fill: grey for [PY], white for [BU]
             VAR _ColorBase =
@@ -225,7 +225,7 @@ function 'PowerofBI.IBCS.BarChart.AbsoluteValues' =
                     & "' fill='"
                     & _ColorBase
                     & "' stroke='"
-                    & _ColorBaseOutline
+                    & _ColorBaseOutline 
                     & "' stroke-width='"
                     & _OutlineWidth
                     & "'></rect>"
