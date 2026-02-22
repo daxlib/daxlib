@@ -219,7 +219,7 @@ function 'PowerofBI.IBCS.BarChart.AbsoluteValues' =
             VAR _SVG_BarBase =
                 "<rect id='rect-base-value' x='0px' width='" & _WidthBase
                     & "' y='"
-                    & 0
+                    & _OutlineWidth
                     & "' height='"
                     & _Em
                     & "' fill='"
