@@ -1,0 +1,1633 @@
+/// DAX Assertion Library Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions provide a standardized way to write unit tests for DAX models
+/// Basic Assertions - PQL.Assert namespace
+function 'PQL.Assert.ShouldBeTrue' =
+        (testName : STRING, actualCondition : BOOLEAN) =>
+            VAR _Passed = actualCondition = TRUE
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "TRUE",
+                "Actual", IF(actualCondition, "TRUE", "FALSE"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.ShouldBeFalse' =
+        (testName : STRING, actualCondition : BOOLEAN) =>
+            VAR _Passed = actualCondition = FALSE
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "FALSE",
+                "Actual", IF(actualCondition, "TRUE", "FALSE"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a value is NULL (DAX BLANK()).
+function 'PQL.Assert.ShouldBeNull' =
+        (testName : STRING, actualValue : VARIANT) =>
+            VAR _Passed = ISBLANK(actualValue)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "NULL",
+                "Actual", IF(ISBLANK(actualValue), "NULL", IF(actualValue = "", "BLANK (empty string)", "HAS VALUE")),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a value is not NULL (not DAX BLANK()). Accepts both simple values and expressions.
+function 'PQL.Assert.ShouldNotBeNull' =
+        (testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
+            VAR _ActualResult = actualValue
+            VAR _Passed = NOT ISBLANK(_ActualResult)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "NOT NULL",
+                "Actual", IF(ISBLANK(_ActualResult), "NULL", IF(_ActualResult = "", "BLANK (empty string)", "HAS VALUE")),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a value is BLANK (empty string "").
+function 'PQL.Assert.ShouldBeBlank' =
+        (testName : STRING, actualValue : VARIANT) =>
+            VAR _Passed = NOT ISBLANK(actualValue) && actualValue = ""
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "BLANK (empty string)",
+                "Actual", IF(ISBLANK(actualValue), "NULL", IF(actualValue = "", "BLANK (empty string)", "HAS VALUE")),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a value is not BLANK (not empty string "").
+function 'PQL.Assert.ShouldNotBeBlank' =
+        (testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
+            VAR _ActualResult = actualValue
+            VAR _Passed = ISBLANK(_ActualResult) || _ActualResult <> ""
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "NOT BLANK (not empty string)",
+                "Actual", IF(ISBLANK(_ActualResult), "NULL", IF(_ActualResult = "", "BLANK (empty string)", "HAS VALUE")),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a value is NULL or BLANK (BLANK() or empty string "").
+function 'PQL.Assert.ShouldBeNullOrBlank' =
+        (testName : STRING, actualValue : VARIANT) =>
+            VAR _Passed = ISBLANK(actualValue) || actualValue = ""
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "NULL OR BLANK",
+                "Actual", IF(ISBLANK(actualValue), "NULL", IF(actualValue = "", "BLANK (empty string)", "HAS VALUE")),
+                "Passed", _Passed
+            )
+
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a value is not NULL and not BLANK (has actual content).
+function 'PQL.Assert.ShouldNotBeNullOrBlank' =
+        (testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
+            VAR _ActualResult = actualValue
+            VAR _Passed = NOT ISBLANK(_ActualResult) && _ActualResult <> ""
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "NOT NULL AND NOT BLANK",
+                "Actual", IF(ISBLANK(_ActualResult), "NULL", IF(_ActualResult = "", "BLANK (empty string)", "HAS VALUE")),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.ShouldEqual' =
+        (testName : STRING, expected : VARIANT, actual : VARIANT) =>
+            VAR _Passed = expected = actual
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", FORMAT(expected, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.ShouldNotEqual' =
+        (testName : STRING, notExpected : VARIANT, actual : VARIANT) =>
+            VAR _Passed = notExpected <> actual
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "NOT " & FORMAT(notExpected, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that two strings are exactly equal (case-sensitive comparison).
+function 'PQL.Assert.ShouldEqualExactly' =
+        (testName : STRING, expected : STRING, actual : STRING) =>
+            VAR _Passed = EXACT(expected, actual)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", expected,
+                "Actual", actual,
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.ShouldBeGreaterThan' =
+        (testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+            VAR _Passed = actual > threshold
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "> " & FORMAT(threshold, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.ShouldBeLessThan' =
+        (testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+            VAR _Passed = actual < threshold
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "< " & FORMAT(threshold, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a number is greater than or equal to an expected value.
+function 'PQL.Assert.ShouldBeGreaterOrEqual' =
+        (testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+            VAR _Passed = actual >= threshold
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", ">= " & FORMAT(threshold, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a number is less than or equal to an expected value.
+function 'PQL.Assert.ShouldBeLessOrEqual' =
+        (testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+            VAR _Passed = actual <= threshold
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "<= " & FORMAT(threshold, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.ShouldBeBetween' =
+        (testName : STRING, lowerBound : DOUBLE, upperBound : DOUBLE, actual : DOUBLE) =>
+            VAR _Passed = actual >= lowerBound && actual <= upperBound
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", FORMAT(lowerBound, "") & " <= value <= " & FORMAT(upperBound, ""),
+                "Actual", FORMAT(actual, ""),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// String Assertions - PQL.Assert namespace
+/// Asserts that a string starts with the specified prefix (case-insensitive).
+function 'PQL.Assert.ShouldStartWith' =
+        (testName : STRING, prefix : STRING, actual : STRING) =>
+            VAR _Passed = LEFT(UPPER(actual), LEN(prefix)) = UPPER(prefix)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Starts with '" & prefix & "'",
+                "Actual", actual,
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a string ends with the specified suffix (case-insensitive).
+function 'PQL.Assert.ShouldEndWith' =
+        (testName : STRING, suffix : STRING, actual : STRING) =>
+            VAR _Passed = RIGHT(UPPER(actual), LEN(suffix)) = UPPER(suffix)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Ends with '" & suffix & "'",
+                "Actual", actual,
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a string contains the specified substring (case-insensitive).
+function 'PQL.Assert.ShouldContainString' =
+        (testName : STRING, substring : STRING, actual : STRING) =>
+            VAR _Passed = CONTAINSSTRING(actual, substring)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Contains '" & substring & "'",
+                "Actual", actual,
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a string matches a pattern (case-insensitive).
+function 'PQL.Assert.ShouldMatch' =
+        (testName : STRING, pattern : STRING, actual : STRING) =>
+            VAR _Passed = CONTAINSSTRING(actual, pattern)
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Matches '" & pattern & "'",
+                "Actual", actual,
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Col Assertions - PQL.Assert.Col namespace
+/// Asserts that all values in a column are NULL (DAX BLANK()).
+function 'PQL.Assert.Col.ShouldBeNull' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _NonNullCount = DISTINCTCOUNTNOBLANK(columnRef)
+            VAR _Passed = _NonNullCount = 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column is all NULL",
+                "Actual", IF(_Passed, "ALL NULL", "HAS NON-NULL VALUES (" & FORMAT(_NonNullCount, "0") & " distinct)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a column contains at least one non-NULL value (not DAX BLANK()).
+function 'PQL.Assert.Col.ShouldNotBeNull' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _NonNullCount = DISTINCTCOUNTNOBLANK(columnRef)
+            VAR _Passed = _NonNullCount > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column has non-NULL values",
+                "Actual", IF(_Passed, "HAS VALUES (" & FORMAT(_NonNullCount, "0") & " distinct)", "ALL NULL"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that all values in a column are BLANK (empty string "" or NULL BLANK()). Fails if any non-blank values exist.
+function 'PQL.Assert.Col.ShouldBeBlank' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _NonBlankCount = COUNTAX(
+                VALUES(columnRef),
+                IF(NOT ISBLANK(columnRef) && FORMAT(columnRef, "") <> "", 1, BLANK())
+            )
+            VAR _TotalCount = COUNTROWS(VALUES(columnRef))
+            VAR _Passed = _NonBlankCount = 0 && _TotalCount > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column is all BLANK (empty string or NULL)",
+                "Actual", IF(_Passed, "ALL BLANK", "HAS NON-BLANK VALUES (" & FORMAT(_NonBlankCount, "0") & " non-blank)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that all values in a column are non-BLANK (not empty string "" and not NULL BLANK()). Fails if any blank values exist.
+function 'PQL.Assert.Col.ShouldNotBeBlank' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _BlankCount = COUNTBLANK(columnRef)
+            VAR _TotalCount = COUNTROWS(ALLNOBLANKROW(columnRef))
+            VAR _Passed = _BlankCount = 0 && _TotalCount > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column has no BLANK values (all non-empty and non-NULL)",
+                "Actual", IF(_Passed, "NO BLANK VALUES", "HAS BLANK VALUES (" & FORMAT(_BlankCount, "0") & " blank)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that all values in a column are NULL or BLANK (BLANK() or empty string ""). Fails if any values with content exist.
+function 'PQL.Assert.Col.ShouldBeNullOrBlank' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _NonEmptyCount = COUNTAX(
+                VALUES(columnRef),
+                IF(NOT ISBLANK(columnRef) && FORMAT(columnRef, "") <> "", 1, BLANK())
+            )
+            VAR _TotalCount = COUNTROWS(VALUES(columnRef))
+            VAR _Passed = _NonEmptyCount = 0 && _TotalCount > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column is all NULL or BLANK",
+                "Actual", IF(_Passed, "ALL NULL/BLANK", "HAS VALUES (" & FORMAT(_NonEmptyCount, "0") & " non-empty)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that all values in a column are not NULL and not BLANK. Fails if any NULL or empty values exist.
+function 'PQL.Assert.Col.ShouldNotBeNullOrBlank' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _BlankCount = COUNTBLANK(columnRef)
+            VAR _TotalCount = COUNTROWS(ALLNOBLANKROW(columnRef))
+            VAR _Passed = _BlankCount = 0 && _TotalCount > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column has no NULL or BLANK values (all values have content)",
+                "Actual", IF(_Passed, "NO NULL/BLANK VALUES", "HAS NULL/BLANK VALUES (" & FORMAT(_BlankCount, "0") & " empty)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that all values in a column are unique (no duplicates).
+function 'PQL.Assert.Col.ShouldBeDistinct' =
+        (testName : STRING, columnRef : ANYREF EXPR) =>
+            VAR _DistinctCount = DISTINCTCOUNT(columnRef)
+            VAR _TotalCount = COUNTROWS(VALUES(columnRef))
+            VAR _Passed = _DistinctCount = _TotalCount
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "All values distinct",
+                "Actual", IF(_Passed, "ALL DISTINCT (" & FORMAT(_TotalCount, "0") & " rows)", "DUPLICATES FOUND (" & FORMAT(_DistinctCount, "0") & " distinct of " & FORMAT(_TotalCount, "0") & " rows)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.Col.ShouldExist' =
+        (testName : STRING, tableName : STRING, columnName : STRING) =>
+            VAR _Columns = INFO.VIEW.COLUMNS()
+            VAR _Found = COUNTROWS(FILTER(_Columns, [Table] = tableName && [Name] = columnName)) > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Column '" & tableName & "[" & columnName & "]' exists",
+                "Actual", IF(_Found, "EXISTS", "NOT FOUND"),
+                "Passed", _Found
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Table Assertions - PQL.Assert.Table namespace
+/// Asserts that a table has at least one row.
+function 'PQL.Assert.Tbl.ShouldHaveRows' =
+        (testName : STRING, tableRef : TABLE EXPR) =>
+            VAR _RowCount = COUNTROWS(tableRef)
+            VAR _Passed = _RowCount > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Table has rows",
+                "Actual", IF(_Passed, "HAS ROWS (" & FORMAT(_RowCount, "0") & ")", "EMPTY (0 rows)"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that a table has exactly the expected number of rows.
+function 'PQL.Assert.Tbl.ShouldHaveRowCount' =
+        (testName : STRING, tableRef : TABLE EXPR, expectedRowCount : INT64) =>
+            VAR _RowCount = COUNTROWS(tableRef)
+            VAR _Passed = _RowCount = expectedRowCount
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", FORMAT(expectedRowCount, "0") & " rows",
+                "Actual", FORMAT(_RowCount, "0") & " rows",
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.Tbl.ShouldHaveMoreRowsThan' =
+        (testName : STRING, threshold : INT64, tableToCheck : TABLE) =>
+            VAR _RowCount = COUNTROWS(tableToCheck)
+            VAR _Passed = _RowCount > threshold
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "> " & FORMAT(threshold, "0"),
+                "Actual", FORMAT(_RowCount, "0"),
+                "Passed", _Passed
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+function 'PQL.Assert.Tbl.ShouldExist' =
+        (testName : STRING, tableName : STRING) =>
+            VAR _Tables = INFO.VIEW.TABLES()
+            VAR _Found = COUNTROWS(FILTER(_Tables, [Name] = tableName)) > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Table '" & tableName & "' exists",
+                "Actual", IF(_Found, "EXISTS", "NOT FOUND"),
+                "Passed", _Found
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Relationship Assertions - PQL.Assert.Relationship namespace
+function 'PQL.Assert.Relationship.ShouldExist' =
+        (testName : STRING, fromTable : STRING, fromColumn : STRING, toTable : STRING, toColumn : STRING) =>
+            VAR _Relationships = INFO.VIEW.RELATIONSHIPS()
+            VAR _Found = COUNTROWS(FILTER(_Relationships,
+                [FromTable] = fromTable && [FromColumn] = fromColumn &&
+                [ToTable] = toTable && [ToColumn] = toColumn)) > 0
+            RETURN ROW(
+                "TestName", testName,
+                "Expected", "Relationship '" & fromTable & "[" & fromColumn & "] -> " & toTable & "[" & toColumn & "]' exists",
+                "Actual", IF(_Found, "EXISTS", "NOT FOUND"),
+                "Passed", _Found
+            )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Test Discovery Functions - PQL.Assert namespace
+function 'PQL.Assert.RetrieveTests' =
+        () =>
+            FILTER(INFO.FUNCTIONS("ORIGIN", "2"), OR(RIGHT([FUNCTION_NAME],5) = ".Test", RIGHT([FUNCTION_NAME],6) = ".Tests"))
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Retrieves tests filtered by environment. Looks for .{ENV}. or .ANY. in function names.
+/// If environment is blank, returns all tests.
+/// Supports any custom environment naming convention (DEV, TEST, PROD, UAT, STAGING, etc.)
+function 'PQL.Assert.RetrieveTestsByEnvironment' =
+        (environment: STRING) =>
+            VAR _EnvUpper = UPPER(environment)
+            RETURN
+                FILTER(
+                    INFO.FUNCTIONS("ORIGIN", "2"),
+                    (RIGHT([FUNCTION_NAME], 5) = ".Test" || RIGHT([FUNCTION_NAME], 6) = ".Tests")
+                    && (
+                        ISBLANK(_EnvUpper)
+                        || CONTAINSSTRING(UPPER([FUNCTION_NAME]), "." & _EnvUpper & ".")
+                        || CONTAINSSTRING(UPPER([FUNCTION_NAME]), ".ANY.")
+                    )
+                )
+    annotation DAXLIB_PackageId = PQL.Assert
+    annotation DAXLIB_PackageVersion = 0.1.6
+
+
+
+/// DAX Expression Best Practice Validation Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions validate semantic models against DAX expression best practices
+/// Asserts that column references in DAX expressions should be fully qualified.
+/// Using fully qualified column references (Table[Column]) makes it easier to distinguish between columns and measures, and helps avoid certain errors.
+function 'PQL.Assert.BP.ShouldUseFullyQualifiedColumnReferences' =
+		() =>
+		    VAR _Measures = INFO.VIEW.MEASURES()
+		    VAR _ViolatingMeasures = 
+		        FILTER(
+		            _Measures,
+		            VAR _Expression = [Expression]
+		            VAR _HasUnqualifiedColumnRef = 
+		                // Check for unqualified column references in the expression
+		                // This is a simplified check - looks for [ColumnName] not preceded by a table name
+		                // Pattern: spaces or operators followed by [ but not preceded by alphanumeric/underscore
+		                NOT ISBLANK(_Expression) 
+		                && (
+		                    CONTAINSSTRING(_Expression, " [") 
+		                    || CONTAINSSTRING(_Expression, "([") 
+		                    || CONTAINSSTRING(_Expression, ",[")
+		                    || LEFT(_Expression, 1) = "["
+		                )
+		                && NOT CONTAINSSTRING(_Expression, "'[") // Exclude table names with brackets
+		            RETURN _HasUnqualifiedColumnRef
+		        )
+		    VAR _ViolatingMeasureCount = COUNTROWS(_ViolatingMeasures)
+		    VAR _MeasuresList = 
+		        CONCATENATEX(
+		            _ViolatingMeasures,
+		            [Table] & "[" & [Name] & "]",
+		            ", ",
+		            [Table], ASC,
+		            [Name], ASC
+		        )
+		    VAR _Passed = _ViolatingMeasureCount = 0
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolatingMeasureCount > 0,
+		            "MEASURES WITH UNQUALIFIED COLUMN REFERENCES FOUND (" & FORMAT(_ViolatingMeasureCount, "0") & "): " & _MeasuresList,
+		            "ALL COLUMN REFERENCES ARE FULLY QUALIFIED"
+		        )
+		    RETURN ROW(
+		        "TestName", "[DAX Expressions] Column references should be fully qualified",
+		        "Expected", "All column references should be fully qualified (Table[Column])",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Using fully qualified column references makes it easier to distinguish between column and measure references, and also helps avoid certain errors. Reference: https://www.elegantbi.com/post/top10bestpractices. Severity: Medium (2)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that measures should use TREATAS instead of INTERSECT for virtual relationships.
+/// The TREATAS function is more efficient and provides better performance than the INTERSECT function when used in virtual relationships.
+function 'PQL.Assert.BP.ShouldUseTreatAsInsteadOfIntersect' =
+		() =>
+		    VAR _Measures = INFO.VIEW.MEASURES()
+		    VAR _ViolatingMeasures = 
+		        FILTER(
+		            _Measures,
+		            VAR _Expression = [Expression]
+		            VAR _HasIntersect = 
+		                // Check for INTERSECT function usage (case-insensitive)
+		                NOT ISBLANK(_Expression) 
+		                && (
+		                    CONTAINSSTRING(UPPER(_Expression), "INTERSECT(")
+		                    || CONTAINSSTRING(UPPER(_Expression), "INTERSECT (")
+		                )
+		            RETURN _HasIntersect
+		        )
+		    VAR _ViolatingMeasureCount = COUNTROWS(_ViolatingMeasures)
+		    VAR _MeasuresList = 
+		        CONCATENATEX(
+		            _ViolatingMeasures,
+		            [Table] & "[" & [Name] & "]",
+		            ", ",
+		            [Table], ASC,
+		            [Name], ASC
+		        )
+		    VAR _Passed = _ViolatingMeasureCount = 0
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolatingMeasureCount > 0,
+		            "MEASURES USING INTERSECT FOUND (" & FORMAT(_ViolatingMeasureCount, "0") & "): " & _MeasuresList,
+		            "NO MEASURES USE INTERSECT"
+		        )
+		    RETURN ROW(
+		        "TestName", "[DAX Expressions] Use the TREATAS function instead of INTERSECT",
+		        "Expected", "Measures should use TREATAS instead of INTERSECT for virtual relationships",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "The TREATAS function is more efficient and provides better performance than the INTERSECT function when used in virtual relationships. Reference: https://www.sqlbi.com/articles/propagate-filters-using-treatas-in-dax/. Severity: Medium (2)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Runs all DAX expression best practice checks.
+/// This function executes all DAX expression validation rules and returns combined results.
+function 'PQL.Assert.BP.CheckDAXExpressions' =
+		() =>
+		    UNION(
+		        PQL.Assert.BP.ShouldUseFullyQualifiedColumnReferences(),
+		        PQL.Assert.BP.ShouldUseTreatAsInsteadOfIntersect()
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+
+/// Error Prevention Best Practice Validation Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions validate semantic models against error prevention best practices
+/// Asserts that relationship columns should be of the same data type.
+/// Columns used in a relationship should be of the same data type. Having columns within a relationship which are of different data types may lead to various issues.
+function 'PQL.Assert.BP.ShouldHaveSameDataTypeInRelationships' =
+		() =>
+		    VAR _Relationships = INFO.VIEW.RELATIONSHIPS()
+		    VAR _Columns = INFO.VIEW.COLUMNS()
+		    
+		    // Create a lookup for column data types
+		    VAR _ColumnDataTypes = 
+		        SUMMARIZE(
+		            _Columns,
+		            [Table],
+		            [Name],
+		            [DataType]
+		        )
+		    
+		    // Check each relationship for data type mismatches
+		    VAR _ViolatingRelationships = 
+		        FILTER(
+		            _Relationships,
+		            VAR _FromTable = [FromTable]
+		            VAR _FromColumn = [FromColumn]
+		            VAR _ToTable = [ToTable]
+		            VAR _ToColumn = [ToColumn]
+		            
+		            // Get data type of FromColumn
+		            VAR _FromDataType = 
+		                MAXX(
+		                    FILTER(
+		                        _ColumnDataTypes,
+		                        [Table] = _FromTable && [Name] = _FromColumn
+		                    ),
+		                    [DataType]
+		                )
+		            
+		            // Get data type of ToColumn
+		            VAR _ToDataType = 
+		                MAXX(
+		                    FILTER(
+		                        _ColumnDataTypes,
+		                        [Table] = _ToTable && [Name] = _ToColumn
+		                    ),
+		                    [DataType]
+		                )
+		            
+		            // Check if data types are different
+		            RETURN 
+		                NOT ISBLANK(_FromDataType) 
+		                && NOT ISBLANK(_ToDataType)
+		                && _FromDataType <> _ToDataType
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingRelationships)
+		    
+		    VAR _RelationshipsList = 
+		        CONCATENATEX(
+		            _ViolatingRelationships,
+		            [FromTable] & "[" & [FromColumn] & "] -> " & [ToTable] & "[" & [ToColumn] & "]",
+		            ", ",
+		            [FromTable], ASC,
+		            [FromColumn], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "RELATIONSHIPS WITH MISMATCHED DATA TYPES FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _RelationshipsList,
+		            "ALL RELATIONSHIP COLUMNS HAVE MATCHING DATA TYPES"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Error Prevention] Relationship columns should be of the same data type",
+		        "Expected", "All relationship columns should have matching data types",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Columns used in a relationship should be of the same data type. Ideally, they will be of integer data type. Having columns within a relationship which are of different data types may lead to various issues including slower performance and unexpected query results. Severity: High (3)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Runs all error prevention best practice checks.
+/// This function executes all error prevention validation rules and returns combined results.
+function 'PQL.Assert.BP.CheckErrorPrevention' =
+		() =>
+		    PQL.Assert.BP.ShouldHaveSameDataTypeInRelationships()
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+
+/// Formatting Best Practice Validation Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions validate semantic models against formatting best practices
+/// Asserts that visible measures should have their format string property assigned.
+/// Measures without format strings may display inconsistently and make reports harder to understand.
+function 'PQL.Assert.BP.ShouldProvideFormatStringForMeasures' =
+		() =>
+		    VAR _ViewMeasures = INFO.VIEW.MEASURES()
+		    VAR _Measures = INFO.MEASURES()
+		    VAR _Tables = INFO.VIEW.TABLES()
+		    
+		    // Create a lookup for hidden tables
+		    VAR _HiddenTables = 
+		        FILTER(
+		            _Tables,
+		            [IsHidden] = TRUE
+		        )
+		    
+		    // Check measures for missing format strings
+		    VAR _ViolatingMeasures = 
+		        FILTER(
+		            _ViewMeasures,
+		            VAR _TableName = [Table]
+		            VAR _MeasureID = [ID]
+		            
+		            // Get FormatString from INFO.MEASURES()
+		            VAR _FormatString = 
+		                MAXX(
+		                    FILTER(
+		                        _Measures,
+		                        [ID] = _MeasureID
+		                    ),
+		                    [FormatString]
+		                )
+		            
+		            // Check if table is hidden
+		            VAR _TableIsHidden = 
+		                COUNTROWS(
+		                    FILTER(
+		                        _HiddenTables,
+		                        [Name] = _TableName
+		                    )
+		                ) > 0
+		            
+		            // Measure is on a visible table and has no format string
+		            RETURN 
+		                NOT _TableIsHidden
+		                && (ISBLANK(_FormatString) || _FormatString = "")
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingMeasures)
+		    
+		    VAR _MeasuresList = 
+		        CONCATENATEX(
+		            _ViolatingMeasures,
+		            [Table] & "[" & [Name] & "]",
+		            ", ",
+		            [Table], ASC,
+		            [Name], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "MEASURES WITHOUT FORMAT STRING FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _MeasuresList,
+		            "ALL VISIBLE MEASURES HAVE FORMAT STRINGS ASSIGNED"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Formatting] Provide format string for measures",
+		        "Expected", "All visible measures should have format strings assigned",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Visible measures should have their format string property assigned. Measures without format strings may display inconsistently and make reports harder to understand. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that numeric columns should have SummarizeBy set to None.
+/// Numeric columns with SummarizeBy enabled may cause accidental aggregation in reports. Users should create explicit measures instead.
+function 'PQL.Assert.BP.ShouldNotSummarizeNumericColumns' =
+		() =>
+		    VAR _Columns = INFO.VIEW.COLUMNS()
+		    VAR _Tables = INFO.VIEW.TABLES()
+		    
+		    // Create a lookup for hidden tables
+		    VAR _HiddenTables = 
+		        FILTER(
+		            _Tables,
+		            [IsHidden] = TRUE
+		        )
+		    
+		    // Check numeric columns with SummarizeBy not set to None
+		    VAR _ViolatingColumns = 
+		        FILTER(
+		            _Columns,
+		            VAR _TableName = [Table]
+		            VAR _DataType = [DataType]
+		            VAR _IsHidden = [IsHidden]
+		            VAR _SummarizeBy = [SummarizeBy]
+		            
+		            // Check if table is hidden
+		            VAR _TableIsHidden = 
+		                COUNTROWS(
+		                    FILTER(
+		                        _HiddenTables,
+		                        [Name] = _TableName
+		                    )
+		                ) > 0
+		            
+		            // Column is numeric (Int64, Decimal, or Double)
+		            VAR _IsNumeric = 
+		                _DataType = "Integer"
+		                || _DataType = "Currency"
+		                || _DataType = "Number"
+		            
+		            // Check if SummarizeBy is not set to None
+		            RETURN 
+		                _IsNumeric
+		                && NOT _IsHidden
+		                && NOT _TableIsHidden
+		                && _SummarizeBy <> "None"
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingColumns)
+		    
+		    VAR _ColumnsList = 
+		        CONCATENATEX(
+		            _ViolatingColumns,
+		            [Table] & "[" & [Name] & "] (SummarizeBy: " & [SummarizeBy] & ")",
+		            ", ",
+		            [Table], ASC,
+		            [Name], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "NUMERIC COLUMNS WITH SUMMARIZE BY FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _ColumnsList,
+		            "ALL NUMERIC COLUMNS HAVE SUMMARIZE BY SET TO NONE"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Formatting] Do not summarize numeric columns",
+		        "Expected", "Numeric columns should have SummarizeBy set to None",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Numeric columns (Int64, Decimal, Double) should have their SummarizeBy property set to None to avoid accidental aggregation in Power BI. Users should create explicit measures instead. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that tables should have at least one column marked as a row label (IsDefaultLabel = true).
+/// Row labels help Power BI Copilot understand which columns represent the primary identifier for rows in a table.
+/// Reference: https://blog.crossjoin.co.uk/2024/08/25/tuning-power-bi-copilot-with-row-labels-and-key-columns/
+function 'PQL.Assert.BP.ShouldMarkRowLabels' =
+		() =>
+		    VAR _Columns = INFO.COLUMNS()
+		    VAR _Tables = INFO.TABLES()
+		    
+		    // Get visible tables (excluding hidden and system tables)
+		    VAR _VisibleTables = 
+		        FILTER(
+		            _Tables,
+		            NOT [IsHidden]
+		            && NOT CONTAINSSTRING([Name], "DateTableTemplate")
+		            && NOT CONTAINSSTRING([Name], "LocalDateTable")
+		        )
+		    
+		    // Check each visible table for row labels
+		    VAR _TablesWithoutRowLabels = 
+		        ADDCOLUMNS(
+		            _VisibleTables,
+		            "@HasRowLabel",
+		                VAR _TableID = [ID]
+		                VAR _RowLabelCount = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _Columns,
+		                            [TableID] = _TableID
+		                            && [IsDefaultLabel] = TRUE
+		                            && NOT [IsHidden]
+		                        )
+		                    )
+		                RETURN _RowLabelCount > 0
+		        )
+		    
+		    VAR _ViolatingTables = 
+		        FILTER(
+		            _TablesWithoutRowLabels,
+		            [@HasRowLabel] = FALSE
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingTables)
+		    
+		    VAR _TablesList = 
+		        CONCATENATEX(
+		            _ViolatingTables,
+		            [Name],
+		            ", ",
+		            [Name], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "TABLES WITHOUT ROW LABELS FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _TablesList,
+		            "ALL TABLES HAVE ROW LABELS ASSIGNED"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Formatting] Mark row labels",
+		        "Expected", "Tables should have at least one column marked as a row label",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Set the 'RowLabel' property to 'True' for row label columns within the column properties. This helps Power BI Copilot understand which columns represent the primary identifier for rows in a table. Reference: https://blog.crossjoin.co.uk/2024/08/25/tuning-power-bi-copilot-with-row-labels-and-key-columns/. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that columns on the "One" side of relationships should have the IsKey property set to true.
+/// Marking primary keys helps Power BI understand table relationships and optimize query performance.
+function 'PQL.Assert.BP.ShouldMarkPrimaryKeys' =
+		() =>
+		    VAR _Columns = INFO.COLUMNS()
+		    VAR _Tables = INFO.TABLES()
+		    VAR _Relationships = INFO.RELATIONSHIPS()
+		    
+		    // Get columns that are on the "One" side of relationships (primary keys)
+		    // ToCardinality is Int64: 1 = One, 2 = Many
+		    VAR _PrimaryKeyColumns = 
+		        ADDCOLUMNS(
+		            FILTER(
+		                _Relationships,
+		                [ToCardinality] = 1
+		            ),
+		            "@ToTableID", [ToTableID],
+		            "@ToColumnID", [ToColumnID]
+		        )
+		    
+		    // Find columns that should be marked as keys but aren't
+		    VAR _ViolatingColumns = 
+		        FILTER(
+		            _Columns,
+		            VAR _ColumnID = [ID]
+		            VAR _TableID = [TableID]
+		            VAR _IsHidden = [IsHidden]
+		            VAR _IsKey = [IsKey]
+		            
+		            // Get table information
+		            VAR _TableIsHidden = 
+		                COUNTROWS(
+		                    FILTER(
+		                        _Tables,
+		                        [ID] = _TableID
+		                        && [IsHidden] = TRUE
+		                    )
+		                ) > 0
+		            
+		            VAR _TableDataCategory = 
+		                MAXX(
+		                    FILTER(
+		                        _Tables,
+		                        [ID] = _TableID
+		                    ),
+		                    [DataCategory]
+		                )
+		            
+		            // Check if this column is a primary key in any relationship
+		            VAR _IsPrimaryKey = 
+		                COUNTROWS(
+		                    FILTER(
+		                        _PrimaryKeyColumns,
+		                        [@ToColumnID] = _ColumnID
+		                    )
+		                ) > 0
+		            
+		            // Return true if column should be marked as key but isn't
+		            RETURN 
+		                _IsPrimaryKey
+		                && NOT _IsKey
+		                && NOT _IsHidden
+		                && NOT _TableIsHidden
+		                && (_TableDataCategory <> "Time" || ISBLANK(_TableDataCategory))
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingColumns)
+		    
+		    // Build detailed list with table and column names
+		    VAR _ColumnsList = 
+		        CONCATENATEX(
+		            _ViolatingColumns,
+		            VAR _TableID = [TableID]
+		            VAR _TableName = 
+		                MAXX(
+		                    FILTER(
+		                        _Tables,
+		                        [ID] = _TableID
+		                    ),
+		                    [Name]
+		                )
+		            RETURN _TableName & "[" & [ExplicitName] & "]",
+		            ", "
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "PRIMARY KEY COLUMNS NOT MARKED AS KEYS FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _ColumnsList,
+		            "ALL PRIMARY KEY COLUMNS ARE MARKED AS KEYS"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Formatting] Mark primary keys",
+		        "Expected", "Columns on the 'One' side of relationships should have IsKey = true",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Set the 'Key' property to 'True' for primary key columns within the column properties. This helps Power BI understand table relationships and optimize query performance. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Runs all formatting best practice checks.
+/// This function executes all formatting validation rules and returns combined results.
+function 'PQL.Assert.BP.CheckFormatting' =
+		() =>
+		    UNION(
+		        PQL.Assert.BP.ShouldProvideFormatStringForMeasures(),
+		        PQL.Assert.BP.ShouldNotSummarizeNumericColumns(),
+		        PQL.Assert.BP.ShouldMarkRowLabels(),
+		        PQL.Assert.BP.ShouldMarkPrimaryKeys()
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Maintenance Best Practice Validation Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions validate semantic models against maintenance best practices
+/// Asserts that hidden measures not referenced by any DAX expressions should be removed.
+/// Hidden measures that are not referenced by any DAX expression are unnecessary and should be removed for maintainability.
+/// Scope: Measure. CompatibilityLevel >= 1200.
+function 'PQL.Assert.BP.ShouldRemoveUnnecessaryMeasures' =
+		() =>
+		    VAR _Measures = INFO.MEASURES()
+		    VAR _Tables = INFO.TABLES()
+		    VAR _Columns = INFO.COLUMNS()
+		    
+		    // Get hidden table IDs
+		    VAR _HiddenTableIDs = 
+		        SELECTCOLUMNS(
+		            FILTER(_Tables, [IsHidden]),
+		            "@ID", VALUE([ID])
+		        )
+		    
+		    // Get all measure expressions for reference checking
+		    VAR _AllMeasureExpressions = 
+		        SELECTCOLUMNS(
+		            _Measures,
+		            "@Expr", [Expression]
+		        )
+		    
+		    // Get calculated column expressions for reference checking
+		    VAR _CalcColumnExpressions = 
+		        SELECTCOLUMNS(
+		            FILTER(_Columns, [Type] = 2),
+		            "@Expr", [Expression]
+		        )
+		    
+		    // Find hidden measures not referenced by any expression
+		    VAR _ViolatingMeasures = 
+		        ADDCOLUMNS(
+		            FILTER(
+		                _Measures,
+		                VAR _MeasureName = [Name]
+		                VAR _IsHidden = [IsHidden]
+		                VAR _TableID = VALUE([TableID])
+		                
+		                // Check if table is hidden
+		                VAR _TableIsHidden = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _HiddenTableIDs,
+		                            [@ID] = _TableID
+		                        )
+		                    ) > 0
+		                
+		                // Measure must be hidden (directly or via table)
+		                VAR _IsHiddenMeasure = _IsHidden || _TableIsHidden
+		                
+		                // Check if measure name appears in any other measure expression
+		                VAR _SearchPattern = "[" & _MeasureName & "]"
+		                VAR _ReferencedInMeasures = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _AllMeasureExpressions,
+		                            CONTAINSSTRING([@Expr], _SearchPattern)
+		                        )
+		                    )
+		                
+		                // Check if measure name appears in any calculated column expression
+		                VAR _ReferencedInColumns = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _CalcColumnExpressions,
+		                            CONTAINSSTRING([@Expr], _SearchPattern)
+		                        )
+		                    )
+		                
+		                VAR _IsReferenced = (_ReferencedInMeasures + _ReferencedInColumns) > 0
+		                
+		                RETURN _IsHiddenMeasure && NOT _IsReferenced
+		            ),
+		            "@TableName",
+		                VAR _TableID = VALUE([TableID])
+		                RETURN 
+		                    MAXX(
+		                        FILTER(
+		                            _Tables,
+		                            VALUE([ID]) = _TableID
+		                        ),
+		                        [Name]
+		                    )
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingMeasures)
+		    
+		    VAR _MeasuresList = 
+		        CONCATENATEX(
+		            _ViolatingMeasures,
+		            [@TableName] & "[" & [Name] & "]",
+		            ", ",
+		            [@TableName], ASC,
+		            [Name], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "UNNECESSARY HIDDEN MEASURES FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _MeasuresList,
+		            "NO UNNECESSARY HIDDEN MEASURES FOUND"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Maintenance] Remove unnecessary measures",
+		        "Expected", "Hidden measures not referenced by any DAX expression should be removed",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Hidden measures that are not referenced by any DAX expression are unnecessary and should be removed for maintainability. Scope: Measure. CompatibilityLevel: 1200. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that visible objects should have descriptions.
+/// Add descriptions to visible tables, measures, and columns. Descriptions are shown on hover within the Field List in Power BI Desktop.
+/// Scope: Table, Measure, DataColumn, CalculatedColumn, CalculatedTable, CalculatedTableColumn, CalculationGroup.
+/// CompatibilityLevel >= 1200.
+/// Reference: https://www.elegantbi.com/post/datadictionary
+function 'PQL.Assert.BP.ShouldHaveObjectDescriptions' =
+		() =>
+		    VAR _Tables = INFO.TABLES()
+		    VAR _Measures = INFO.MEASURES()
+		    VAR _Columns = INFO.COLUMNS()
+		    
+		    // Get hidden table IDs for lookup
+		    VAR _HiddenTableIDs = 
+		        SELECTCOLUMNS(
+		            FILTER(_Tables, [IsHidden]),
+		            "@ID", VALUE([ID])
+		        )
+		    
+		    // Visible tables without description (exclude system tables)
+		    VAR _TablesWithoutDesc = 
+		        FILTER(
+		            _Tables,
+		            NOT [IsHidden]
+		            && NOT CONTAINSSTRING([Name], "DateTableTemplate")
+		            && NOT CONTAINSSTRING([Name], "LocalDateTable")
+		            && (ISBLANK([Description]) || [Description] = "")
+		        )
+		    
+		    // Visible measures without description (on visible tables)
+		    VAR _MeasuresWithoutDesc = 
+		        ADDCOLUMNS(
+		            FILTER(
+		                _Measures,
+		                VAR _TableID = VALUE([TableID])
+		                VAR _IsHidden = [IsHidden]
+		                VAR _TableIsHidden = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _HiddenTableIDs,
+		                            [@ID] = _TableID
+		                        )
+		                    ) > 0
+		                RETURN
+		                    NOT _IsHidden
+		                    && NOT _TableIsHidden
+		                    && (ISBLANK([Description]) || [Description] = "")
+		            ),
+		            "@TableName",
+		                VAR _TableID = VALUE([TableID])
+		                RETURN 
+		                    MAXX(
+		                        FILTER(
+		                            _Tables,
+		                            VALUE([ID]) = _TableID
+		                        ),
+		                        [Name]
+		                    )
+		        )
+		    
+		    // Visible columns without description (types 1, 2, 4 on visible tables)
+		    VAR _ColumnsWithoutDesc = 
+		        ADDCOLUMNS(
+		            FILTER(
+		                _Columns,
+		                VAR _TableID = VALUE([TableID])
+		                VAR _IsHidden = [IsHidden]
+		                VAR _ColumnType = [Type]
+		                VAR _TableIsHidden = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _HiddenTableIDs,
+		                            [@ID] = _TableID
+		                        )
+		                    ) > 0
+		                VAR _IsInScope = _ColumnType = 1 || _ColumnType = 2 || _ColumnType = 4
+		                RETURN
+		                    _IsInScope
+		                    && NOT _IsHidden
+		                    && NOT _TableIsHidden
+		                    && (ISBLANK([Description]) || [Description] = "")
+		            ),
+		            "@TableName",
+		                VAR _TableID = VALUE([TableID])
+		                RETURN 
+		                    MAXX(
+		                        FILTER(
+		                            _Tables,
+		                            VALUE([ID]) = _TableID
+		                        ),
+		                        [Name]
+		                    )
+		        )
+		    
+		    VAR _TableCount = COUNTROWS(_TablesWithoutDesc)
+		    VAR _MeasureCount = COUNTROWS(_MeasuresWithoutDesc)
+		    VAR _ColumnCount = COUNTROWS(_ColumnsWithoutDesc)
+		    VAR _ViolationCount = _TableCount + _MeasureCount + _ColumnCount
+		    
+		    VAR _TablesList = 
+		        CONCATENATEX(
+		            _TablesWithoutDesc,
+		            "'" & [Name] & "'",
+		            ", ",
+		            [Name], ASC
+		        )
+		    
+		    VAR _MeasuresList = 
+		        CONCATENATEX(
+		            _MeasuresWithoutDesc,
+		            [@TableName] & "[" & [Name] & "]",
+		            ", ",
+		            [@TableName], ASC,
+		            [Name], ASC
+		        )
+		    
+		    VAR _ColumnsList = 
+		        CONCATENATEX(
+		            _ColumnsWithoutDesc,
+		            [@TableName] & "[" & [ExplicitName] & "]",
+		            ", ",
+		            [@TableName], ASC,
+		            [ExplicitName], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "OBJECTS WITHOUT DESCRIPTIONS (" & FORMAT(_ViolationCount, "0") & ")"
+		                & IF(_TableCount > 0, " | Tables (" & FORMAT(_TableCount, "0") & "): " & _TablesList, "")
+		                & IF(_MeasureCount > 0, " | Measures (" & FORMAT(_MeasureCount, "0") & "): " & _MeasuresList, "")
+		                & IF(_ColumnCount > 0, " | Columns (" & FORMAT(_ColumnCount, "0") & "): " & _ColumnsList, ""),
+		            "ALL VISIBLE OBJECTS HAVE DESCRIPTIONS"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Maintenance] Visible objects with no description",
+		        "Expected", "All visible tables, measures, and columns should have descriptions",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Add descriptions to visible objects. Descriptions are shown on hover within the Field List in Power BI Desktop. Additionally, you can leverage these descriptions to create an automated data dictionary. Reference: https://www.elegantbi.com/post/datadictionary. Scope: Table, Measure, DataColumn, CalculatedColumn, CalculatedTable, CalculatedTableColumn, CalculationGroup. CompatibilityLevel: 1200. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that hidden columns not referenced by any DAX expressions, relationships, hierarchy levels, or Sort By-properties should be removed.
+/// Scope: DataColumn, CalculatedColumn, CalculatedTableColumn. CompatibilityLevel >= 1200.
+function 'PQL.Assert.BP.ShouldRemoveUnnecessaryColumns' =
+		() =>
+		    VAR _Columns = INFO.COLUMNS()
+		    VAR _Tables = INFO.TABLES()
+		    VAR _Dependencies = INFO.CALCDEPENDENCY()
+		    VAR _TablePermissions = INFO.TABLEPERMISSIONS()
+		    
+		    // Get hidden table IDs
+		    VAR _HiddenTableIDs = 
+		        SELECTCOLUMNS(
+		            FILTER(_Tables, [IsHidden]),
+		            "@ID", VALUE([ID])
+		        )
+		    
+		    // All columns referenced by anything (measures, calc columns, relationships, hierarchies)
+		    // REFERENCED_OBJECT_TYPE: COLUMN, CALC_COLUMN for direct refs; ATTRIBUTE_HIERARCHY for hierarchy levels
+		    VAR _ReferencedColumns = 
+		        DISTINCT(
+		            SELECTCOLUMNS(
+		                FILTER(
+		                    _Dependencies,
+		                    [REFERENCED_OBJECT_TYPE] = "COLUMN"
+		                    || [REFERENCED_OBJECT_TYPE] = "CALC_COLUMN"
+		                    || [REFERENCED_OBJECT_TYPE] = "ATTRIBUTE_HIERARCHY"
+		                ),
+		                "@RefTable", [REFERENCED_TABLE],
+		                "@RefColumn", [REFERENCED_OBJECT]
+		            )
+		        )
+		    
+		    // Columns used as SortBy target (SortByColumnID references)
+		    VAR _SortByColumnIDs = 
+		        DISTINCT(
+		            SELECTCOLUMNS(
+		                FILTER(_Columns, NOT ISBLANK([SortByColumnID]) && [SortByColumnID] > 0),
+		                "@SortByID", [SortByColumnID]
+		            )
+		        )
+		    
+		    // RLS filter expressions (if any roles exist)
+		    VAR _RLSExpressions = 
+		        SELECTCOLUMNS(
+		            FILTER(_TablePermissions, NOT ISBLANK([FilterExpression]) && [FilterExpression] <> ""),
+		            "@FilterExpr", [FilterExpression]
+		        )
+		    
+		    // Find hidden columns not referenced by anything
+		    VAR _ViolatingColumns = 
+		        ADDCOLUMNS(
+		            FILTER(
+		                _Columns,
+		                VAR _ColumnType = [Type]
+		                VAR _IsHidden = [IsHidden]
+		                VAR _TableID = VALUE([TableID])
+		                VAR _ColumnID = VALUE([ID])
+		                VAR _ColumnName = [ExplicitName]
+		                
+		                // Scope: DataColumn (1), CalculatedColumn (2), CalculatedTableColumn (4)
+		                VAR _IsInScope = _ColumnType = 1 || _ColumnType = 2 || _ColumnType = 4
+		                
+		                // Check if table is hidden
+		                VAR _TableIsHidden = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _HiddenTableIDs,
+		                            [@ID] = _TableID
+		                        )
+		                    ) > 0
+		                
+		                // Column or table must be hidden
+		                VAR _IsHiddenColumn = _IsHidden || _TableIsHidden
+		                
+		                // Get table name for reference matching
+		                VAR _TableName = 
+		                    MAXX(
+		                        FILTER(_Tables, VALUE([ID]) = _TableID),
+		                        [Name]
+		                    )
+		                
+		                // Check if referenced by any DAX, relationship, or hierarchy
+		                VAR _IsReferenced = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _ReferencedColumns,
+		                            [@RefTable] = _TableName && [@RefColumn] = _ColumnName
+		                        )
+		                    ) > 0
+		                
+		                // Check if used as SortBy target by another column
+		                VAR _UsedInSortBy = 
+		                    COUNTROWS(
+		                        FILTER(_SortByColumnIDs, [@SortByID] = _ColumnID)
+		                    ) > 0
+		                
+		                // Check if referenced in RLS filter expressions
+		                VAR _SearchPattern1 = _TableName & "[" & _ColumnName & "]"
+		                VAR _SearchPattern2 = "'" & _TableName & "'[" & _ColumnName & "]"
+		                VAR _UsedInRLS = 
+		                    COUNTROWS(
+		                        FILTER(
+		                            _RLSExpressions,
+		                            CONTAINSSTRING([@FilterExpr], _SearchPattern1)
+		                            || CONTAINSSTRING([@FilterExpr], _SearchPattern2)
+		                        )
+		                    ) > 0
+		                
+		                RETURN
+		                    _IsInScope
+		                    && _IsHiddenColumn
+		                    && NOT _IsReferenced
+		                    && NOT _UsedInSortBy
+		                    && NOT _UsedInRLS
+		            ),
+		            "@TableName",
+		                VAR _TableID = VALUE([TableID])
+		                RETURN 
+		                    MAXX(
+		                        FILTER(
+		                            _Tables,
+		                            VALUE([ID]) = _TableID
+		                        ),
+		                        [Name]
+		                    )
+		        )
+		    
+		    VAR _ViolationCount = COUNTROWS(_ViolatingColumns)
+		    
+		    VAR _ColumnsList = 
+		        CONCATENATEX(
+		            _ViolatingColumns,
+		            [@TableName] & "[" & [ExplicitName] & "]",
+		            ", ",
+		            [@TableName], ASC,
+		            [ExplicitName], ASC
+		        )
+		    
+		    VAR _Passed = _ViolationCount = 0
+		    
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolationCount > 0,
+		            "UNNECESSARY HIDDEN COLUMNS FOUND (" & FORMAT(_ViolationCount, "0") & "): " & _ColumnsList,
+		            "NO UNNECESSARY HIDDEN COLUMNS FOUND"
+		        )
+		    
+		    RETURN ROW(
+		        "TestName", "[Maintenance] Remove unnecessary columns",
+		        "Expected", "Hidden columns not referenced by any DAX expression, relationship, hierarchy, or SortBy should be removed",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Hidden columns that are not referenced by any DAX expressions, relationships, hierarchy levels, or Sort By-properties should be removed. Scope: DataColumn, CalculatedColumn, CalculatedTableColumn. CompatibilityLevel: 1200. Severity: High (3)."
+		    )	
+    annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Runs all maintenance best practice checks.
+/// This function executes all maintenance validation rules and returns combined results.
+function 'PQL.Assert.BP.CheckMaintenance' =
+		() =>
+		    UNION(
+		        PQL.Assert.BP.ShouldRemoveUnnecessaryMeasures(),
+		        PQL.Assert.BP.ShouldRemoveUnnecessaryColumns(),
+		        PQL.Assert.BP.ShouldHaveObjectDescriptions()
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+
+/// DAX Best Practice Validation Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions validate semantic models against best practices and performance recommendations
+/// Asserts that no bi-directional relationships exist on high-cardinality columns.
+/// For high-cardinality columns (>1M distinct values), bi-directional relationships can impact performance.
+function 'PQL.Assert.BP.ShouldAvoidBiDirectionalOnHighCardinalityColumn' =
+		() =>
+		    VAR _CardinalityThreshold = 1000000
+		    VAR _Relationships = INFO.VIEW.RELATIONSHIPS()
+		    VAR _ColumnStats = COLUMNSTATISTICS()
+		    VAR _BiDirectionalRels = 
+		        FILTER(
+		            _Relationships,
+		            [CrossFilteringBehavior] = "BothDirections"
+		        )
+		    VAR _HighCardinalityBiDirRels = 
+		        FILTER(
+		            _BiDirectionalRels,
+		            VAR _FromTable = [FromTable]
+		            VAR _FromColumn = [FromColumn]
+		            VAR _ToTable = [ToTable]
+		            VAR _ToColumn = [ToColumn]
+		            VAR _FromColumnCardinality = 
+		                MAXX(
+		                    FILTER(
+		                        _ColumnStats,
+		                        [Table Name] = _FromTable && [Column Name] = _FromColumn
+		                    ),
+		                    [Cardinality]
+		                )
+		            VAR _ToColumnCardinality = 
+		                MAXX(
+		                    FILTER(
+		                        _ColumnStats,
+		                        [Table Name] = _ToTable && [Column Name] = _ToColumn
+		                    ),
+		                    [Cardinality]
+		                )
+		            RETURN _FromColumnCardinality > _CardinalityThreshold || _ToColumnCardinality > _CardinalityThreshold
+		        )
+		    VAR _HighCardinalityCount = COUNTROWS(_HighCardinalityBiDirRels)
+		    VAR _Passed = _HighCardinalityCount = 0
+		    RETURN ROW(
+		        "TestName", "[Performance] Avoid bi-directional relationships against high-cardinality columns",
+		        "Expected", "No bi-directional relationships on high-cardinality columns (>1M)",
+		        "Actual", IF(_HighCardinalityCount > 0, "BI-DIRECTIONAL RELATIONSHIPS ON HIGH-CARDINALITY COLUMNS FOUND (" & FORMAT(_HighCardinalityCount, "0") & ")", "NO HIGH-CARDINALITY BI-DIRECTIONAL RELATIONSHIPS"),
+		        "Passed", _Passed,
+		        "RuleDescription", "Avoid bi-directional relationships on high-cardinality columns (>1M distinct values) for better performance. Severity: Medium (2)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that auto-date tables should be removed.
+/// Auto-date tables (DateTableTemplate_* and LocalDateTable_*) consume memory and should be disabled.
+function 'PQL.Assert.BP.ShouldRemoveAutoDateTable' =
+		() =>
+		    VAR _Tables = INFO.VIEW.TABLES()
+		    VAR _AutoDateTableCount = 
+		        COUNTROWS(
+		            FILTER(
+		                _Tables,
+		                LEFT([Name], 18) = "DateTableTemplate_" || LEFT([Name], 15) = "LocalDateTable_"
+		            )
+		        )
+		    VAR _Passed = _AutoDateTableCount = 0
+		    RETURN ROW(
+		        "TestName", "[Performance] Remove auto-date table",
+		        "Expected", "No auto-date tables should exist in the model",
+		        "Actual", IF(_AutoDateTableCount > 0, "AUTO-DATE TABLES FOUND (" & FORMAT(_AutoDateTableCount, "0") & ")", "NO AUTO-DATE TABLES"),
+		        "Passed", _Passed,
+		        "RuleDescription", "Avoid using auto-date tables. Turn off auto-date table in Power BI Desktop settings to save memory. Severity: Medium (2)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that no columns use floating point data types.
+/// The "Double" floating point data type should be avoided to prevent unpredictable roundoff errors and performance issues.
+function 'PQL.Assert.BP.ShouldAvoidFloatingPointDataTypes' =
+		() =>
+		    VAR _Columns = INFO.VIEW.COLUMNS()
+		    VAR _DoubleColumns = 
+		        FILTER(
+		            _Columns,
+		            [DataType] = "Number"
+		        )
+		    VAR _DoubleColumnCount = COUNTROWS(_DoubleColumns)
+		    VAR _ColumnsList = 
+		        CONCATENATEX(
+		            _DoubleColumns,
+		            [Table] & "[" & [Name] & "]",
+		            ", ",
+		            [Table], ASC,
+		            [Name], ASC
+		        )
+		    VAR _Passed = _DoubleColumnCount = 0
+		    VAR _ActualMessage = 
+		        IF(
+		            _DoubleColumnCount > 0,
+		            "NUMBER DATA TYPE COLUMNS FOUND (" & FORMAT(_DoubleColumnCount, "0") & "): " & _ColumnsList,
+		            "NO NUMBER DATA TYPE COLUMNS"
+		        )
+		    RETURN ROW(
+		        "TestName", "[Performance] Do not use floating point data types",
+		        "Expected", "No columns should use Number data type",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "Avoid using Number floating point data type, as it can result in unpredictable roundoff errors and decreased performance. Use Int64 or Decimal where appropriate (Decimal limited to 4 digits after decimal). Severity: Medium (2)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Asserts that IsAvailableInMdx should be set to false on hidden non-attribute columns.
+/// Hidden columns that still have IsAvailableInMdx = true cause unnecessary attribute hierarchy builds, consuming memory and slowing processing.
+function 'PQL.Assert.BP.ShouldSetIsAvailableInMdxFalseOnNonAttributeColumns' =
+		() =>
+		    VAR _Columns = INFO.VIEW.COLUMNS()
+		    VAR _Tables = INFO.VIEW.TABLES()
+		    VAR _ViolatingColumns = 
+		        FILTER(
+		            _Columns,
+		            VAR _CurrentTable = [Table]
+		            VAR _IsHidden = [IsHidden]
+		            VAR _IsAvailableInMDX = [IsAvailableInMDX]
+		            VAR _TableIsHidden = 
+		                COUNTROWS(
+		                    FILTER(_Tables, [Name] = _CurrentTable && [IsHidden] = TRUE)
+		                ) > 0
+		            RETURN
+		                _IsAvailableInMDX = TRUE
+		                && (_IsHidden = TRUE || _TableIsHidden = TRUE)
+		        )
+		    VAR _ViolatingColumnCount = COUNTROWS(_ViolatingColumns)
+		    VAR _ColumnsList = 
+		        CONCATENATEX(
+		            _ViolatingColumns,
+		            [Table] & "[" & [Name] & "]",
+		            ", ",
+		            [Table], ASC,
+		            [Name], ASC
+		        )
+		    VAR _Passed = _ViolatingColumnCount = 0
+		    VAR _ActualMessage = 
+		        IF(
+		            _ViolatingColumnCount > 0,
+		            "HIDDEN COLUMNS WITH ISAVAILABLEINMDX=TRUE FOUND (" & FORMAT(_ViolatingColumnCount, "0") & "): " & _ColumnsList,
+		            "ALL HIDDEN COLUMNS HAVE ISAVAILABLEINMDX SET TO FALSE"
+		        )
+		    RETURN ROW(
+		        "TestName", "[Performance] Set IsAvailableInMdx to false on non-attribute columns",
+		        "Expected", "Hidden columns should have IsAvailableInMdx = false",
+		        "Actual", _ActualMessage,
+		        "Passed", _Passed,
+		        "RuleDescription", "To speed up processing time and conserve memory, attribute hierarchies should not be built for hidden columns. Set IsAvailableInMdx to false for better performance. Severity: Medium (2)."
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6
+
+/// Runs all performance best practice checks.
+/// This function executes all performance validation rules and returns combined results.
+function 'PQL.Assert.BP.CheckPerformance' =
+		() =>
+		    UNION(
+		        PQL.Assert.BP.ShouldAvoidBiDirectionalOnHighCardinalityColumn(),
+		        PQL.Assert.BP.ShouldRemoveAutoDateTable(),
+		        PQL.Assert.BP.ShouldAvoidFloatingPointDataTypes(),
+		        PQL.Assert.BP.ShouldSetIsAvailableInMdxFalseOnNonAttributeColumns()
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.6

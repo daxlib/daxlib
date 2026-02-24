@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "PowerofBI.IBCS",
+  "version": "0.8.1",
+  "authors": "Andrzej Leszkiewicz",
+  "description": "DAX user-defined functions for creating International Business Communication Standards (IBCS)-guided SVG visualizations embedded into core Power BI visuals.",
+  "tags": "IBCS,SVG,VISUALIZATION",
+  "releaseNotes": "Updated readme",
+  "projectUrl": "https://powerofbi.org/ibcs",
+  "repositoryUrl": "https://github.com/avatorl/dax-udf-svg-ibcs",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
