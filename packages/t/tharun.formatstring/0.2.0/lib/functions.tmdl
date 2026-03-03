@@ -1,4 +1,4 @@
-// Creates dynamic format strings with optional thousand separators, decimals, negative brackets, and delta icons. Example: 1000000 with K multiplier → "1.0K▲"
+/// Creates dynamic format strings with optional thousand separators, decimals, negative brackets, and delta icons. Example: 1000000 with K multiplier → "1.0K▲"
 function 'Tharun.FormatString.GetDynamicFormatString' =
 		(
 			Val: anyref, numberOfDecimalPlaces: numeric, 
