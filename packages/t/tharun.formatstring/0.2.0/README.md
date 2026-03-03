@@ -4,7 +4,7 @@ This package provides advanced DAX UDF functions for creating dynamic, customiza
 
 ## Functions Overview
 
-### 1. GetDynamicFormatString
+### 1. Tharun.FormatString.GetDynamicFormatString
 Creates dynamic format strings with comprehensive customization options including thousand separators, decimal places, negative number brackets, thousands multipliers, and delta indicators.
 
 **Parameters:**
@@ -31,21 +31,21 @@ Creates dynamic format strings with comprehensive customization options includin
 **DAX Example:**
 ```dax
 // Sales metric with automatic scaling
-FORMAT(1250000, GetDynamicFormatString(1250000, 1, FALSE(), TRUE(), FALSE(), FALSE(), TRUE()))
+FORMAT(1250000, Tharun.FormatString.GetDynamicFormatString(1250000, 1, FALSE(), TRUE(), FALSE(), FALSE(), TRUE()))
 // Returns: "1.3M▲"
 
 // Revenue with thousand separators and brackets for negatives
-FORMAT(-750000, GetDynamicFormatString(-750000, 0, TRUE(), TRUE(), TRUE(), FALSE(), FALSE()))
+FORMAT(-750000, Tharun.FormatString.GetDynamicFormatString(-750000, 0, TRUE(), TRUE(), TRUE(), FALSE(), FALSE()))
 // Returns: "(750K)"
 
 // Budget comparison with delta icons
-FORMAT(2500000, GetDynamicFormatString(2500000, 2, FALSE(), TRUE(), FALSE(), TRUE(), TRUE()))
+FORMAT(2500000, Tharun.FormatString.GetDynamicFormatString(2500000, 2, FALSE(), TRUE(), FALSE(), TRUE(), TRUE()))
 // Returns: "2.50M▲"
 ```
 
 ---
 
-### 2. GetNumericDynamicFormatString
+### 2. Tharun.FormatString.GetNumericDynamicFormatString
 Creates numeric format strings with custom delta icons for more control over visual indicators. Ideal for dashboards that need custom positive/negative icons.
 
 **Parameters:**
@@ -72,21 +72,21 @@ Creates numeric format strings with custom delta icons for more control over vis
 **DAX Example:**
 ```dax
 // Growth indicator with custom icons
-FORMAT(3200000, GetNumericDynamicFormatString(3200000, 1, FALSE(), TRUE(), FALSE(), FALSE(), TRUE(), "📈", "📉"))
+FORMAT(3200000, Tharun.FormatString.GetNumericDynamicFormatString(3200000, 1, FALSE(), TRUE(), FALSE(), FALSE(), TRUE(), "📈", "📉"))
 // Returns: "3.2M 📈"
 
 // Performance metric with checkmarks
-FORMAT(-500000, GetNumericDynamicFormatString(-500000, 0, TRUE(), FALSE(), TRUE(), FALSE(), TRUE(), "✓", "✗"))
+FORMAT(-500000, Tharun.FormatString.GetNumericDynamicFormatString(-500000, 0, TRUE(), FALSE(), TRUE(), FALSE(), TRUE(), "✓", "✗"))
 // Returns: "(500,000) ✗"
 
 // Sales target with arrows
-FORMAT(1200000, GetNumericDynamicFormatString(1200000, 2, FALSE(), TRUE(), FALSE(), TRUE(), TRUE(), "↑", "↓"))
+FORMAT(1200000, Tharun.FormatString.GetNumericDynamicFormatString(1200000, 2, FALSE(), TRUE(), FALSE(), TRUE(), TRUE(), "↑", "↓"))
 // Returns: "1.20M ↑"
 ```
 
 ---
 
-### 3. GetPercentageDynamicFormatString
+### 3. Tharun.FormatString.GetPercentageDynamicFormatString
 Creates percentage format strings with custom delta icons. Perfect for KPI displays, target achievement metrics, and growth percentages.
 
 **Parameters:**
@@ -112,15 +112,15 @@ Creates percentage format strings with custom delta icons. Perfect for KPI displ
 **DAX Example:**
 ```dax
 // Target achievement with arrow indicators
-FORMAT(0.87, GetPercentageDynamicFormatString(0.87, 1, FALSE(), FALSE(), FALSE(), TRUE(), "↑", "↓"))
+FORMAT(0.87, Tharun.FormatString.GetPercentageDynamicFormatString(0.87, 1, FALSE(), FALSE(), FALSE(), TRUE(), "↑", "↓"))
 // Returns: "87.0% ↑"
 
 // Variance with custom icons
-FORMAT(-0.12, GetPercentageDynamicFormatString(-0.12, 2, FALSE(), TRUE(), FALSE(), TRUE(), "📈", "📉"))
+FORMAT(-0.12, Tharun.FormatString.GetPercentageDynamicFormatString(-0.12, 2, FALSE(), TRUE(), FALSE(), TRUE(), "📈", "📉"))
 // Returns: "(12.00%) 📉"
 
 // Growth rate simple display
-FORMAT(0.45, GetPercentageDynamicFormatString(0.45, 0, FALSE(), FALSE(), FALSE(), FALSE(), "", ""))
+FORMAT(0.45, Tharun.FormatString.GetPercentageDynamicFormatString(0.45, 0, FALSE(), FALSE(), FALSE(), FALSE(), "", ""))
 // Returns: "45%"
 ```
 
@@ -135,8 +135,8 @@ Display sales figures that automatically scale based on magnitude.
 // Sales Values: 500K, 5M, 15M
 Sales_Formatted = 
     IF(Sales >= 1000000,
-        FORMAT(Sales, GetDynamicFormatString(Sales, 1, FALSE(), TRUE(), FALSE(), FALSE(), TRUE())),
-        FORMAT(Sales, GetDynamicFormatString(Sales, 0, TRUE(), FALSE(), FALSE(), FALSE(), FALSE()))
+        FORMAT(Sales, Tharun.FormatString.GetDynamicFormatString(Sales, 1, FALSE(), TRUE(), FALSE(), FALSE(), TRUE())),
+        FORMAT(Sales, Tharun.FormatString.GetDynamicFormatString(Sales, 0, TRUE(), FALSE(), FALSE(), FALSE(), FALSE()))
     )
 
 // Results: "0.5M▲", "5.0M▲", "15.0M▲"
@@ -149,7 +149,7 @@ Show budget variances with visual indicators.
 // Variance: +250000, -500000, +1200000
 Variance_Formatted = 
     FORMAT(Variance, 
-        GetNumericDynamicFormatString(Variance, 0, TRUE(), TRUE(), TRUE(), FALSE(), TRUE(), "✓ Over", "✗ Under")
+        Tharun.FormatString.GetNumericDynamicFormatString(Variance, 0, TRUE(), TRUE(), TRUE(), FALSE(), TRUE(), "✓ Over", "✗ Under")
     )
 
 // Results: "250K ✓ Over", "(500K) ✗ Under", "1.2M ✓ Over"
@@ -162,7 +162,7 @@ Show percentage achievement of targets with custom icons.
 // Achievement: 92%, 75%, 110%
 Achievement_Formatted = 
     FORMAT(Achievement, 
-        GetPercentageDynamicFormatString(Achievement, 1, FALSE(), FALSE(), FALSE(), TRUE(), "📈", "📉")
+        Tharun.FormatString.GetPercentageDynamicFormatString(Achievement, 1, FALSE(), FALSE(), FALSE(), TRUE(), "📈", "📉")
     )
 
 // Results: "92.0% 📈", "75.0% 📈", "110.0% 📈"
@@ -175,7 +175,7 @@ Display values across different currency scales consistently.
 // EUR: 1200000, GBP: -750000, USD: 2500000000
 Currency_Display = 
     FORMAT(Amount,
-        GetDynamicFormatString(Amount, 2, TRUE(), TRUE(), TRUE(), FALSE(), FALSE())
+        Tharun.FormatString.GetDynamicFormatString(Amount, 2, TRUE(), TRUE(), TRUE(), FALSE(), FALSE())
     )
 
 // Results: "1.20M", "(750K)", "2.50B"
@@ -188,7 +188,7 @@ Track growth with up/down visual cues.
 // Growth: +18%, -3%, +5.5%
 Growth_Formatted = 
     FORMAT(GrowthRate,
-        GetPercentageDynamicFormatString(GrowthRate, 1, FALSE(), FALSE(), FALSE(), TRUE(), "↑", "↓")
+        Tharun.FormatString.GetPercentageDynamicFormatString(GrowthRate, 1, FALSE(), FALSE(), FALSE(), TRUE(), "↑", "↓")
     )
 
 // Results: "18.0% ↑", "(3.0%) ↓", "5.5% ↑"
