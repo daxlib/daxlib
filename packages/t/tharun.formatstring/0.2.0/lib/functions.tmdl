@@ -120,7 +120,7 @@ function 'Tharun.FormatString.GetNumericDynamicFormatString' =
 	annotation DAXLIB_PackageVersion = 0.2.0
 
 
-// Creates percentage format strings with custom delta icons. Example: 0.85 with 2 decimals → "85.00% ▲"
+/// Creates percentage format strings with custom delta icons. Example: 0.85 with 2 decimals → "85.00% ▲"
 function 'Tharun.FormatString.GetPercentageDynamicFormatString' = 
 			(
                 Val: anyref, numberOfDecimalPlaces: numeric, 
