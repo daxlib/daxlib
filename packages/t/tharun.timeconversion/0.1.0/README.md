@@ -4,7 +4,7 @@ This package provides DAX UDF functions to convert total seconds into human-read
 
 ## Functions Overview
 
-### 1. ConvertSecondsToMinutes
+### 1. Tharun.TimeConversion.ConvertSecondsToMinutes
 Converts total seconds into Minutes:Seconds (MM:SS) format.
 
 **Parameters:**
@@ -27,15 +27,15 @@ Converts total seconds into Minutes:Seconds (MM:SS) format.
 **DAX Example:**
 ```dax
 // Display with symbols
-ConvertSecondsToMinutes(125, TRUE())  // Returns "2m:5s"
+Tharun.TimeConversion.ConvertSecondsToMinutes(125, TRUE())  // Returns "2m:5s"
 
 // Display in standard time format
-ConvertSecondsToMinutes(125, FALSE()) // Returns "02:05"
+Tharun.TimeConversion.ConvertSecondsToMinutes(125, FALSE()) // Returns "02:05"
 ```
 
 ---
 
-### 2. ConvertSecondsToHours
+### 2. Tharun.TimeConversion.ConvertSecondsToHours
 Converts total seconds into Hours:Minutes:Seconds (HH:MM:SS) format.
 
 **Parameters:**
@@ -58,15 +58,15 @@ Converts total seconds into Hours:Minutes:Seconds (HH:MM:SS) format.
 **DAX Example:**
 ```dax
 // Display with symbols (useful for human-readable reports)
-ConvertSecondsToHours(3725, TRUE())  // Returns "1h:2m:5s"
+Tharun.TimeConversion.ConvertSecondsToHours(3725, TRUE())  // Returns "1h:2m:5s"
 
 // Display in compact time format (useful for data imports/exports)
-ConvertSecondsToHours(3725, FALSE()) // Returns "01:02:05"
+Tharun.TimeConversion.ConvertSecondsToHours(3725, FALSE()) // Returns "01:02:05"
 ```
 
 ---
 
-### 3. ConvertSecondsToDays
+### 3. Tharun.TimeConversion.ConvertSecondsToDays
 Converts total seconds into Days:Hours:Minutes:Seconds (DD:HH:MM:SS) format.
 
 **Parameters:**
@@ -89,10 +89,10 @@ Converts total seconds into Days:Hours:Minutes:Seconds (DD:HH:MM:SS) format.
 **DAX Example:**
 ```dax
 // Display with symbols (great for dashboards and reports)
-ConvertSecondsToDays(90061, TRUE())  // Returns "1d:1h:1m:1s"
+Tharun.TimeConversion.ConvertSecondsToDays(90061, TRUE())  // Returns "1d:1h:1m:1s"
 
 // Display in standard format (great for data tables)
-ConvertSecondsToDays(90061, FALSE()) // Returns "01:01:01:01"
+Tharun.TimeConversion.ConvertSecondsToDays(90061, FALSE()) // Returns "01:01:01:01"
 ```
 
 ---
