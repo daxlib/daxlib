@@ -57,7 +57,7 @@ function 'Tharun.FormatString.GetDynamicFormatString' =
 	annotation DAXLIB_PackageVersion = 0.2.0
 
 
-// Creates numeric format strings with custom delta icons for positive/negative values. Example: -5000 with brackets and custom icon → "(5.0K)▼"
+/// Creates numeric format strings with custom delta icons for positive/negative values. Example: -5000 with brackets and custom icon → "(5.0K)▼"
 function 'Tharun.FormatString.GetNumericDynamicFormatString' =
 			(
                 Val: anyref, numberOfDecimalPlaces: numeric, 
