@@ -221,9 +221,9 @@ Growth_Formatted =
 
 ## Notes
 
-- Use `GetDynamicFormatString` for standard numeric displays with built-in icons (▲/▼)
-- Use `GetNumericDynamicFormatString` when you need custom icons for better visual control
-- Use `GetPercentageDynamicFormatString` exclusively for percentage metrics
+- Use `Tharun.FormatString.GetDynamicFormatString` for standard numeric displays with built-in icons (▲/▼)
+- Use `Tharun.FormatString.GetNumericDynamicFormatString` when you need custom icons for better visual control
+- Use `Tharun.FormatString.GetPercentageDynamicFormatString` exclusively for percentage metrics
 - Test formatting with your actual data ranges to ensure scaling works as expected
 - All functions work with FORMAT() DAX function for rendering values
 - Custom icons can be emojis, Unicode symbols, or plain text strings
