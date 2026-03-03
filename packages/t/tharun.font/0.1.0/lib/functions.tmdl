@@ -1,0 +1,38 @@
+/// Generates SVG with embedded custom font for rendering text in Power BI. Example: ApplyCustomFont("Hello", base64Font, "MyFont", "middle") returns SVG data URI
+function 'Tharun.Font.ApplyCustomFont' =
+        (
+            tex: string, font: string, 
+            fontName:string, alignment:string
+        ) =>
+            VAR __Result =
+                            "data:image/svg+xml;utf8,
+                            <svg xmlns='http://www.w3.org/2000/svg' width='200' height='30'>
+    
+                            <style>
+    
+                            @font-face {
+                                font-family:'"&fontName&"';
+                                src: url('data:font/woff2;base64,"
+                                    & font &
+                                    "') format('woff2');
+                            }
+    
+                            text {
+                                font-family: '"&fontName&"';
+                                font-size: 12px;
+                                fill: black;
+                                text-anchor: "&alignment&";
+                            }
+    
+                            </style>
+    
+                            <text x='50%' y='50%' dominant-baseline='middle'>"
+                                    & tex &
+                                    "</text>
+    
+                            </svg>"
+    
+                RETURN 
+                    __Result
+	annotation DAXLIB_PackageId = Tharun.Font
+	annotation DAXLIB_PackageVersion = 0.1.0
