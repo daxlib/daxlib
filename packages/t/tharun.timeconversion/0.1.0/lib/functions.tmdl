@@ -1,4 +1,4 @@
-// Converts total seconds to MM:SS format. Example: 125 seconds → "2m:5s" or "02:05"
+/// Converts total seconds to MM:SS format. Example: 125 seconds → "2m:5s" or "02:05"
 function 'Tharun.TimeConvertion.ConvertSecondsToMinutes' =
 			(
                 Seconds:int64, 
@@ -13,7 +13,7 @@ function 'Tharun.TimeConvertion.ConvertSecondsToMinutes' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 
-// Converts total seconds to HH:MM:SS format. Example: 3725 seconds → "1h:2m:5s" or "01:02:05"
+/// Converts total seconds to HH:MM:SS format. Example: 3725 seconds → "1h:2m:5s" or "01:02:05"
 function 'Tharun.TimeConvertion.ConvertSecondsToHours' =
         (
             Seconds:int64, 
@@ -30,7 +30,7 @@ function 'Tharun.TimeConvertion.ConvertSecondsToHours' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 
-// Converts total seconds to DD:HH:MM:SS format. Example: 90061 seconds → "1d:1h:1m:1s" or "01:01:01:01"
+/// Converts total seconds to DD:HH:MM:SS format. Example: 90061 seconds → "1d:1h:1m:1s" or "01:01:01:01"
 function 'Tharun.TimeConvertion.ConvertSecondsToDays' =
 			(
                 Seconds:int64, 
