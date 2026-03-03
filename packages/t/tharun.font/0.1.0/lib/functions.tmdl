@@ -1,4 +1,4 @@
-// Generates SVG with embedded custom font for rendering text in Power BI. Example: ApplyCustomFont("Hello", base64Font, "MyFont", "middle") returns SVG data URI
+/// Generates SVG with embedded custom font for rendering text in Power BI. Example: ApplyCustomFont("Hello", base64Font, "MyFont", "middle") returns SVG data URI
 function 'Tharun.Font.ApplyCustomFont' =
         (
             tex: string, font: string, 
