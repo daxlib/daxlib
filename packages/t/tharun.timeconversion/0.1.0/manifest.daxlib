@@ -1,0 +1,11 @@
+
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Tharun.TimeConversion",
+  "version": "0.1.0",
+  "authors": "Tharun Kumar Ravikrindhi",
+  "description": "Functions that can convert seconds to minutes, hours and days.",
+  "tags": "DAX,UDF,FUNCTION,Time Conversion",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
