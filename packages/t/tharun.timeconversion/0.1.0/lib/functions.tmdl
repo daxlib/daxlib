@@ -1,5 +1,5 @@
 /// Converts total seconds to MM:SS format. Example: 125 seconds → "2m:5s" or "02:05"
-function 'Tharun.TimeConvertion.ConvertSecondsToMinutes' =
+function 'Tharun.TimeConversion.ConvertSecondsToMinutes' =
 			(
                 Seconds:int64, 
                 WithSymbols:boolean
@@ -9,39 +9,39 @@ function 'Tharun.TimeConvertion.ConvertSecondsToMinutes' =
                 VAR __WithSymbols = __Minutes & "m:" & __Seconds & "s"
                 VAR __WithoutSymbols= FORMAT(__Minutes,"00") & ":" & FORMAT( __Seconds,"00")
                 RETURN IF(WithSymbols, __WithSymbols, __WithoutSymbols)
-    annotation DAXLIB_PackageId = Tharun.TimeConvertion
+    annotation DAXLIB_PackageId = Tharun.TimeConversion
     annotation DAXLIB_PackageVersion = 0.1.0
 
 
 /// Converts total seconds to HH:MM:SS format. Example: 3725 seconds → "1h:2m:5s" or "01:02:05"
-function 'Tharun.TimeConvertion.ConvertSecondsToHours' =
+function 'Tharun.TimeConversion.ConvertSecondsToHours' =
         (
             Seconds:int64, 
             WithSymbols:boolean
         )=>
             VAR __Hours = ROUNDDOWN(DIVIDE(Seconds, 3600),0)
             VAR __RemainingSeconds = Seconds - __Hours*3600
-            VAR __MinutesWithSymbols = ConvertSecondsToMinutes(__RemainingSeconds,TRUE())
-            VAR __MinutesWithOutSymbols = ConvertSecondsToMinutes(__RemainingSeconds, FALSE())
+            VAR __MinutesWithSymbols = Tharun.TimeConversion.ConvertSecondsToMinutes(__RemainingSeconds,TRUE())
+            VAR __MinutesWithOutSymbols = Tharun.TimeConversion.ConvertSecondsToMinutes(__RemainingSeconds, FALSE())
             VAR __WithSymbols = __Hours & "h:" & __MinutesWithSymbols
             VAR __WithOutSymbols = FORMAT( __Hours,"00") & ":" & __MinutesWithOutSymbols
             RETURN IF(WithSymbols, __WithSymbols, __WithOutSymbols)
-    annotation DAXLIB_PackageId = Tharun.TimeConvertion
+    annotation DAXLIB_PackageId = Tharun.TimeConversion
     annotation DAXLIB_PackageVersion = 0.1.0
 
 
 /// Converts total seconds to DD:HH:MM:SS format. Example: 90061 seconds → "1d:1h:1m:1s" or "01:01:01:01"
-function 'Tharun.TimeConvertion.ConvertSecondsToDays' =
+function 'Tharun.TimeConversion.ConvertSecondsToDays' =
 			(
                 Seconds:int64, 
                 WithSymbols:boolean
             )=>
                 VAR __Days = ROUNDDOWN(DIVIDE(Seconds, 86400),0)
                 VAR __RemainingSeconds = Seconds - __Days * 86400
-                VAR __HoursWithSymbols = ConvertSecondsToHours(__RemainingSeconds,TRUE())
-                VAR __HoursWithOutSymbols = ConvertSecondsToHours(__RemainingSeconds, FALSE())
+                VAR __HoursWithSymbols = Tharun.TimeConversion.ConvertSecondsToHours(__RemainingSeconds,TRUE())
+                VAR __HoursWithOutSymbols = Tharun.TimeConversion.ConvertSecondsToHours(__RemainingSeconds, FALSE())
                 VAR __WithSymbols = __Days & "d:" & __HoursWithSymbols
                 VAR __WithOutSymbols = FORMAT( __Days,"00") & ":" & __HoursWithOutSymbols
                 RETURN IF(WithSymbols, __WithSymbols, __WithOutSymbols)
-	annotation DAXLIB_PackageId = Tharun.TimeConvertion
+	annotation DAXLIB_PackageId = Tharun.TimeConversion
 	annotation DAXLIB_PackageVersion = 0.1.0

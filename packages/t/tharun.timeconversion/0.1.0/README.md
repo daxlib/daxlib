@@ -104,7 +104,7 @@ Convert video length stored in seconds to human-readable format.
 
 ```dax
 // Video is 7325 seconds long
-ConvertSecondsToHours(7325, TRUE())  // Returns "2h:2m:5s"
+Tharun.TimeConversion.ConvertSecondsToHours(7325, TRUE())  // Returns "2h:2m:5s"
 ```
 
 ### Scenario 2: Process Execution Time
@@ -112,7 +112,7 @@ Display how long a data process took to complete.
 
 ```dax
 // Process took 4850 seconds
-ConvertSecondsToMinutes(4850, FALSE()) // Returns "80:50" (80 minutes and 50 seconds)
+Tharun.TimeConversion.ConvertSecondsToMinutes(4850, FALSE()) // Returns "80:50" (80 minutes and 50 seconds)
 ```
 
 ### Scenario 3: Project Duration Tracking
@@ -120,7 +120,7 @@ Show project timeline in days, hours, minutes format.
 
 ```dax
 // Project took 259235 seconds
-ConvertSecondsToDays(259235, TRUE())  // Returns "3d:0h:1m:35s"
+Tharun.TimeConversion.ConvertSecondsToDays(259235, TRUE())  // Returns "3d:0h:1m:35s"
 ```
 
 ### Scenario 4: Activity Log Report
@@ -128,9 +128,9 @@ Create a report column showing how long activities took.
 
 ```dax
 // Multiple activities in a table
-Activity 1: ConvertSecondsToHours(1800, TRUE())   // Returns "0h:30m:0s"
-Activity 2: ConvertSecondsToHours(5400, TRUE())   // Returns "1h:30m:0s"
-Activity 3: ConvertSecondsToHours(36000, TRUE())  // Returns "10h:0m:0s"
+Activity 1: Tharun.TimeConversion.ConvertSecondsToHours(1800, TRUE())   // Returns "0h:30m:0s"
+Activity 2: Tharun.TimeConversion.ConvertSecondsToHours(5400, TRUE())   // Returns "1h:30m:0s"
+Activity 3: Tharun.TimeConversion.ConvertSecondsToHours(36000, TRUE())  // Returns "10h:0m:0s"
 ```
 
 ---
@@ -141,7 +141,7 @@ Activity 3: ConvertSecondsToHours(36000, TRUE())  // Returns "10h:0m:0s"
 - Use `WithSymbols = TRUE()` for user-facing reports and dashboards
 - Use `WithSymbols = FALSE()` for data export, import, or system integrations
 - Functions automatically handle leading zeros in the non-symbol format
-- The functions are composable - `ConvertSecondsToHours` uses `ConvertSecondsToMinutes` internally for calculation
+- The functions are composable - `Tharun.TimeConversion.ConvertSecondsToHours` uses `Tharun.TimeConversion.ConvertSecondsToMinutes` internally for calculation
 
 ---
 
