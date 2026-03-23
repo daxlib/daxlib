@@ -1,7 +1,7 @@
 /// Performs the Anderson-Darling test for  the composite hypothesis of normality, see e.g. Thode (2002, Sec. 5.1.4). 
 /// Takes a list of numbers or a table with a column named [Value] as input parameter. 
 /// Thanks to Juergen Gross for the R implementation in the nortest library.
-function ADTEST =
+function Nortest.AndersonDarlingTest.ADTEST =
     ( x : TABLE ) =>
     VAR _ValuesTable =
         FILTER ( x, NOT ISBLANK ( [Value] ) )
