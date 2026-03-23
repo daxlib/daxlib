@@ -8,5 +8,6 @@
   "releaseNotes": "First release of DaxLib.Records library.",
   "projectUrl": "https://github.com/daxlib/dev-daxlib-records",
   "repositoryUrl": "https://github.com/daxlib/dev-daxlib-records",
-  "icon": "/icon.png"
+  "icon": "/icon.png",
+  "readme": "/README.md"
 }
