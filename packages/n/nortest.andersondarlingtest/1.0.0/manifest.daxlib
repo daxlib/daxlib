@@ -3,7 +3,7 @@
   "id": "Nortest.AndersonDarlingTest",
   "version": "1.0.0",
   "authors": "Martin Bubenheimer",
-  "description": "Performs the Anderson-Darling test for  the composite hypothesis of normality, see e.g. Thode (2002, Sec. 5.1.4). Takes a list of numbers or a table with a column named [Value] as input parameter. Thanks to Juergen Gross for the R implementation in the nortest library.",
+  "description": "Performs the Anderson-Darling test for  the composite hypothesis of normality, see e.g. Thode (2002, Sec. 5.1.4). Takes a table and a column reference to the values as input parameter. Thanks to Juergen Gross for the R implementation in the nortest library.",
   "tags": "function, statistics",
   "projectUrl": "https://github.com/sql-bi/daxlib",
   "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/n/nortest.adtest"
