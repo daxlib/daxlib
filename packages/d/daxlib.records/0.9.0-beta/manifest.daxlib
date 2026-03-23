@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DaxLib.Records",
+  "version": "0.9.0-beta",
+  "authors": "DAXLIB",
+  "description": "A set of User-Defined Functions designed to simulate optional parameters in DAX UDFs.",
+  "tags": "RECORDS,PARAMETERS",
+  "releaseNotes": "First release of DaxLib.Records library.",
+  "projectUrl": "https://github.com/daxlib/dev-daxlib-records",
+  "repositoryUrl": "https://github.com/daxlib/dev-daxlib-records",
+  "icon": "/icon.png"
+}
