@@ -1,0 +1,20 @@
+createOrReplace
+
+	function GetTableColumnCount =
+			(
+			        TableRef : ANYREF
+			    ) =>
+			VAR tableRef = NAMEOF(TableRef)
+			VAR quotePos = SEARCH("'", RIGHT(tableRef, LEN(tableRef) - 1))
+			VAR tableName = SUBSTITUTE(LEFT(tableRef, quotePos), "'", "")
+			VAR columnCount =
+			    COUNTROWS(
+			        FILTER(
+			            COLUMNSTATISTICS(),
+			            [Table Name] = tableName
+			                && NOT CONTAINSSTRING([Column Name], "RowNumber")
+			        )
+			    )
+			RETURN
+			    columnCount
+		lineageTag: 0b0d8ddb-6dd8-4e7d-a126-3a6c064d0f43
