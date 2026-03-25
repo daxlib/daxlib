@@ -1,0 +1,6 @@
+{
+  "name": "mz.metadata",
+  "version": "0.1.0",
+  "author": "Moetaz Zahran",
+  "description": "Utility DAX UDFs for semantic model metadata inspection and schema-related helpers."
+}
