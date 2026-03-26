@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Nortest.AndersonDarlingTest",
+  "version": "1.0.0",
+  "authors": "Martin Bubenheimer",
+  "description": "Performs the Anderson-Darling test for the composite hypothesis of normality, see e.g. Thode (2002, Sec. 5.1.4). Takes a table and a column reference to the values as input parameter. Thanks to Juergen Gross for the R implementation in the nortest library.",
+  "tags": "function, statistics",
+  "projectUrl": "https://github.com/daxlib/daxlib",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/n/nortest.andersondarlingtest"
+}
