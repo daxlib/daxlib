@@ -124,3 +124,7 @@ function 'Nortest.AndersonDarlingTest.ADTEST' =
 		RETURN
 			_PValue
 	)
+
+	annotation DAXLIB_PackageId = Nortest.AndersonDarlingTest.ADTEST
+
+	annotation DAXLIB_PackageVersion = 1.0.0
