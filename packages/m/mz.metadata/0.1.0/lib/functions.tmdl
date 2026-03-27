@@ -17,4 +17,3 @@ createOrReplace
 			    )
 			RETURN
 			    columnCount
-		lineageTag: 0b0d8ddb-6dd8-4e7d-a126-3a6c064d0f43
