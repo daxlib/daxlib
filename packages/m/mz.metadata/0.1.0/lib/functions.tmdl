@@ -1,5 +1,5 @@
 
-	function GetTableColumnCount =
+	function 'Mz.Metadata.GetTableColumnCount' =
 			(
 			        TableRef : ANYREF
 			    ) =>
