@@ -1,4 +1,3 @@
-createOrReplace
 
 	function GetTableColumnCount =
 			(
