@@ -16,3 +16,6 @@
 			    )
 			RETURN
 			    columnCount
+			        
+        annotation DAXLIB_PackageId = Mz.Metadata
+        annotation DAXLIB_PackageVersion = 0.1.0
