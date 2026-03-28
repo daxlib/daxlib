@@ -7,13 +7,12 @@ The **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Fl
 ## How it works?
 This function generates an NPV value for each period used to calculate the profitability of a project. This value can be displayed as a matrix or a graph.
 
-📌 To use this function, some measures and values are necessery.
+📌 To use this function, some measures and values are required:
   - **Revenue_measure** is the revenue expected of the project
   - **Cost_measure** is the cost expected of the project
   - **Investment_measure** is the investment expected of the project
   - **Year_date_of_calendar_table** refers to the year shown in the calendar table or fact table
   -  **Discounted_rate** is is a decimal value representing a percentage. For example, 0.101 for 10.1%. It can be based on the WACC, inflation rate, financial internal rate of return...
-    
-    ⛔ **Put Costs and Investment in negative value** 
+  -  ⛔ **Put Costs and Investment in negative value** 
   
-Create a measure that calls one of the functions (see function-specific instructions inside the function code).
+✏️ Create a measure that calls one of the "Patou.Tips" functions (write the word "Patou" for example), the function-specific instructions are also synthesized in the function's code.
