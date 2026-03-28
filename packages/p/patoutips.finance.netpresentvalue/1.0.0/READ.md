@@ -7,6 +7,7 @@ The **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Fl
 ## How it works?
 This function generates an NPV value for each period used to calculate the profitability of a project. This value can be displayed as a matrix or a graph.
 
+**1 - Parameters**
 📌 To use this function, some measures and values are required:
   - **Revenue_measure** is the revenue expected of the project
   - **Cost_measure** is the cost expected of the project
