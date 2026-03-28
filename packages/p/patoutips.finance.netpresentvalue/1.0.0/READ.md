@@ -13,6 +13,7 @@ This function generates an NPV value for each period used to calculate the profi
   - **Investment_measure** is the investment expected of the project
   - **Year_date_of_calendar_table** refers to the year shown in the calendar table or fact table
   -  **Discounted_rate** is is a decimal value representing a percentage. For example, 0.101 for 10.1%. It can be based on the WACC, inflation rate, financial internal rate of return...
+    
     ⛔ **Put Costs and Investment in negative value** 
   
 Create a measure that calls one of the functions (see function-specific instructions inside the function code).
