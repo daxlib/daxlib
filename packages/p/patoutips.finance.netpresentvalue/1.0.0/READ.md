@@ -32,9 +32,9 @@ This function generates an NPV value for each period used to calculate the profi
 
 This financial function is part of a series of "Patou Tips" functions to calculate the profitability of a project.
 
-| Functions          | What it is?
------------------------------------------
-| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)
+| Functions          | What it is?                                        |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
 
 ## License
 
