@@ -35,6 +35,21 @@ This financial function is part of a series of "Patou Tips" functions to calcula
 | Functions          | What it is?                                        |
 | -------------------| ---------------------------------------------------|
 | DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+| -------------------| ---------------------------------------------------|
+| DCF.Patou.Tips     | Calculate DCF (Discounted Cash Flow)               |
+
 
 ## License
 
