@@ -1,21 +1,20 @@
-
-	function 'Mz.Metadata.GetTableColumnCount' =
-			(
-			        TableRef : ANYREF
-			    ) =>
-			VAR tableRef = NAMEOF(TableRef)
-			VAR quotePos = SEARCH("'", RIGHT(tableRef, LEN(tableRef) - 1))
-			VAR tableName = SUBSTITUTE(LEFT(tableRef, quotePos), "'", "")
-			VAR columnCount =
-			    COUNTROWS(
-			        FILTER(
-			            COLUMNSTATISTICS(),
-			            [Table Name] = tableName
-			                && NOT CONTAINSSTRING([Column Name], "RowNumber")
-			        )
-			    )
-			RETURN
-			    columnCount
-			        
-        annotation DAXLIB_PackageId = Mz.Metadata
-        annotation DAXLIB_PackageVersion = 0.1.0
+function 'Mz.Metadata.GetTableColumnCount' =
+		(
+		        TableRef : ANYREF
+		) =>
+		VAR tableRef = NAMEOF(TableRef)
+		VAR quotePos = SEARCH("'", RIGHT(tableRef, LEN(tableRef) - 1))
+		VAR tableName = SUBSTITUTE(LEFT(tableRef, quotePos), "'", "")
+		VAR columnCount =
+		    COUNTROWS(
+		        FILTER(
+		            COLUMNSTATISTICS(),
+		            [Table Name] = tableName
+		                && NOT CONTAINSSTRING([Column Name], "RowNumber")
+		        )
+		    )
+		RETURN
+		    columnCount
+	
+	annotation DAXLIB_PackageId = Mz.Metadata
+	annotation DAXLIB_PackageVersion = 0.1.0
