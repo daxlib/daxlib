@@ -3,5 +3,6 @@
   "id": "Mz.Metadata",
   "version": "0.1.0",
   "authors": "Moetaz Zahran",
-  "description": "Utility DAX UDFs for semantic model metadata inspection and schema-related helpers."
+  "description": "Utility DAX UDFs for semantic model metadata inspection and schema-related helpers.",
+  "readme": "/README.md"
 }
