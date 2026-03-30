@@ -1,6 +1,7 @@
 {
-  "name": "Mz.Metadata",
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Mz.Metadata",
   "version": "0.1.0",
-  "author": "Moetaz Zahran",
+  "authors": "Moetaz Zahran",
   "description": "Utility DAX UDFs for semantic model metadata inspection and schema-related helpers."
 }
