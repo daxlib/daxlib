@@ -11,7 +11,7 @@ This function generates an NPV value for each period used to calculate the profi
 
 ## How it works?
 
-**1 - Parameters**
+**1.Parameters**
 
 📌 To use this function, some measures and values are required:
   - **Revenue_measure** is the revenue expected of the project
