@@ -82,6 +82,8 @@ RETURN
     )
     ```DAX
 
+
+
 ---------------------------------------------------------------------
 
 ## Regarding Patou Tips' other financial functions...
