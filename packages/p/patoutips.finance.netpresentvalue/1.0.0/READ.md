@@ -25,7 +25,7 @@ This function generates an NPV value for each period used to calculate the profi
 
 ### 2 - Usage
 
-✅ Insert the function code (see next chapter "code") into the TMDL view.
+✅ Insert the function code (see next chapter "3 - Code") into the TMDL view.
 
 ✏️ Create a measure that calls one of the "Patou.Tips" functions, for example, write the word "Patou". The function-specific instructions are also summarized in the pop-up window that appears when the measure is inserted.
 
