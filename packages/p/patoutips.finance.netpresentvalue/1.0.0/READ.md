@@ -97,9 +97,9 @@ This financial function is part of a series of "Patou Tips" functions to calcula
 | FCF.Patou.Tips                  | Calculate FCF (Discounted Free Cash Flow) by period          |
 | IRR.Patou.Tips                  | Calculate IRR (Internal Rate Return) by period               |
 | NPV.Patou.Tips                  | Calculate NPV (Net Present Value) by period                  |
-| NPV.Total.Patou.Tips            | Calculate DCF (Discounted Cash Flow) at end of period        |
+| NPV.Total.Patou.Tips            | Calculate NPV (Net Present Value) at end of period     	     |
 | Payback.Year.Patou.Tips         | Calculate the year of the project payback                    |
-| Payback.Nb.Year.Patou.Tips      | Calculate number of year of the project payback              |
+| Payback.Nb.Year.Patou.Tips      | Calculate the number of year of the project payback          |
 
 ---------------------------------------------------------------------
 
