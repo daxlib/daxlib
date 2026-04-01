@@ -26,9 +26,10 @@ This function generates an NPV value for each period used to calculate the profi
 
 <img width="490" height="189" alt="image" src="https://github.com/user-attachments/assets/19a0d463-576a-4c51-a66a-30d29647fd59" />
 
+
 **2 - Usage examples**
 
-📌 To use this function, some measures and values are required:
+Bla, bla
 
 ---------------------------------------------------------------------
 
