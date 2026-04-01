@@ -36,16 +36,16 @@ This function generates an NPV value for each period used to calculate the profi
 
 This financial function is part of a series of "Patou Tips" functions to calculate the profitability of a project.
 
-| Functions                       | What it is?                                        |
-| --------------------------------|----------------------------------------------------|
-| DCF.Patou.Tips                  | Calculate DCF (Discounted Cash Flow)               |
-| DF.Patou.Tips                   | Calculate DF (Discounted Factor)                   |
-| FCF.Patou.Tips                  | Calculate FCF (Discounted Free Cash Flow)          |
-| IRR.Patou.Tips                  | Calculate IRR (Internal Rate Return)               |
-| NPV.Patou.Tips                  | Calculate NPV (Net Present Value)                  |
-| NPV.Total.Patou.Tips            | Calculate DCF (Discounted Cash Flow)               |
-| Payback.Year.Patou.Tips         | Calculate the year of the payback)                 |
-| Payback.Nb.Year.Patou.Tips      | Calculate number of year for payback               |
+| Functions                       | What it is?                                                  |
+| --------------------------------|--------------------------------------------------------------|
+| DCF.Patou.Tips                  | Calculate DCF (Discounted Cash Flow) by oeriod               |
+| DF.Patou.Tips                   | Calculate DF (Discounted Factor) by oeriod                   |
+| FCF.Patou.Tips                  | Calculate FCF (Discounted Free Cash Flow) by period          |
+| IRR.Patou.Tips                  | Calculate IRR (Internal Rate Return) by period               |
+| NPV.Patou.Tips                  | Calculate NPV (Net Present Value) by period                  |
+| NPV.Total.Patou.Tips            | Calculate DCF (Discounted Cash Flow) at end of period        |
+| Payback.Year.Patou.Tips         | Calculate the year of the project payback                    |
+| Payback.Nb.Year.Patou.Tips      | Calculate number of year of the project payback              |
 
 ---------------------------------------------------------------------
 
