@@ -23,11 +23,64 @@ This function generates an NPV value for each period used to calculate the profi
 > **Put Costs and Investment measures in negative value** 
   
 
-### 2 - Usage examples
+### 2 - Usage
 
 ✏️ Create a measure that calls one of the "Patou.Tips" functions, for example, write the word "Patou". The function-specific instructions are also summarized in the pop-up window that appears when the measure is inserted.
 
 <img width="490" height="189" alt="image" src="https://github.com/user-attachments/assets/19a0d463-576a-4c51-a66a-30d29647fd59" />
+
+### 3 - Code
+---
+DEFINE
+/// Net Present Value (NPV). This is the cumulative Discounted Cash Flow (DCF), for each period of the project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101 for 10.1%.
+
+FUNCTION NPV.Patou.Tips =
+    (
+        Revenue_measure :expr,
+        Cost_measure : expr,
+        Investment_measure : expr,
+		Year_date_of_calendar_table : anyref,
+		Discounted_rate : decimal
+    ) =>
+
+VAR First_Selected_Year = 
+    CALCULATE(
+        FIRSTNONBLANK(Year_date_of_calendar_table,Investment_measure),
+        ALLSELECTED(Year_date_of_calendar_table)
+    ) 
+VAR Last_Selected_Year = 
+    CALCULATE(
+        MAX(Year_date_of_calendar_table),
+        ALLSELECTED(Year_date_of_calendar_table)
+    )
+VAR Selected_Year = SELECTEDVALUE(Year_date_of_calendar_table)
+VAR Number_Term = Selected_Year - First_Selected_Year + 1
+
+RETURN
+    IF(
+        Selected_Year >= First_Selected_Year,
+        SUMX(
+            FILTER(
+                ALL(Year_date_of_calendar_table),
+                Year_date_of_calendar_table <= Selected_Year && Year_date_of_calendar_table >= First_Selected_Year
+            ),
+            VAR Year = Year_date_of_calendar_table
+            VAR Term = Year - First_Selected_Year + 1
+            VAR Discount_Factor = (1 / (1 + Discounted_rate) ^ (Term - 1))
+            VAR CF =
+                CALCULATE(
+                    Revenue_measure+Cost_measure+Investment_measure,
+                    FILTER(
+                        ALL(Year_date_of_calendar_table),
+                        Year_date_of_calendar_table = Year
+                    )
+                )
+            RETURN
+                CF * Discount_Factor
+        ),
+        BLANK()
+    )
+    ---
 
 ---------------------------------------------------------------------
 
