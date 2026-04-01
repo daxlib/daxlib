@@ -11,14 +11,14 @@ This function generates an NPV value for each period used to calculate the profi
 
 ## How it works?
 
-- **Parameters**
+**1 - Parameters**
 
 📌 To use this function, some measures and values are required:
-    - **Revenue_measure** is the revenue expected of the project
-    - **Cost_measure** is the cost expected of the project
-    - **Investment_measure** is the investment expected of the project
-    - **Year_date_of_calendar_table** refers to the year of the calendar table or fact table
-    - **Discounted_rate** is a decimal value representing a percentage. For example, 0.101 for 10.1%. It can be based on the WACC, inflation rate, financial internal rate of return, requirement of the project...
+- **Revenue_measure** is the revenue expected of the project
+- **Cost_measure** is the cost expected of the project
+- **Investment_measure** is the investment expected of the project
+- **Year_date_of_calendar_table** refers to the year of the calendar table or fact table
+- **Discounted_rate** is a decimal value representing a percentage. For example, 0.101 for 10.1%. It can be based on the WACC, inflation rate, financial internal rate of return, requirement of the project...
 
 > **Put Costs and Investment measures in negative value** 
   
