@@ -23,7 +23,7 @@ This function generates an NPV value for each period used to calculate the profi
 > **Put Costs and Investment measures in negative value** 
   
 
-**2 - Usage examples**
+### 2 - Usage examples**
 
 ✏️ Create a measure that calls one of the "Patou.Tips" functions (write the word "Patou" for example), the function-specific instructions are also synthesized in the function's code.
 
