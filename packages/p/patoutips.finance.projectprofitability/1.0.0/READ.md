@@ -14,13 +14,10 @@ This package of 8 DAX functions is designed to provide access to **key performan
 | **Payback.Year.Patou.Tips**         | Calculate the year of the project payback                    |
 | **Payback.Nb.Year.Patou.Tips**      | Calculate the number of year of the project payback          |
 
+Functions are created to be used independently, in whole or in part. Functions are not linked to each other by code. 
+Each function generates an value for each period used to calculate the profitability of a project. These values can be displayed as a matrix or a graph for example.
 
-
-The **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Flow (DCF). See also the "DCF.Patou.Tips" function to calculate the Discounted Free Cash Flow. The NPV is useful for calculating the profitability of a project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. When the NPV is positive, the project create value to by generating revenues exceed the costs, once they are discounted.
-
-This function generates an NPV value for each period used to calculate the profitability of a project. This value can be displayed as a matrix or a graph for example.
-
-<img width="1073" height="658" alt="image" src="https://github.com/user-attachments/assets/19c74087-9fc9-4981-8e6f-77e674bd37c1" />
+<img width="1177" height="638" alt="image" src="https://github.com/user-attachments/assets/b038d038-c554-4030-b743-2f82b9aa9b9f" />
 
 ---------------------------------------------------------------------
 
@@ -101,20 +98,9 @@ RETURN
 
 ---------------------------------------------------------------------
 
-## Regarding Patou Tips' other financial functions...
+## Financial explanations
 
-This financial function is part of a series of "Patou Tips" functions to calculate the profitability of a project.
-
-| Functions                       | What it is?                                                  |
-| --------------------------------|--------------------------------------------------------------|
-| DCF.Patou.Tips                  | Calculate DCF (Discounted Cash Flow) by oeriod               |
-| DF.Patou.Tips                   | Calculate DF (Discounted Factor) by oeriod                   |
-| FCF.Patou.Tips                  | Calculate FCF (Discounted Free Cash Flow) by period          |
-| IRR.Patou.Tips                  | Calculate IRR (Internal Rate Return) by period               |
-| NPV.Patou.Tips                  | Calculate NPV (Net Present Value) by period                  |
-| NPV.Total.Patou.Tips            | Calculate NPV (Net Present Value) at end of period     	     |
-| Payback.Year.Patou.Tips         | Calculate the year of the project payback                    |
-| Payback.Nb.Year.Patou.Tips      | Calculate the number of year of the project payback          |
+The **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Flow (DCF). See also the "DCF.Patou.Tips" function to calculate the Discounted Free Cash Flow. The NPV is useful for calculating the profitability of a project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. When the NPV is positive, the project create value to by generating revenues exceed the costs, once they are discounted.
 
 ---------------------------------------------------------------------
 
