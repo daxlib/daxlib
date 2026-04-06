@@ -14,7 +14,7 @@ This package of 8 DAX functions is designed to provide access to **key performan
 | **Payback.Year.Patou.Tips**         | Calculate the year of the project payback                    |
 | **Payback.Nb.Year.Patou.Tips**      | Calculate the number of year of the project payback          |
 
-Functions are created to be used independently, in whole or in part. Functions are not linked to each other by code. 
+💡 Functions are created to be used independently, in whole or in part. Functions are not linked to each other by code. 
 Each function generates an value for each period used to calculate the profitability of a project. These values can be displayed as a matrix or a graph for example.
 
 <img width="1177" height="638" alt="image" src="https://github.com/user-attachments/assets/b038d038-c554-4030-b743-2f82b9aa9b9f" />
