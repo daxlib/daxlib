@@ -19,6 +19,8 @@ Each function generates an value for each period used to calculate the profitabi
 
 <img width="1177" height="638" alt="image" src="https://github.com/user-attachments/assets/b038d038-c554-4030-b743-2f82b9aa9b9f" />
 
+To learn more about the financial concepts related to these functions, see the chapter "Financial Explanations".
+
 ---------------------------------------------------------------------
 
 ## How it works?
