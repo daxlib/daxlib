@@ -1,7 +1,7 @@
 # "Patou Tips" financial package of functions for project's profitabilty calculation
 
 ## About this financial package...
-This package of 8 DAX functions is designed to provide access to key performance indicators (KPIs) representative of project profitability, such as IRR, NPV, and payback. It also allows for the calculation of DF, FCF, and DCF.
+This package of 8 DAX functions is designed to provide access to **key performance indicators (KPIs)** representative of project profitability, such as IRR, NPV, and payback. It also allows for the calculation of the **metrics** such as DF, FCF, and DCF.
 
 | Functions                 	      | What it is?                                                  |
 | ------------------------------------|--------------------------------------------------------------|
