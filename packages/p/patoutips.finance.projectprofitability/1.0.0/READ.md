@@ -1,4 +1,4 @@
-# "Patou Tips" financial package of functions for project's profitabilty calculation
+<img width="869" height="70" alt="image" src="https://github.com/user-attachments/assets/e723deab-c139-4b25-af08-83fc82a8fb88" /># "Patou Tips" financial package of functions for project's profitabilty calculation
 
 ## About this financial package...
 This package of 8 DAX functions is designed to provide access to **key performance indicators (KPIs)** representative of project profitability, such as **IRR, NPV, and payback**. It also allows for the calculation of the **metrics** such as **DF, FCF, and DCF**.
@@ -103,9 +103,15 @@ RETURN
 
 ## Financial explanations
 
-Free cash flow (FCF) is the money a company has left over after paying its operating expenses and capital expenditures.
+**Discount Factor (DF)** allows to evaluate the value of one euro (or other money) according to a required rate of return and the number of term. Required rate of return is the Discounted Rate and it can be based on the WACC, the inflation rate, the financial internal rate of return… **Discount Factor =1/(1+Discounted Rate)^(#Period-1)**
 
-The **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Flow (DCF). See also the "DCF.Patou.Tips" function to calculate the Discounted Free Cash Flow. The NPV is useful for calculating the profitability of a project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. When the NPV is positive, the project create value to by generating revenues exceed the costs, once they are discounted.
+**Free cash flow (FCF)** is the money a company has left over after paying its operating expenses and capital expenditures. **Free Cash Flow (FCF) = Revenue + Costs + Investment**
+
+**Discounted cash flow (DCF)** is a valuation method that estimates the value of an investment using its expected future cash flows. **Discounted Cash Flow (DCF) = Free Cash Flow x Discount Factor**
+
+
+
+**Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Flow (DCF). The NPV is useful for calculating the profitability of a project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. When the NPV is positive, the project create value to by generating revenues exceed the costs, once they are discounted.
 
 ---------------------------------------------------------------------
 
