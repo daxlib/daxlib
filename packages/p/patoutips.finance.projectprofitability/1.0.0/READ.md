@@ -6,14 +6,14 @@ This package of 8 DAX functions is designed to provide access to **key performan
 
 | Functions                 	      | What it is?                                                  |
 | ------------------------------------|--------------------------------------------------------------|
-| PatouTips.Finance.ProfitabilityProject.**DF**                   | Calculate DF (Discounted Factor) by period                   |
-| PatouTips.Finance.ProfitabilityProject.**FCF**                  | Calculate FCF (Discounted Free Cash Flow) by period          |
-| PatouTips.Finance.ProfitabilityProject.**DCF**                  | Calculate DCF (Discounted Cash Flow) by period               |
-| PatouTips.Finance.ProfitabilityProject.**IRR**                  | Calculate IRR (Internal Rate Return) by period               |
-| PatouTips.Finance.ProfitabilityProject.**NPV**                  | Calculate NPV (Net Present Value) by period                  |
-| PatouTips.Finance.ProfitabilityProject.**NPV.Total**            | Calculate NPV (Net Present Value) at end of period     	     |
-| PatouTips.Finance.ProfitabilityProject.**Payback.Year**         | Calculate the year of the project payback                    |
-| PatouTips.Finance.ProfitabilityProject.**Payback.Nb.Year**      | Calculate the number of year of the project payback          |
+| PatouTips.Finance.ProjectProfitability.**DF**                   | Calculate DF (Discounted Factor) by period                   |
+| PatouTips.Finance.ProjectProfitability.**FCF**                  | Calculate FCF (Discounted Free Cash Flow) by period          |
+| PatouTips.Finance.ProjectProfitability.**DCF**                  | Calculate DCF (Discounted Cash Flow) by period               |
+| PatouTips.Finance.ProjectProfitability.**IRR**                  | Calculate IRR (Internal Rate Return) by period               |
+| PatouTips.Finance.ProjectProfitability.**NPV**                  | Calculate NPV (Net Present Value) by period                  |
+| PatouTips.Finance.ProjectProfitability.**NPV.Total**            | Calculate NPV (Net Present Value) at end of period     	     |
+| PatouTips.Finance.ProjectProfitability.**Payback.Year**         | Calculate the year of the project payback                    |
+| PatouTips.Finance.ProjectProfitability.**Payback.Nb.Year**      | Calculate the number of year of the project payback          |
 
 💡 Functions are created to be used independently, in whole or in part. Functions are not linked to each other by code. 
 Each function generates an value for each period used to calculate the profitability of a project. These values can be displayed as a matrix or a graph for example.
