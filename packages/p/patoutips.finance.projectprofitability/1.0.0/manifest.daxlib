@@ -3,10 +3,10 @@
   "id": "PatouTips.Finance",
   "version": "1.0.0",
   "authors": "Patrice Fayard",
-  "description": "Function for yearly NPV (Net Present Value) calculation",
-  "tags": "Finance, Profitability, DF, FCF, DCF, IRR, NPV, Payback, Discounted Factor, Cash Flow, Free Cash Flow, Discounted Cash Flow, Internal Rate of Return, Net Present Value",
+  "description": "Financial functions for the yearly calculation of a project's profitability",
+  "tags": "Finance, Profitability, DF, FCF, DCF, IRR, NPV, Payback, Discount Factor, Cash Flow, Free Cash Flow, Discounted Cash Flow, Internal Rate of Return, Net Present Value",
   "projectUrl": "https://github.com/sql-bi/daxlib",
-  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/p/patoutips.finance.netpresentvalue",
+  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/p/patoutips.finance.projectprofitability",
   "icon": "/icon.png",
   "readme": "/README.md"
 }
