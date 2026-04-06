@@ -1,4 +1,4 @@
-# Patou.Tips financial package of functions for project's profitabilty calculation
+# "Patou Tips" financial package of functions for project's profitabilty calculation
 
 ## About NPV (Net Present Value)...
 The **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Flow (DCF). See also the "DCF.Patou.Tips" function to calculate the Discounted Free Cash Flow. The NPV is useful for calculating the profitability of a project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. When the NPV is positive, the project create value to by generating revenues exceed the costs, once they are discounted.
