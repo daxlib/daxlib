@@ -109,9 +109,11 @@ RETURN
 
 **Discounted cash flow (DCF)** is a valuation method that estimates the value of an investment using its expected future cash flows. **Discounted Cash Flow (DCF) = Free Cash Flow x Discount Factor**
 
-
+**Internal Rate of Return (IRR)** is the discount factor at which the net present value (NPV) of a set of discounted cash flows (DCF) is equal to zero. 
 
 **Net Present Value (NPV)** is the cumulative sum of Discounted Free Cash Flow (DCF). The NPV is useful for calculating the profitability of a project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. When the NPV is positive, the project create value to by generating revenues exceed the costs, once they are discounted.
+
+**Payback** period is the amount of time it takes to recover the cost of an investment. Simply put, it is the length of time an investment reaches a breakeven point. A payback period relatively short indicates a rapid return on investment, that reduces risk and improves liquidity. **Payback Period = (Project Start Date - Date when NPV >= 0) +1**
 
 ---------------------------------------------------------------------
 
