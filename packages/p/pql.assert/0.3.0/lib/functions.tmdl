@@ -469,7 +469,7 @@ function 'PQL.Assert.BP.ShouldUseFullyQualifiedColumnReferences' =
 		        "RuleDescription", "Using fully qualified column references makes it easier to distinguish between column and measure references, and also helps avoid certain errors. Reference: https://www.elegantbi.com/post/top10bestpractices. Severity: Medium (2)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that measures should use TREATAS instead of INTERSECT for virtual relationships.
 /// The TREATAS function is more efficient and provides better performance than the INTERSECT function when used in virtual relationships.
@@ -513,7 +513,7 @@ function 'PQL.Assert.BP.ShouldUseTreatAsInsteadOfIntersect' =
 		        "RuleDescription", "The TREATAS function is more efficient and provides better performance than the INTERSECT function when used in virtual relationships. Reference: https://www.sqlbi.com/articles/propagate-filters-using-treatas-in-dax/. Severity: Medium (2)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Runs all DAX expression best practice checks.
 /// This function executes all DAX expression validation rules and returns combined results.
@@ -524,7 +524,7 @@ function 'PQL.Assert.BP.CheckDAXExpressions' =
 		        PQL.Assert.BP.ShouldUseTreatAsInsteadOfIntersect()
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Error Prevention Best Practice Validation Functions
 /// Publisher: PQL (Power Query Lint)
@@ -609,7 +609,7 @@ function 'PQL.Assert.BP.ShouldHaveSameDataTypeInRelationships' =
 		        "RuleDescription", "Columns used in a relationship should be of the same data type. Ideally, they will be of integer data type. Having columns within a relationship which are of different data types may lead to various issues including slower performance and unexpected query results. Severity: High (3)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Runs all error prevention best practice checks.
 /// This function executes all error prevention validation rules and returns combined results.
@@ -617,7 +617,7 @@ function 'PQL.Assert.BP.CheckErrorPrevention' =
 		() =>
 		    PQL.Assert.BP.ShouldHaveSameDataTypeInRelationships()
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Formatting Best Practice Validation Functions
 /// Publisher: PQL (Power Query Lint)
@@ -697,7 +697,7 @@ function 'PQL.Assert.BP.ShouldProvideFormatStringForMeasures' =
 		        "RuleDescription", "Visible measures should have their format string property assigned. Measures without format strings may display inconsistently and make reports harder to understand. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that numeric columns should have SummarizeBy set to None.
 /// Numeric columns with SummarizeBy enabled may cause accidental aggregation in reports. Users should create explicit measures instead.
@@ -773,7 +773,7 @@ function 'PQL.Assert.BP.ShouldNotSummarizeNumericColumns' =
 		        "RuleDescription", "Numeric columns (Int64, Decimal, Double) should have their SummarizeBy property set to None to avoid accidental aggregation in Power BI. Users should create explicit measures instead. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that tables should have at least one column marked as a row label (IsDefaultLabel = true).
 /// Row labels help Power BI Copilot understand which columns represent the primary identifier for rows in a table.
@@ -843,7 +843,7 @@ function 'PQL.Assert.BP.ShouldMarkRowLabels' =
 		        "RuleDescription", "Set the 'RowLabel' property to 'True' for row label columns within the column properties. This helps Power BI Copilot understand which columns represent the primary identifier for rows in a table. Reference: https://blog.crossjoin.co.uk/2024/08/25/tuning-power-bi-copilot-with-row-labels-and-key-columns/. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that columns on the "One" side of relationships should have the IsKey property set to true.
 /// Marking primary keys helps Power BI understand table relationships and optimize query performance.
@@ -947,7 +947,7 @@ function 'PQL.Assert.BP.ShouldMarkPrimaryKeys' =
 		        "RuleDescription", "Set the 'Key' property to 'True' for primary key columns within the column properties. This helps Power BI understand table relationships and optimize query performance. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that visible numeric columns used in aggregation measures should be hidden.
 /// It is a best practice to hide fact table columns that are used for aggregation in measures.
@@ -1083,7 +1083,7 @@ function 'PQL.Assert.BP.ShouldHideFactTableColumns' =
 		        "RuleDescription", "It is a best practice to hide fact table columns that are used for aggregation in measures. Visible numeric columns referenced in SUM, COUNT, AVERAGE, MIN, MAX, DISTINCTCOUNT and other aggregation functions should be hidden to encourage users to use measures instead. Reference: https://blog.crossjoin.co.uk/2024/06/09/get-better-results-from-power-bi-copilot-with-linguistic-modelling/. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Runs all formatting best practice checks.
 /// This function executes all formatting validation rules and returns combined results.
@@ -1097,7 +1097,7 @@ function 'PQL.Assert.BP.CheckFormatting' =
 		        PQL.Assert.BP.ShouldHideFactTableColumns()
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Maintenance Best Practice Validation Functions
 /// Publisher: PQL (Power Query Lint)
@@ -1216,7 +1216,7 @@ function 'PQL.Assert.BP.ShouldRemoveUnnecessaryMeasures' =
 		        "RuleDescription", "Hidden measures that are not referenced by any DAX expression are unnecessary and should be removed for maintainability. Scope: Measure. CompatibilityLevel: 1200. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that visible objects should have descriptions.
 /// Add descriptions to visible tables, measures, and columns. Descriptions are shown on hover within the Field List in Power BI Desktop.
@@ -1362,7 +1362,7 @@ function 'PQL.Assert.BP.ShouldHaveObjectDescriptions' =
 		        "RuleDescription", "Add descriptions to visible objects. Descriptions are shown on hover within the Field List in Power BI Desktop. Additionally, you can leverage these descriptions to create an automated data dictionary. Reference: https://www.elegantbi.com/post/datadictionary. Scope: Table, Measure, DataColumn, CalculatedColumn, CalculatedTable, CalculatedTableColumn, CalculationGroup. CompatibilityLevel: 1200. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that hidden columns not referenced by any DAX expressions, relationships, hierarchy levels, or Sort By-properties should be removed.
 /// Scope: DataColumn, CalculatedColumn, CalculatedTableColumn. CompatibilityLevel >= 1200.
@@ -1519,7 +1519,7 @@ function 'PQL.Assert.BP.ShouldRemoveUnnecessaryColumns' =
 		        "RuleDescription", "Hidden columns that are not referenced by any DAX expressions, relationships, hierarchy levels, or Sort By-properties should be removed. Scope: DataColumn, CalculatedColumn, CalculatedTableColumn. CompatibilityLevel: 1200. Severity: High (3)."
 		    )
     annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Runs all maintenance best practice checks.
 /// This function executes all maintenance validation rules and returns combined results.
@@ -1531,7 +1531,7 @@ function 'PQL.Assert.BP.CheckMaintenance' =
 		        PQL.Assert.BP.ShouldHaveObjectDescriptions()
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// DAX Best Practice Validation Functions
 /// Publisher: PQL (Power Query Lint)
@@ -1583,7 +1583,7 @@ function 'PQL.Assert.BP.ShouldAvoidBiDirectionalOnHighCardinalityColumn' =
 		        "RuleDescription", "Avoid bi-directional relationships on high-cardinality columns (>1M distinct values) for better performance. Severity: Medium (2)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that auto-date tables should be removed.
 /// Auto-date tables (DateTableTemplate_* and LocalDateTable_*) consume memory and should be disabled.
@@ -1606,7 +1606,7 @@ function 'PQL.Assert.BP.ShouldRemoveAutoDateTable' =
 		        "RuleDescription", "Avoid using auto-date tables. Turn off auto-date table in Power BI Desktop settings to save memory. Severity: Medium (2)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that no columns use floating point data types.
 /// The "Double" floating point data type should be avoided to prevent unpredictable roundoff errors and performance issues.
@@ -1642,7 +1642,7 @@ function 'PQL.Assert.BP.ShouldAvoidFloatingPointDataTypes' =
 		        "RuleDescription", "Avoid using Number floating point data type, as it can result in unpredictable roundoff errors and decreased performance. Use Int64 or Decimal where appropriate (Decimal limited to 4 digits after decimal). Severity: Medium (2)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that IsAvailableInMdx should be set to false on hidden non-attribute columns.
 /// Hidden columns that still have IsAvailableInMdx = true cause unnecessary attribute hierarchy builds, consuming memory and slowing processing.
@@ -1688,7 +1688,7 @@ function 'PQL.Assert.BP.ShouldSetIsAvailableInMdxFalseOnNonAttributeColumns' =
 		        "RuleDescription", "To speed up processing time and conserve memory, attribute hierarchies should not be built for hidden columns. Set IsAvailableInMdx to false for better performance. Severity: Medium (2)."
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Runs all performance best practice checks.
 /// This function executes all performance validation rules and returns combined results.
@@ -1701,7 +1701,7 @@ function 'PQL.Assert.BP.CheckPerformance' =
 		        PQL.Assert.BP.ShouldSetIsAvailableInMdxFalseOnNonAttributeColumns()
 		    )
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Col Assertions - PQL.Assert.Col namespace
 /// Column-level assertion functions for data quality validation
@@ -1718,7 +1718,7 @@ function 'PQL.Assert.Col.ShouldBeNull' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a column contains at least one non-NULL value (not DAX BLANK()).
 function 'PQL.Assert.Col.ShouldNotBeNull' =
@@ -1732,7 +1732,7 @@ function 'PQL.Assert.Col.ShouldNotBeNull' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all values in a column are BLANK (empty string "" or NULL BLANK()). Fails if any non-blank values exist.
 function 'PQL.Assert.Col.ShouldBeBlank' =
@@ -1750,7 +1750,7 @@ function 'PQL.Assert.Col.ShouldBeBlank' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all values in a column are non-BLANK (not empty string "" and not NULL BLANK()). Fails if any blank values exist.
 function 'PQL.Assert.Col.ShouldNotBeBlank' =
@@ -1765,7 +1765,7 @@ function 'PQL.Assert.Col.ShouldNotBeBlank' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all values in a column are NULL or BLANK (BLANK() or empty string ""). Fails if any values with content exist.
 function 'PQL.Assert.Col.ShouldBeNullOrBlank' =
@@ -1783,7 +1783,7 @@ function 'PQL.Assert.Col.ShouldBeNullOrBlank' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all values in a column are not NULL and not BLANK. Fails if any NULL or empty values exist.
 function 'PQL.Assert.Col.ShouldNotBeNullOrBlank' =
@@ -1798,7 +1798,7 @@ function 'PQL.Assert.Col.ShouldNotBeNullOrBlank' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all values in a column are unique (no duplicates).
 function 'PQL.Assert.Col.ShouldBeDistinct' =
@@ -1813,7 +1813,7 @@ function 'PQL.Assert.Col.ShouldBeDistinct' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a column exists in a table.
 function 'PQL.Assert.Col.ShouldExist' =
@@ -1827,7 +1827,7 @@ function 'PQL.Assert.Col.ShouldExist' =
 				"Passed", _Found
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Presence / Completeness Thresholds
 /// Asserts that the null rate of a column is at most the specified percentage.
@@ -1844,7 +1844,7 @@ function 'PQL.Assert.Col.NullRateShouldBeAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the blank rate (empty string) of a column is at most the specified percentage.
 function 'PQL.Assert.Col.BlankRateShouldBeAtMost' =
@@ -1860,7 +1860,7 @@ function 'PQL.Assert.Col.BlankRateShouldBeAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the null or blank rate of a column is at most the specified percentage.
 function 'PQL.Assert.Col.NullOrBlankRateShouldBeAtMost' =
@@ -1876,7 +1876,7 @@ function 'PQL.Assert.Col.NullOrBlankRateShouldBeAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the populated (non-null, non-blank) rate of a column is at least the specified percentage.
 function 'PQL.Assert.Col.PopulatedRateShouldBeAtLeast' =
@@ -1892,7 +1892,7 @@ function 'PQL.Assert.Col.PopulatedRateShouldBeAtLeast' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Uniqueness & Key-Like Behavior
 /// Asserts that column values are unique within partitions defined by another column.
@@ -1909,7 +1909,7 @@ function 'PQL.Assert.Col.ShouldBeUniqueWithin' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the combination of two columns forms a distinct composite key.
 function 'PQL.Assert.Col.ComboShouldBeDistinct' =
@@ -1925,7 +1925,7 @@ function 'PQL.Assert.Col.ComboShouldBeDistinct' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a column contains no duplicate values. Alias for ShouldBeDistinct.
 function 'PQL.Assert.Col.ShouldNotContainDuplicates' =
@@ -1940,7 +1940,7 @@ function 'PQL.Assert.Col.ShouldNotContainDuplicates' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Range & Distribution Checks (Numeric)
 /// Asserts that all values in a numeric column fall within the specified inclusive range.
@@ -1956,7 +1956,7 @@ function 'PQL.Assert.Col.ShouldBeInRange' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the minimum value in a column is at least the specified value.
 function 'PQL.Assert.Col.MinShouldBeAtLeast' =
@@ -1970,7 +1970,7 @@ function 'PQL.Assert.Col.MinShouldBeAtLeast' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the maximum value in a column is at most the specified value.
 function 'PQL.Assert.Col.MaxShouldBeAtMost' =
@@ -1984,7 +1984,7 @@ function 'PQL.Assert.Col.MaxShouldBeAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the specified percentile of a column falls within the given range.
 function 'PQL.Assert.Col.PctileShouldBeInRange' =
@@ -1998,7 +1998,7 @@ function 'PQL.Assert.Col.PctileShouldBeInRange' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the mean of a column falls within the specified range.
 function 'PQL.Assert.Col.MeanShouldBeInRange' =
@@ -2012,7 +2012,7 @@ function 'PQL.Assert.Col.MeanShouldBeInRange' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the standard deviation of a column is at most the specified value.
 function 'PQL.Assert.Col.StdDevShouldBeAtMost' =
@@ -2030,7 +2030,7 @@ function 'PQL.Assert.Col.StdDevShouldBeAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the share of zero values in a column is at most the specified percentage.
 function 'PQL.Assert.Col.ShareOfZerosAtMost' =
@@ -2046,7 +2046,7 @@ function 'PQL.Assert.Col.ShareOfZerosAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the share of even values in a column is at least the specified percentage.
 function 'PQL.Assert.Col.ShareOfEvensAtLeast' =
@@ -2062,7 +2062,7 @@ function 'PQL.Assert.Col.ShareOfEvensAtLeast' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the share of odd values in a column is at least the specified percentage.
 function 'PQL.Assert.Col.ShareOfOddsAtLeast' =
@@ -2078,7 +2078,7 @@ function 'PQL.Assert.Col.ShareOfOddsAtLeast' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Sign & Monotonicity
 /// Asserts that all values in a column are non-negative (>= 0).
@@ -2094,7 +2094,7 @@ function 'PQL.Assert.Col.ShouldBeNonNegative' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all values in a column are strictly positive (> 0).
 function 'PQL.Assert.Col.ShouldBePositive' =
@@ -2109,7 +2109,7 @@ function 'PQL.Assert.Col.ShouldBePositive' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that no values in a column are zero.
 function 'PQL.Assert.Col.ShouldBeNonZero' =
@@ -2124,7 +2124,7 @@ function 'PQL.Assert.Col.ShouldBeNonZero' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that values in a column are monotonically strictly increasing when ordered by another column.
 function 'PQL.Assert.Col.ShouldBeMonotonicIncreasing' =
@@ -2150,7 +2150,7 @@ function 'PQL.Assert.Col.ShouldBeMonotonicIncreasing' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that values in a column are monotonically non-decreasing when ordered by another column.
 function 'PQL.Assert.Col.ShouldBeMonotonicNonDecreasing' =
@@ -2176,7 +2176,7 @@ function 'PQL.Assert.Col.ShouldBeMonotonicNonDecreasing' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that values in a column are monotonically strictly decreasing when ordered by another column.
 function 'PQL.Assert.Col.ShouldBeMonotonicDecreasing' =
@@ -2202,7 +2202,7 @@ function 'PQL.Assert.Col.ShouldBeMonotonicDecreasing' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Categorical / Membership / Format
 /// Asserts that all values in a column are in the specified allowed set (table).
@@ -2225,7 +2225,7 @@ function 'PQL.Assert.Col.ValuesShouldBeInSet' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that no values in a column are in the specified banned set (table).
 function 'PQL.Assert.Col.ValuesShouldNotBeInSet' =
@@ -2247,7 +2247,7 @@ function 'PQL.Assert.Col.ValuesShouldNotBeInSet' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the distinct count of values in a column is at most the specified number.
 function 'PQL.Assert.Col.DistinctCountShouldBeAtMost' =
@@ -2261,7 +2261,7 @@ function 'PQL.Assert.Col.DistinctCountShouldBeAtMost' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that the distinct count of values in a column is at least the specified number.
 function 'PQL.Assert.Col.DistinctCountShouldBeAtLeast' =
@@ -2275,7 +2275,7 @@ function 'PQL.Assert.Col.DistinctCountShouldBeAtLeast' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that no text values in a column have leading or trailing spaces.
 function 'PQL.Assert.Col.TextShouldHaveNoLeadingOrTrailingSpaces' =
@@ -2290,7 +2290,7 @@ function 'PQL.Assert.Col.TextShouldHaveNoLeadingOrTrailingSpaces' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all text values in a column are trimmed. Alias for TextShouldHaveNoLeadingOrTrailingSpaces.
 function 'PQL.Assert.Col.TextShouldBeTrimmed' =
@@ -2305,7 +2305,7 @@ function 'PQL.Assert.Col.TextShouldBeTrimmed' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all text values in a column are uppercase.
 function 'PQL.Assert.Col.TextCaseShouldBeUpper' =
@@ -2320,7 +2320,7 @@ function 'PQL.Assert.Col.TextCaseShouldBeUpper' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that all text values in a column are lowercase.
 function 'PQL.Assert.Col.TextCaseShouldBeLower' =
@@ -2335,7 +2335,7 @@ function 'PQL.Assert.Col.TextCaseShouldBeLower' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that text lengths in a column fall within the specified range.
 function 'PQL.Assert.Col.TextLengthShouldBeInRange' =
@@ -2350,13 +2350,12 @@ function 'PQL.Assert.Col.TextLengthShouldBeInRange' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Object Level Security (OLS) Assertions - PQL.Assert.OLS namespace
 /// Publisher: PQL (Power Query Lint)
 /// These functions test metadata visibility to verify OLS is properly configured.
 /// Use with "View as" role context in Power BI Desktop to validate security settings.
-
 /// Asserts that a table is hidden from metadata (OLS metadataPermission = none).
 /// Use this when a role should NOT have access to view or query a table.
 function 'PQL.Assert.OLS.TableShouldBeHidden' =
@@ -2432,7 +2431,7 @@ function 'PQL.Assert.Tbl.ShouldHaveRows' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a table has exactly the expected number of rows.
 function 'PQL.Assert.Tbl.ShouldHaveRowCount' =
@@ -2446,7 +2445,7 @@ function 'PQL.Assert.Tbl.ShouldHaveRowCount' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a table has more rows than the specified threshold.
 function 'PQL.Assert.Tbl.ShouldHaveMoreRowsThan' =
@@ -2460,7 +2459,7 @@ function 'PQL.Assert.Tbl.ShouldHaveMoreRowsThan' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a table exists in the model.
 function 'PQL.Assert.Tbl.ShouldExist' =
@@ -2474,7 +2473,7 @@ function 'PQL.Assert.Tbl.ShouldExist' =
 				"Passed", _Found
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Schema & Column Shape
 /// Asserts that a table has all the specified columns (comma-separated list).
@@ -2499,7 +2498,7 @@ function 'PQL.Assert.Tbl.ShouldHaveColumns' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a table does not have extra columns beyond the allowed list (comma-separated).
 function 'PQL.Assert.Tbl.ShouldNotHaveExtraColumns' =
@@ -2522,7 +2521,7 @@ function 'PQL.Assert.Tbl.ShouldNotHaveExtraColumns' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
 
 /// Asserts that a column in a table has the expected data type.
 function 'PQL.Assert.Tbl.ColumnDataTypeShouldBe' =
@@ -2539,4 +2538,4 @@ function 'PQL.Assert.Tbl.ColumnDataTypeShouldBe' =
 				"Passed", _Passed
 			)
 	annotation DAXLIB_PackageId = PQL.Assert
-	annotation DAXLIB_PackageVersion = 0.2.0
+	annotation DAXLIB_PackageVersion = 0.3.0
