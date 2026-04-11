@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
-  "id": "PatouTips.Finance",
+  "id": "PatouTips.Finance.ProjectProfitability",
   "version": "1.0.0",
   "authors": "Patrice Fayard",
   "description": "Financial functions for project's profitability calculation",
