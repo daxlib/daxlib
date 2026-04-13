@@ -1,0 +1,859 @@
+/// Lists all DAX calculations: Measures, Calculated Columns, Calculated Tables, and Calculation Items.
+/// Indicators: 👁‍🗨 = Hidden, ❌ = Invalid Measure.
+function 'Ankush.SemanticInfo.AllCalc.Describe' = ```
+		() =>
+			VAR _Measures = 
+			    SELECTCOLUMNS(
+			        INFO.VIEW.MEASURES(),
+			        "Object Type", if( [State] = "Valid","Measure","Measure (Invalid❌)" ),
+			        "Table Name", [Table],
+			        "Object Name",  IF([IsHidden], " 👁‍🗨     "&[Name] , [Name]),
+			        "Expression", COALESCE([Expression], ""),
+					"FormatString" , [FormatStringDefinition],
+			        "Description", COALESCE([Description], ""),
+			        "Data Type", [DataType],
+			        "Display Folder", COALESCE([DisplayFolder], "")
+					
+			    )
+			
+			VAR _CalcColumns = 
+			    SELECTCOLUMNS(
+			        FILTER(
+			            INFO.VIEW.COLUMNS(),
+			            NOT(ISBLANK([Expression])) &&
+			            NOT(LEFT([Table], 15) = "LocalDateTable_") &&
+			            NOT(LEFT([Table], 18) = "DateTableTemplate_") &&
+						(LEFT([Name] , 9) <> "rownumber")
+			        ),
+			        "Object Type", "Calculated Column",
+			        "Table Name", [Table],
+			        "Object Name",  IF([IsHidden], " 👁‍🗨     "&[Name] , [Name]),
+			        "Expression", COALESCE([Expression], ""),
+					"FormatString", [FormatString],
+			        "Description", COALESCE([Description], ""),
+			        "Data Type", [DataType],
+			        "Display Folder", COALESCE([DisplayFolder], "")
+			    )
+			
+			VAR _CalcTables = 
+			    SELECTCOLUMNS(
+			        FILTER(
+			            INFO.VIEW.TABLES(),
+			            NOT(ISBLANK([Expression])) &&
+			            NOT(LEFT([Name], 15) = "LocalDateTable_") &&
+			            NOT(LEFT([Name], 18) = "DateTableTemplate_")
+			        ),
+			        "Object Type", "Calculated Table",
+			        "Table Name",  "",
+			        "Object Name",  IF([IsHidden], " 👁‍🗨     "&[Name] , [Name]),
+			        "Expression", COALESCE([Expression], ""),
+					"FormatString","",
+			        "Description", COALESCE([Description], ""),
+			        "Data Type", "Table",
+			        "Display Folder", ""
+			    )
+			
+			VAR _CalcGroupItems = 
+			    SELECTCOLUMNS(
+			        INFO.CALCULATIONITEMS(),
+			        "Object Type", "Calculation Item",
+			        "Table Name", "",
+			        "Object Name", [Name],
+			        "Expression", COALESCE([Expression], ""),
+					"FormatString","",
+			        "Description", COALESCE([Description], ""),
+			        "Data Type", "Variant",
+			        "Display Folder", ""
+			    )
+			
+			VAR _AllCalculations = 
+			    UNION(
+			        _Measures,
+			        _CalcColumns,
+			        _CalcTables,
+			        _CalcGroupItems
+			    )
+			
+			RETURN
+			    _AllCalculations
+		```
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Returns a Comprehensive Audit/Summery on Table Level for all tables in the Semantic Model.
+/// Indicators: 👁️‍🗨 = Hidden Table, ƒ𝑥 = Calculated Table.
+function 'Ankush.SemanticInfo.AllTableSummery.Describe' = ```
+		() =>
+			
+			    VAR _AllTables = INFO.VIEW.TABLES()
+			    VAR _Tables = FILTER(_AllTables, 
+			        NOT(LEFT([Name], 15) = "LocalDateTable_") && 
+			        NOT(LEFT([Name], 18) = "DateTableTemplate_")
+			    )
+			    VAR _AllColumns = INFO.VIEW.COLUMNS()
+			    VAR _Columns = FILTER(_AllColumns, 
+			        NOT(LEFT([Table], 15) = "LocalDateTable_") && 
+			        NOT(LEFT([Table], 18) = "DateTableTemplate_") &&
+					(LEFT([Name] , 9) <> "rownumber")
+			    )
+			    VAR _Measures = INFO.VIEW.MEASURES()
+			    VAR _AllHierarchies = INFO.HIERARCHIES()
+			    VAR _Hierarchies = 
+									SELECTCOLUMNS(
+										_AllHierarchies,
+										"HierarchyName", [Name],
+										"TableID", [TableID],
+										"Table", 
+											VAR CurrentTableID = [TableID]
+											RETURN MAXX(FILTER(_Tables, [ID] = CurrentTableID), [Name])
+									)
+			    VAR _Relationships = FILTER(
+			            INFO.VIEW.RELATIONSHIPS(), 
+			       NOT(
+			        LEFT([FromTable], 15) = "LocalDateTable_" ||
+			        LEFT([FromTable], 18) = "DateTableTemplate_" ||
+			        LEFT([ToTable], 15) = "LocalDateTable_" ||
+			        LEFT([ToTable], 18) = "DateTableTemplate_"
+			    ) &&
+					(LEFT([Name] , 9) <> "rownumber") )
+			
+			return
+			    SELECTCOLUMNS(
+			        _Tables,
+			        "Table Name", SWITCH(TRUE() , 
+			               [IsHidden] && NOT(ISBLANK([Expression])) , "(ƒ𝑥"&",👁️‍🗨)   ",
+			               [IsHidden] , "(👁️‍🗨)   ", 
+			               NOT(ISBLANK([Expression]))," (ƒ𝑥)   "
+			               ) & [Name],
+			        -- Column Stats
+			        "Total Columns", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Columns, [Table] = CurrentTable)),
+			        "Calculated Columns", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Columns, [Table] = CurrentTable && NOT(ISBLANK([Expression])))),
+			        "Hidden Columns", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Columns, [Table] = CurrentTable && [IsHidden] = TRUE())),
+			        
+			        -- Measure Stats
+			        "Measure Count", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Measures, [Table] = CurrentTable)),
+			        "Hidden Measures", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Measures, [Table] = CurrentTable && [IsHidden] = TRUE())),
+			        
+			        -- Relationship Stats
+			        "Relationships (From)", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Relationships, [toTable] = CurrentTable)),
+			        "Relationships (To)", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Relationships, [fromTable] = CurrentTable)),
+						        
+			        -- Hierarchy Stats
+			        "Hierarchy Count ( user defined )", 
+			            VAR CurrentTable = [Name]
+			            RETURN COUNTROWS(FILTER(_Hierarchies, [Table] = CurrentTable)),
+					  -- Basic Metadata
+			        "Storage Mode", [StorageMode],
+			        "Data Category", [DataCategory],
+			        "Description", [Description]
+			        
+			    )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Returns Author/project related information for contribution purpose.
+function 'Ankush.SemanticInfo.Auther' = ```
+		() =>
+		
+		        DATATABLE(
+		            "Name", STRING,
+		            "Description", STRING,
+					
+		            {
+						{ "Author" , 
+						"ANKUSH SHARMA"
+						},
+		                {
+		                    "Linkedin",
+		                    "https://www.linkedin.com/in/ankush-sharma-00007/"
+						},
+		                 {
+		                    "GitHub_Project",
+		                    "https://github.com/Ankush-Sharma06/Ankush.SemanticInfo"
+						}
+		            }
+		        )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+function 'Ankush.SemanticInfo.Dax_Dependancy.Show' = ```
+		( _table_name : string , _column_name : string ) =>
+			
+			var _calcdependencies = 
+				
+				FILTER(
+					INFO.CALCDEPENDENCY(),
+					
+							NOT(LEFT([TABLE], 15) = "LocalDateTable_") && NOT(LEFT([TABLE], 18) = "DateTableTemplate_") &&
+							NOT(LEFT([REFERENCED_TABLE], 15) = "LocalDateTable_") && NOT(LEFT([REFERENCED_TABLE], 18) = "DateTableTemplate_")
+				 )
+									
+			
+			
+			var  _filtered_table = filter(_calcdependencies ,
+			                            [TABLE] = _table_name && [OBJECT] = _column_name &&
+										[OBJECT_TYPE] in {"CALC_COLUMN","CALC_TABLE","MEASURE"}
+										)
+			
+			var _tbl = 
+						SELECTCOLUMNS( _filtered_table , 
+						            //  [TABLE],
+									//  [OBJECT],
+									//  [EXPRESSION],
+									"Table", [REFERENCED_TABLE],
+									"Object",[REFERENCED_OBJECT],
+									"Expression",[REFERENCED_EXPRESSION]
+						)
+			
+			RETURN _tbl
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Finds all DAX calculations that reference the specified column or measure.
+/// Parameters: table_name (text), col_name (text). Useful for impact analysis before changes.
+function 'Ankush.SemanticInfo.Dax_Impact.Show' = ```
+		( table_name : string val , col_name : string val ) =>
+			
+		var _allcalc = Ankush.SemanticInfo.AllCalc.Describe() 
+					var allexp = 
+					    
+							FILTER( _allcalc ,
+		                    CONTAINSSTRING( [Expression] , "["& col_name &"]"  )
+							)
+		                    
+		            
+		            var _filtered  = 
+		              ADDCOLUMNS(allexp , 
+		              "Flag", 
+		                    if( 
+		                        or ( 
+							   CONTAINSSTRING( [Expression] , table_name&"["&col_name&"]"  ),
+		                       CONTAINSSTRING( [Expression] , "'"&table_name&"'"&"["&col_name&"]")
+		                        ) , 
+		                        1 ,
+		                         
+		                         if ( [Table Name] = table_name , 1 , 0)
+		                        
+		                        )
+		                
+		
+		              )
+		
+		            var final_table = FILTER(_filtered , 
+		
+		                     [Flag] = 1) 
+		                   
+							      
+		            
+		           RETURN
+		            
+		                            SELECTCOLUMNS(
+		                    final_table,
+		                    "Object Type", [Object Type],
+		                    "Table Name", [Table Name],
+		                    "Object Name", [Object Name],
+		                    "Expression", [Expression],
+		                    "FormatString", [FormatString],
+		                    "Description", [Description],
+		                    "Data Type", [Data Type],
+		                    "Display Folder", [Display Folder]
+		                )
+		```
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+	
+
+function 'Ankush.SemanticInfo.Explain' = ```
+		() =>
+		
+		        DATATABLE(
+		            "Name", STRING,
+		            "Description", STRING,
+					
+		            {
+						{ "Author" , 
+						"ANKUSH SHARMA - ( Use Ankush.SemanticInfo.Auther() for more information )"
+						},
+						{ "lib. Version" , 
+						"1.0.1"
+						},
+		                {
+		                    "Ankush.SemanticInfo.Tables.Describe",
+		                    "Comprehensive column audit for the provided Table Name from the Semantic Model. Indicators: 👁️‍🗨 = Hidden, ƒ𝑥 = Calculated Column."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.AllCalc.Describe",
+		                    "Lists all DAX calculations: Measures, Calculated Columns, Calculated Tables, and Calculation Items. Indicators: 👁‍🗨 = Hidden, ❌ = Invalid Measure."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.AllTableSummery.Describe",
+		                    "Returns a Comprehensive Audit/Summery on Table Level for all tables in the Semantic Model. Indicators: 👁️‍🗨 = Hidden Table, ƒ𝑥 = Calculated Table."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.Dax_Impact.Show",
+		                    "Finds all DAX calculations that reference the specified column or measure. Parameters: table_name (text), col_name (text). Useful for impact analysis before changes."
+		                },
+						{
+		                    "Ankush.SemanticInfo.Dax_Dependancy.Show",
+		                    "Finds all Columns and calculations that specified column has dependancy on. Parameters: table_name (text), col_name (text). Useful for impact analysis before changes."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.HiddenObjects.Display",
+		                    "Takes parameter as string to specify object , Returns a table with list of hidden Objects from the semantic model. Parameters :- ""Columns"" , ""Measures"" , ""Tables"""
+		                },
+		                {
+		                    "Ankush.SemanticInfo.Measures.Display",
+		                    "Returns all measures from the semantic model with their expressions and metadata. Indicators: 👁‍🗨 = Hidden, ❌ = Invalid."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.Model.Describe",
+		                    "Returns the Table with Comprehensive Summery/Audit of the semantic model."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.Relationships.Display",
+		                    "Returns All relationship defined in the Semantic Model ( excluding internal tables created by PBI ) Indicators: 1️⃣ = One, *️⃣ = Many, ━━━▶ = Single, ◀━━▶ = Bi-Di, 🟢 = Active, ⚫ = Inactive."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.RLS.Display",
+		                    "Lists all RLS roles with their table filter expressions for security auditing."
+		                },
+		                {
+		                    "Ankush.SemanticInfo.TableNames.Display",
+		                    "Lists all table names in the model (excludes auto-generated date tables). Indicator: 👁‍🗨 = Hidden Table."
+		                }
+		            }
+		        )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Takes parameter as string to specify object , Returns a table with list of hidden Objects from the semantic model.
+/// Parameters :- "Columns" , "Measures" , "Tables"
+function 'Ankush.SemanticInfo.HiddenObjects.Display' = ```
+		(parameter : string) =>
+		    var _parameter = LOWER(parameter)
+		
+		    VAR _Measures = 
+		    SELECTCOLUMNS(
+		        FILTER(INFO.VIEW.MEASURES(),[IsHidden] = true),
+		        "Object Type", IF([State] = "Valid", "Measure", "Measure (Invalid❌)"),
+		        "Source", "measures",
+		        "Table Name", [Table],
+		        "Object Name", IF([IsHidden], " 👁‍🗨     " & [Name], [Name]),
+		        "Expression", COALESCE([Expression], ""),
+		        "FormatString", [FormatStringDefinition],
+		        "Description", COALESCE([Description], ""),
+		        "Data Type", [DataType],
+		        "Display Folder", COALESCE([DisplayFolder], "")
+		    )
+		
+		    VAR _Columns = 
+		    SELECTCOLUMNS(
+		        FILTER(
+		            INFO.VIEW.COLUMNS(),
+		            NOT(LEFT([Table], 15) = "LocalDateTable_") &&
+		            NOT(LEFT([Table], 18) = "DateTableTemplate_") &&
+		            (LEFT([Name], 9) <> "rownumber") && 
+					[IsHidden] = true
+		        ),
+		        "Object Type", "Column",
+		        "Source", "columns",
+		        "Table Name", [Table],
+		        "Object Name", SWITCH(TRUE() , 
+		               [IsHidden] && NOT(ISBLANK([Expression])) , "(ƒ𝑥"&",👁️‍🗨)   ",
+		               [IsHidden] , "(👁️‍🗨)   ", 
+		               NOT(ISBLANK([Expression]))," (ƒ𝑥)   "
+		               ) & [Name],
+		        "Expression", COALESCE([Expression], ""),
+		        "FormatString", [FormatString],
+		        "Description", COALESCE([Description], ""),
+		        "Data Type", [DataType],
+		        "Display Folder", COALESCE([DisplayFolder], "")
+		    )
+		
+		    VAR _CalcTables = 
+		    SELECTCOLUMNS(
+		        FILTER(
+		            INFO.VIEW.TABLES(),
+		            NOT(LEFT([Name], 15) = "LocalDateTable_") &&
+		            NOT(LEFT([Name], 18) = "DateTableTemplate_") && 
+					[IsHidden] = true
+		        ),
+		        "Object Type", "Table",
+		        "Source", "tables",
+		        "Table Name", "",
+		        "Object Name", SWITCH(TRUE() , 
+		               [IsHidden] && NOT(ISBLANK([Expression])) , "(ƒ𝑥"&",👁️‍🗨)   ",
+		               [IsHidden] , "(👁️‍🗨)   ", 
+		               NOT(ISBLANK([Expression]))," (ƒ𝑥)   "
+		               ) & [Name],
+		        "Expression", COALESCE([Expression], ""),
+		        "FormatString", "",
+		        "Description", COALESCE([Description], ""),
+		        "Data Type", "Table",
+		        "Display Folder", ""
+		    )
+		
+		    VAR _AllCombined = 
+		        UNION(_Measures, _Columns, _CalcTables)
+		
+		    VAR _result = 
+		        FILTER(_AllCombined, [Source] = _parameter )
+		
+		RETURN
+		    SELECTCOLUMNS(
+		        _result,
+		        "Object Type", [Object Type],
+		        "Table Name", [Table Name],
+		        "Object Name", [Object Name],
+		        "Expression", [Expression],
+		        "FormatString", [FormatString],
+		        "Description", [Description],
+		        "Data Type", [Data Type],
+		        "Display Folder", [Display Folder]
+		    )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Returns all measures from the semantic model with their expressions and metadata.
+/// Indicators: 👁‍🗨 = Hidden, ❌ = Invalid.
+function 'Ankush.SemanticInfo.Measures.Display' = ```
+		() => 
+			
+			var Dax_calc = Ankush.SemanticInfo.AllCalc.Describe()
+			
+			var _measures = FILTER( Dax_calc , 
+			
+			                     or( [Object Type] = "Measure" , [Object Type]="Measure (Invalid❌)")
+			
+			)
+			
+			
+			RETURN _measures
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Returns the Table with Comprehensive Summery/Audit of the semantic model,
+function 'Ankush.SemanticInfo.Model.Describe' = ```
+		() => 
+			    VAR _AllTables = INFO.VIEW.TABLES()
+			    VAR _Tables = FILTER(_AllTables, NOT(LEFT([Name], 15) = "LocalDateTable_") && NOT(LEFT([Name], 18) = "DateTableTemplate_"))
+			    VAR _AllColumns = INFO.VIEW.COLUMNS()
+			    VAR _Columns = FILTER(_AllColumns, NOT(LEFT([Table], 15) = "LocalDateTable_") && NOT(LEFT([Table], 18) = "DateTableTemplate_") && (LEFT([Name] , 9) <> "rownumber"))
+			    VAR _Measures = INFO.VIEW.MEASURES()
+			    VAR _Relationships =  FILTER(
+			            INFO.VIEW.RELATIONSHIPS(), 
+			       NOT(
+			        LEFT([FromTable], 15) = "LocalDateTable_" ||
+			        LEFT([FromTable], 18) = "DateTableTemplate_" ||
+			        LEFT([ToTable], 15) = "LocalDateTable_" ||
+			        LEFT([ToTable], 18) = "DateTableTemplate_"
+			    ) &&
+					(LEFT([Name] , 9) <> "rownumber") )
+			    VAR _Roles = INFO.ROLES()
+			    VAR _CalcGroups = INFO.CALCULATIONGROUPS()
+			    VAR _Perspectives = INFO.PERSPECTIVES()
+			    VAR _Hierarchies = INFO.HIERARCHIES()
+				var _model = INFO.MODEL()
+			
+			    -- Inventory Logic
+			    VAR _Count_Tables = COUNTROWS(_Tables)
+			    VAR _Count_CalcTables = COUNTROWS(FILTER(_Tables, NOT(ISBLANK([Expression]))))
+			    VAR _Count_Cols = COUNTROWS(_Columns)
+			    VAR _Count_CalcCols = COUNTROWS(FILTER(_Columns, NOT(ISBLANK([Expression]))))
+			    VAR _Count_Measures = COUNTROWS(_Measures)
+			    VAR _Count_CalcGroups = COUNTROWS(_CalcGroups)
+			    VAR _Count_Hierarchies = COUNTROWS(_Hierarchies)
+			    
+			    -- Visibility Logic
+			    VAR _Count_HiddenTables = COUNTROWS(FILTER(_Tables, [IsHidden] = TRUE()))
+			    VAR _Count_HiddenCols = COUNTROWS(FILTER(_Columns, [IsHidden] = TRUE()))
+			    VAR _Count_HiddenMeasures = COUNTROWS(FILTER(_Measures, [IsHidden] = TRUE()))
+			
+			    -- Relationship Logic
+			    VAR _Count_Rels_Total = COUNTROWS(_Relationships)
+			    VAR _Count_Rels_Active = COUNTROWS(FILTER(_Relationships, [IsActive] = TRUE()))
+			    VAR _Count_Rels_Inactive = COUNTROWS(FILTER(_Relationships, [IsActive] = FALSE()))
+			    VAR _Count_Rels_Single = COUNTROWS(FILTER(_Relationships, [CrossFilteringBehavior] = "OneDirection"))
+			    VAR _Count_Rels_BiDi = COUNTROWS(FILTER(_Relationships, [CrossFilteringBehavior] = "BothDirections"))
+			
+			    RETURN
+			    UNION(
+					ROW( "Type", "Model",  "Object", "Culture",          "Total Count" , maxx(_model, [Culture]) ),
+			        ROW("Type", "Inventory",     "Object", "Total Tables",          "Total Count", FORMAT(_Count_Tables, "General Number")),
+			        ROW("Type", "Inventory",     "Object", "Calculated Tables",     "Total Count", FORMAT(_Count_CalcTables, "General Number")),
+			        ROW("Type", "Inventory",     "Object", "Total Columns",         "Total Count", FORMAT(_Count_Cols, "General Number")),
+			        ROW("Type", "Inventory",     "Object", "Calculated Columns",    "Total Count", FORMAT(_Count_CalcCols, "General Number")),
+			        ROW("Type", "Inventory",     "Object", "Total Measures",        "Total Count", FORMAT(_Count_Measures, "General Number")),
+			        ROW("Type", "Inventory",     "Object", "Calculation Groups",    "Total Count", FORMAT(_Count_CalcGroups, "General Number")),
+			        ROW("Type", "Inventory",     "Object", "Hierarchies( internal + user defined) ",           "Total Count", FORMAT(_Count_Hierarchies, "General Number")),
+			        ROW("Type", "Visibility",    "Object", "Hidden Tables",         "Total Count", FORMAT(_Count_HiddenTables, "General Number")),
+			        ROW("Type", "Visibility",    "Object", "Hidden Columns",        "Total Count", FORMAT(_Count_HiddenCols, "General Number")),
+			        ROW("Type", "Visibility",    "Object", "Hidden Measures",       "Total Count", FORMAT(_Count_HiddenMeasures, "General Number")),
+			        ROW("Type", "Relationships", "Object", "Total Relationships",   "Total Count", FORMAT(_Count_Rels_Total, "General Number")),
+			        ROW("Type", "Relationships", "Object", "Active Relationships",  "Total Count", FORMAT(_Count_Rels_Active, "General Number")),
+			        ROW("Type", "Relationships", "Object", "Inactive Relationships","Total Count", FORMAT(_Count_Rels_Inactive, "General Number")),
+			        ROW("Type", "Relationships", "Object", "Single Direction",      "Total Count", FORMAT(_Count_Rels_Single, "General Number")),
+			        ROW("Type", "Relationships", "Object", "Bi-Directional",        "Total Count", FORMAT(_Count_Rels_BiDi, "General Number")),
+			        ROW("Type", "Security",      "Object", "Total Roles (RLS)",     "Total Count", FORMAT(COUNTROWS(_Roles), "General Number")),
+			        ROW("Type", "Presentation",  "Object", "Perspectives",          "Total Count", FORMAT(COUNTROWS(_Perspectives), "General Number"))
+			    )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Returns All relationship defined in the Semantic Model ( excluding internal tables created by PBI )
+/// Indicators: 1️⃣ = One, *️⃣ = Many, ━━━▶ = Single, ◀━━▶ = Bi-Di, 🟢 = Active, ⚫ = Inactive.
+function 'Ankush.SemanticInfo.Relationships.Display' = ```
+		() =>
+			
+			var _relationshipTable = 
+			    SELECTCOLUMNS(
+			        
+					FILTER(
+			            INFO.VIEW.RELATIONSHIPS(), 
+			       NOT(
+			        LEFT([FromTable], 15) = "LocalDateTable_" ||
+			        LEFT([FromTable], 18) = "DateTableTemplate_" ||
+			        LEFT([ToTable], 15) = "LocalDateTable_" ||
+			        LEFT([ToTable], 18) = "DateTableTemplate_"
+			    ) &&
+					(LEFT([Name] , 9) <> "rownumber") ),
+			        "RelFromTable", [FromTable],
+			        "RelFromColumn", [FromColumn],
+			        "RelToTable", [ToTable],
+			        "RelToColumn", [ToColumn],
+			        "RelIsActive", [IsActive],
+			        "RelCrossFilter", [CrossFilteringBehavior],
+					[ToCardinality] ,
+					 [FromCardinality]
+			    )
+				
+				var _relationship_conacat = 
+				
+				SELECTCOLUMNS(_relationshipTable , 
+				
+				    " Relation " , 
+							  
+							  [RelToTable] & "[" & [RelToColumn] & "]" & "  "  &
+							  
+							  if( [toCardinality] ="one" , "1️⃣" , "*️⃣")
+							  & " " & 
+							  
+							  if ( [RelCrossFilter] = "onedirection" , 
+							   "━━━▶" , "◀━━▶" ) & 
+							   
+							    if( [fromCardinality] ="one" , "1️⃣" , "*️⃣")
+							  & " " 
+							   
+							   & "  " & [RelfromTable] & "[" & [RelfromColumn] & "]"
+							   
+							   & if ( [RelIsActive] , "   --  🟢 {Active} " , "    -- ⚫ {Inactive}" ),
+			
+			        "toTable" , [RelFromTable],
+				    "tocolumn" ,[RelFromColumn],
+				    "fromtable" , [RelToTable],
+				    "fromcolumn" , [ReltoColumn]
+							  
+				)
+				
+				return 
+				_relationship_conacat
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Lists all RLS roles with their table filter expressions for security auditing.
+function 'Ankush.SemanticInfo.RLS.Display' = ```
+		()=>
+			    
+			    VAR _Roles = INFO.ROLES()
+			    VAR _TablePermissions = INFO.TABLEPERMISSIONS()
+			    VAR _Tables = INFO.VIEW.TABLES()
+			
+			    VAR _RoleDetails = 
+			        ADDCOLUMNS(
+			            _TablePermissions,
+			            "RoleName",
+			                VAR _currentRoleID = [RoleID]
+			                RETURN MAXX(FILTER(_Roles, [ID] = _currentRoleID), [Name]),
+			            "RoleDescription",
+			                VAR _currentRoleID = [RoleID]
+			                RETURN MAXX(FILTER(_Roles, [ID] = _currentRoleID), [Description]),
+			            "TableName",
+			                VAR _currentTableID = [TableID]
+			                RETURN MAXX(FILTER(_Tables, [ID] = _currentTableID), [Name])
+			        )
+			
+			    VAR _FilteredResults = 
+			        FILTER(
+			            _RoleDetails,
+			            NOT(ISBLANK([FilterExpression]))
+			        )
+			
+			    RETURN
+			        SELECTCOLUMNS(
+			            _FilteredResults,
+			            "Role Name", [RoleName],
+			            "Filter Table ", [TableName],
+			            "Filter Expression", [FilterExpression],
+			            "Role Description", COALESCE([RoleDescription], "-")
+			        )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Lists all table names in the model (excludes auto-generated date tables).
+/// Indicator: 👁‍🗨 = Hidden Table.
+function 'Ankush.SemanticInfo.TableNames.Display' = ```
+		() =>
+			
+			VAR _Tables =
+			 
+			 FILTER(INFO.VIEW.TABLES(), 
+			        NOT(LEFT([Name], 15) = "LocalDateTable_") && 
+			        NOT(LEFT([Name], 18) = "DateTableTemplate_")
+			)
+					
+					
+			var _selected_col = 
+			
+					SELECTCOLUMNS(_tables , 
+					
+					        "Table_Name" , SWITCH(TRUE() , 
+			               [IsHidden] && NOT(ISBLANK([Expression])) , "(ƒ𝑥"&",👁️‍🗨)   ",
+			               [IsHidden] , "(👁️‍🗨)   ", 
+			               NOT(ISBLANK([Expression]))," (ƒ𝑥)   "
+			               ) & [Name] 
+							
+					)
+					
+			RETURN _selected_col
+			
+			
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
+/// Comprehensive column audit for the provided Table Name from the Semantic Model.
+/// Indicators: 👁️‍🗨 = Hidden, ƒ𝑥 = Calculated Column.
+function 'Ankush.SemanticInfo.Tables.Describe' = ```
+		(Table_Name : Table) =>
+			VAR CsvString = TOCSV(Table_Name)
+			VAR StartPos = FIND("'", CsvString) + 1
+			VAR EndPos = FIND("'[", CsvString)
+			var _Table =  MID(CsvString, StartPos, EndPos - StartPos) 
+			VAR _AllColumns = 
+			   SELECTCOLUMNS(
+			        FILTER(
+			            INFO.VIEW.COLUMNS(), 
+			        NOT(LEFT([Table], 15) = "LocalDateTable_") && 
+			        NOT(LEFT([Table], 18) = "DateTableTemplate_") &&
+					(LEFT([Name] , 9) <> "rownumber") &&
+			        [Table] = _Table
+			        ),
+			        "ColID", [ID],
+			        "ColName", [Name],
+			        "ColTable", [Table],
+			        "ColDataType", COALESCE([DataType], "Unknown"),
+			        "ColType", [Type],
+			        "IsHidden", [IsHidden],
+			        "ColFormatString", COALESCE([FormatString], "(Default)"),
+			        "ColDisplayFolder", COALESCE([DisplayFolder], ""),
+			        "ColDataCategory", COALESCE([DataCategory], ""),
+			        "ColSummarizeBy", COALESCE([SummarizeBy], "Default"),
+			        // "ColIsKey", [IsKey],
+			        // "ColIsUnique", [IsUnique],
+			        // "ColIsNullable", [IsNullable],
+			        "ColSortBy", [SortByColumn],
+			        "ColDescription", COALESCE([Description], ""),
+			        "Expression", COALESCE([Expression], ""),
+			        "ColSourceColumn", COALESCE([SourceColumn], "")
+			        // "ColAlignment", COALESCE([Alignment], "Default")
+			        
+			    )
+			
+			VAR _AllLevels = 
+			    SELECTCOLUMNS(
+			        INFO.LEVELS(),
+			        "LevelColumnID", [ColumnID]
+			    )
+			       
+			
+			var _relationship_conacat = 
+			          var _relationshipTable = 
+			    SELECTCOLUMNS(
+			        
+					FILTER(
+			            INFO.VIEW.RELATIONSHIPS(), 
+			       NOT(
+			        LEFT([FromTable], 15) = "LocalDateTable_" ||
+			        LEFT([FromTable], 18) = "DateTableTemplate_" ||
+			        LEFT([ToTable], 15) = "LocalDateTable_" ||
+			        LEFT([ToTable], 18) = "DateTableTemplate_"
+			    ) &&
+					(LEFT([Name] , 9) <> "rownumber") ),
+			        "RelFromTable", [FromTable],
+			        "RelFromColumn", [FromColumn],
+			        "RelToTable", [ToTable],
+			        "RelToColumn", [ToColumn],
+			        "RelIsActive", [IsActive],
+			        "RelCrossFilter", [CrossFilteringBehavior],
+					[ToCardinality] ,
+					 [FromCardinality]
+			    )
+				
+				var _relationship_conacat = 
+				
+				SELECTCOLUMNS(_relationshipTable , 
+				"toTable" , [RelFromTable],
+				"tocolumn" ,[RelFromColumn],
+				"fromtable" , [RelToTable],
+				"fromcolumn" , [ReltoColumn],
+				              " Relation " , 
+							  
+							  [RelToTable] & "[" & [RelToColumn] & "]" & "  "  &
+							  
+							  if( [toCardinality] ="one" , "1️⃣" , "*️⃣")
+							  & " " & 
+							  
+							  if ( [RelCrossFilter] = "onedirection" , 
+							   "━━━▶" , "◀━━▶" ) & 
+							   
+							    if( [fromCardinality] ="one" , "1️⃣" , "*️⃣")
+							  & " " 
+							   
+							   & "  " & [RelfromTable] & "[" & [RelfromColumn] & "]"
+							   
+							   & if ( [RelIsActive] , "   --  🟢 {Active} " , "    -- ⚫ {Inactive}" )
+							  
+				)
+				
+				return 
+				_relationship_conacat
+				
+			
+			VAR _Result = 
+			    ADDCOLUMNS(
+			        _AllColumns,
+			        "Relationship",
+			            VAR _currCol = [ColName]
+			            VAR _currTable = [ColTable]
+			            VAR _rels = 
+			                 FILTER(
+			                    _relationship_conacat,
+			                    or(
+			                    ( [fromtable] = _currTable && [fromcolumn] = _currCol ) ,
+								( [totable] = _currTable && [tocolumn] = _currCol )
+			                    )
+			                ) 
+			                
+			            RETURN 
+			                IF(
+			                    COUNTROWS(_rels) = 0,
+			                    "-",
+			                    CONCATENATEX(_rels , [ Relation ] , " ┃ " ) 
+			                    
+			                )
+							,
+			        "@IsInHierarchy",
+			            VAR _currColID = [ColID]
+			            VAR _hierCount = 
+			                COUNTROWS(
+			                    FILTER(
+			                        _AllLevels,
+			                        [LevelColumnID] = _currColID
+			                    )
+			                )
+			            RETURN IF(_hierCount > 0, "Yes", "No"),
+			        "@UsedInCalc",
+			        VAR _col_name = [ColName]
+			        var impacted_cal = Ankush.SemanticInfo.Dax_Impact.Show( _Table , _col_name)
+								      
+			            
+			            RETURN COUNTROWS(impacted_cal)
+			    ) 
+			RETURN
+			   SELECTCOLUMNS(
+			        _Result,
+					"Column Type", 
+			            [ColType] ,
+			        "Column Name",
+					 SWITCH(TRUE() , 
+			               [IsHidden] && NOT(ISBLANK([Expression])) , "(ƒ𝑥"&",👁️‍🗨)   ",
+			               [IsHidden] , "(👁️‍🗨)   ", 
+			               NOT(ISBLANK([Expression]))," (ƒ𝑥)   "
+			               ) & [colName],
+					 "Source Column", IF(LEN([ColSourceColumn]) > 0, [ColSourceColumn], "-"),
+			        "Data Type", [ColDataType],
+			        "Format String", [ColFormatString],
+			        "RelationShip" , [Relationship],
+			        "Dax Exprs dependancy", [@UsedInCalc],
+			        "Sort By", COALESCE([ColSortBy], "(Self)"),
+			        "Summarize By", [ColSummarizeBy],
+			        "Expression", IF(LEN([Expression]) > 0, [Expression], "-"),
+			        "Folder Name", IF(LEN([ColDisplayFolder]) > 0, [ColDisplayFolder], ""),
+			        "Hirrearchy",if([@IsInHierarchy]="Yes","Yes"),
+					"Description", IF(LEN([ColDescription]) > 0,[ColDescription], "-")
+					
+			    )
+		```
+	
+
+	annotation DAXLIB_PackageId = Ankush.SemanticInfo
+
+	annotation DAXLIB_PackageVersion = 1.0.1
+
