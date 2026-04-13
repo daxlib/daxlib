@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Fi.Convert",
+  "version": "0.1.0",
+  "authors": "Filip Kraus",
+  "description": "A set of tools for syntax and unit conversion",
+  "tags": "conversion,markdown,html,units",
+  "releaseNotes": "Initial release including MD to HTML conversion",
+  "readme": "/README.md"
+}
