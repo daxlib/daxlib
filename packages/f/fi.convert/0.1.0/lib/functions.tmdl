@@ -1,7 +1,7 @@
 /// Markdown to HTML conversion
 /// Supports core Markdown features
 
-function 'Fi.Convert.MDtoHTML' =
+function 'Fi.Convert.MDtoHTML' = ```
 		( md : STRING ) =>
 		    IF (
 		        ISBLANK ( md ) || md = "",
@@ -510,6 +510,7 @@ function 'Fi.Convert.MDtoHTML' =
 		            )
 		        RETURN __Html
 		    )
+            ```
 
 		    annotation DAXLIB_PackageId = Fi.Convert
 
