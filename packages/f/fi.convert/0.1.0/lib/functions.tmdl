@@ -1,6 +1,5 @@
 /// Markdown to HTML conversion
 /// Supports core Markdown features
-
 function 'Fi.Convert.MDtoHTML' = ```
 		( md : STRING ) =>
 		    IF (
