@@ -1,8 +1,7 @@
 createOrReplace
 
 	/// Discounted Cash Flow (DCF) is a valuation method that estimates the value of an investment, for each period of the project, based on its expected future cash flows (Cash Flow = Revenue + Costs + Investment), discounted using a discount factor. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101 for 10.1%.
-	function 'PatouTips.Finance.ProjectProfitability.DCF' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.DCF' =			
 			    (
 			        Revenue_measure :expr,
 			        Cost_measure : expr,
@@ -41,8 +40,7 @@ createOrReplace
 
 
 	/// Discount Factor (DF) is a valuation method that estimates, for each period of the project, the value of one euro adjusted for inflation or to a minimum expected return on the investment, this the "Discount Rate". The Discounted Rate is a decimal value representing a percentage. For example, 0.101 for 10.1%. Note: Entering the value of an investment helps determine the first year of the project.
-	function 'PatouTips.Finance.ProjectProfitability.DF' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.DF' =			
 			    (
 			        Investment_measure : expr,
 					Year_date_of_calendar_table : anyref,
@@ -79,8 +77,7 @@ createOrReplace
 
 
 	/// Free Cash Flow (FCF) is a valuation method that estimates the value of an investment, for each period of the project, based on its expected future cash flows (Cash Flow = Revenue + Costs + Investment), discounted using a discount factor. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101 for 10.1%.
-	function 'PatouTips.Finance.ProjectProfitability.FCF' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.FCF' =			
 			    (
 			        Revenue_measure :expr,
 			        Cost_measure : expr,
@@ -94,8 +91,7 @@ createOrReplace
     annotation DAXLIB_PackageVersion = 1.0.0
 
 	/// Internal Rate of Return (IRR). The IRR is the discount rate at wich the net present value (NPV) of a set of Discounted Cash Flows (DCF) is eaqual to zero. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101.  for 10.1%. "Fact_table" is the business data table.
-	function 'PatouTips.Finance.ProjectProfitability.IRR' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.IRR' =			
 			    (
 			        Revenue_measure :expr,
 			        Cost_measure : expr,
@@ -129,8 +125,7 @@ createOrReplace
 
 
 	/// Net Present Value (NPV). This is the cumulative Discounted Cash Flow (DCF), for each period of the project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101 for 10.1%.
-	function 'PatouTips.Finance.ProjectProfitability.NPV' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.NPV' =			
 			    (
 			        Revenue_measure :expr,
 			        Cost_measure : expr,
@@ -183,8 +178,7 @@ createOrReplace
 
 
 	/// Net Present Value (NPV). This is the value of the NPV for the entire project. Useful for KPI.
-	function 'PatouTips.Finance.ProjectProfitability.NPV.Total' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.NPV.Total' =			
 			    (
 			        NPV_measure :expr,
 					Year_date_of_calendar_table : anyref
@@ -215,8 +209,7 @@ createOrReplace
 
 
 	/// Payback Number Year determines the number of years required to achieve a return on investment, so when the NPV becomes positive.
-	function 'PatouTips.Finance.ProjectProfitability.Payback.Nb.Year' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.Payback.Nb.Year' =			
 			    (
 			        NPV_measure : expr,
 					Year_date_of_calendar_table : anyref
@@ -250,8 +243,7 @@ createOrReplace
 
 
     /// "Payback Year" determines the year of return on investment, that is, the moment when the NPV becomes positive.
-	function 'PatouTips.Finance.ProjectProfitability.Payback.Year' = ```
-			
+	function 'PatouTips.Finance.ProjectProfitability.Payback.Year' =			
 			    (
 			        NPV_Measure : expr,
 					Year_date_of_calendar_table : anyref
