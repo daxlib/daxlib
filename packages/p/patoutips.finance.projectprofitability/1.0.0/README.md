@@ -41,9 +41,7 @@ Each function generates an value for each period used to calculate the profitabi
 
 ### 2 - Usage
 
-✅ Insert the function code (see next chapter "3 - Code") into the TMDL view.
-
-✏️ Create a measure that calls one of the "Patou.Tips" functions, for example, write the word "Patou". The function-specific instructions are also summarized in the pop-up window that appears when the measure is inserted.
+✏️ After retrieving the code by following the instructions on the "DaxLib" portal, then create a measure that calls one of the "Patou.Tips" functions, for example, write the word "Patou". The function-specific instructions are also summarized in the pop-up window that appears when the measure is inserted.
 
 <img width="490" height="189" alt="image" src="https://github.com/user-attachments/assets/19a0d463-576a-4c51-a66a-30d29647fd59" />
 
