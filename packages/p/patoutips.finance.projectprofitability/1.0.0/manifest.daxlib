@@ -5,8 +5,8 @@
   "authors": "Patrice Fayard",
   "description": "Financial functions for project's profitability calculation",
   "tags": "Finance, Profitability, Project, DF, FCF, DCF, IRR, NPV, Payback, Cash Flow",
-  "projectUrl": "https://github.com/sql-bi/daxlib",
-  "repositoryUrl": "https://github.com/sql-bi/daxlib/tree/main/packages/p/patoutips.finance.projectprofitability",
+  "projectUrl": "https://github.com/daxlib/daxlib",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/p/patoutips.finance.projectprofitability",
   "icon": "/icon.png",
   "readme": "/README.md"
 }
