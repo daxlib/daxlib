@@ -32,7 +32,7 @@ function 'PatouTips.Finance.ProjectProfitability.DCF' =
 		
 					RETURN (Revenue_measure+Cost_measure+Investment_measure)*Yearly_Discount_Rate
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -69,7 +69,7 @@ function 'PatouTips.Finance.ProjectProfitability.DF' =
 		
 			RETURN Discount_Factor
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -84,7 +84,7 @@ function 'PatouTips.Finance.ProjectProfitability.FCF' =
 		
 			Revenue_measure+Cost_measure+Investment_measure
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -117,7 +117,7 @@ function 'PatouTips.Finance.ProjectProfitability.IRR' =
 				'Dim Date',
 				'Dim Date'[Year] >= First_Selected_Year && 'Dim Date'[Year] <= Last_Selected_Year))
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -170,7 +170,7 @@ function 'PatouTips.Finance.ProjectProfitability.NPV' =
 				BLANK()
 			)
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -201,7 +201,7 @@ function 'PatouTips.Finance.ProjectProfitability.NPV.Total' =
 				[NPV_Table]
 			)
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -235,7 +235,7 @@ function 'PatouTips.Finance.ProjectProfitability.Payback.Nb.Year' =
 			)
 		RETURN IF(ISBLANK(First_Year),"No payback",First_Year-First_Selected_Year+1)
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
 
@@ -263,6 +263,6 @@ function 'PatouTips.Finance.ProjectProfitability.Payback.Year' =
 			)
 		RETURN IF(ISBLANK(First_Year),"No payback",First_Year)
 
-	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
 	annotation DAXLIB_PackageVersion = 1.0.0
