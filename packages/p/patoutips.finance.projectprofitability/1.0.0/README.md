@@ -18,7 +18,7 @@ This package of 8 DAX functions is designed to provide access to **key performan
 💡 Functions are created to be used independently, in whole or in part. Functions are not linked to each other by code. 
 Each function generates an value for each period used to calculate the profitability of a project. These values can be displayed as a matrix or a graph for example.
 
-<img width="1177" height="638" alt="image" src="https://github.com/user-attachments/assets/b038d038-c554-4030-b743-2f82b9aa9b9f" />
+[<img width="1177" height="638" alt="image" src="https://github.com/user-attachments/assets/b038d038-c554-4030-b743-2f82b9aa9b9f" />](https://github.com/PatouTips/Patou-Tips/blob/main/%2360%20Patou%20Tips%20(Financial%20UDF%20pack%20-%20Profitability%20of%20a%20project)/Simulation%20sample.png)
 
 > To learn more about the financial concepts related to these functions, see the chapter "Financial Explanations".
 > Download this PowerBI file example in "Patou Tips GitHub" --> https://github.com/PatouTips/Patou-Tips/tree/main/%2360%20Patou%20Tips%20(Financial%20UDF%20pack%20-%20Profitability%20of%20a%20project)
