@@ -117,9 +117,9 @@ function 'PatouTips.Finance.ProjectProfitability.IRR' =
 				'Dim Date',
 				'Dim Date'[Year] >= First_Selected_Year && 'Dim Date'[Year] <= Last_Selected_Year))
 
-annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
+	annotation DAXLIB_PackageId = Patoutips.Finance.ProjectProfitability
 
-annotation DAXLIB_PackageVersion = 1.0.0
+	annotation DAXLIB_PackageVersion = 1.0.0
 
 
 /// Net Present Value (NPV). This is the cumulative Discounted Cash Flow (DCF), for each period of the project. NPV evaluates the profitability of an investment by comparing the present value of expected future cash flows to the initial investment. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101 for 10.1%.
