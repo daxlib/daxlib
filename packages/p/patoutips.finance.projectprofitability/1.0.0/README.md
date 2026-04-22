@@ -37,7 +37,7 @@ Each function generates an value for each period used to calculate the profitabi
 - **Discounted_rate** is a decimal value representing a percentage. For example, 0.101 for 10.1%. It can be based on the WACC, inflation rate, financial internal rate of return, requirement of the project...
 
 > The values ​​required for each of the functions are mentioned in the pop-up that appears when using a "Patou Tips" financial function (see next chapter "2 - Usage").
-> **Put Costs and Investment measures in negative value** 
+> **`Put Costs and Investment measures in negative value`** 
   
 
 ### 2 - Usage
