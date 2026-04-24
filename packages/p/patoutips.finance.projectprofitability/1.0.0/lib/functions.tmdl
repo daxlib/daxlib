@@ -91,12 +91,13 @@ function 'PatouTips.Finance.ProjectProfitability.FCF' =
 /// Internal Rate of Return (IRR). The IRR is the discount rate at wich the net present value (NPV) of a set of Discounted Cash Flows (DCF) is eaqual to zero. Put Costs and Investment in negative value. The Discounted Rate is a decimal value representing a percentage. For example, 0.101.  for 10.1%. "Fact_table" is the business data table.
 function 'PatouTips.Finance.ProjectProfitability.IRR' =
 		(
-				Revenue_measure :expr,
-				Cost_measure : expr,
-				Investment_measure : expr,
-				Year_date_of_calendar_table : anyref,
-				Fact_table : table,
-				Year_date_of_fact_table : anyref
+	        Revenue_measure :expr,
+	        Cost_measure : expr,
+	        Investment_measure : expr,
+	        Calendar_table : TABLE,
+			Year_date_of_calendar_table : anyref,
+	        Fact_table : table,
+			Year_date_of_fact_table : anyref
 		) =>
 		
 		VAR First_Selected_Year = 
@@ -114,8 +115,8 @@ function 'PatouTips.Finance.ProjectProfitability.IRR' =
 		CALCULATE(
 			XIRR(Fact_table,Revenue_measure+Cost_measure+Investment_measure,Year_date_of_fact_table,,0),
 			FILTER(
-				'Dim Date',
-				'Dim Date'[Year] >= First_Selected_Year && 'Dim Date'[Year] <= Last_Selected_Year))
+				Calendar_table,
+				Year_date_of_calendar_table >= First_Selected_Year && Year_date_of_calendar_table <= Last_Selected_Year))
 
 	annotation DAXLIB_PackageId = PatouTips.Finance.ProjectProfitability
 
