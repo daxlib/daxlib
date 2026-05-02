@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.Base64",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Functions to decode Base64 encoded strings to plain text using DAX",
+  "tags": "DAX,Base64,Encoding,String,Decode",
+  "releaseNotes": "Initial release: Base64 to plain text decoder using pure DAX.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib"
+}

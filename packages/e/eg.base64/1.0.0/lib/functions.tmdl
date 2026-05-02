@@ -1,0 +1,117 @@
+function 'EG.Base64.ConvertASCII' =
+	( Character : string ) =>
+	SWITCH (
+	    TRUE (),
+	    EXACT ( Character, "A" ), 0,
+	    EXACT ( Character, "B" ), 1,
+	    EXACT ( Character, "C" ), 2,
+	    EXACT ( Character, "D" ), 3,
+	    EXACT ( Character, "E" ), 4,
+	    EXACT ( Character, "F" ), 5,
+	    EXACT ( Character, "G" ), 6,
+	    EXACT ( Character, "H" ), 7,
+	    EXACT ( Character, "I" ), 8,
+	    EXACT ( Character, "J" ), 9,
+	    EXACT ( Character, "K" ), 10,
+	    EXACT ( Character, "L" ), 11,
+	    EXACT ( Character, "M" ), 12,
+	    EXACT ( Character, "N" ), 13,
+	    EXACT ( Character, "O" ), 14,
+	    EXACT ( Character, "P" ), 15,
+	    EXACT ( Character, "Q" ), 16,
+	    EXACT ( Character, "R" ), 17,
+	    EXACT ( Character, "S" ), 18,
+	    EXACT ( Character, "T" ), 19,
+	    EXACT ( Character, "U" ), 20,
+	    EXACT ( Character, "V" ), 21,
+	    EXACT ( Character, "W" ), 22,
+	    EXACT ( Character, "X" ), 23,
+	    EXACT ( Character, "Y" ), 24,
+	    EXACT ( Character, "Z" ), 25,
+	    EXACT ( Character, "a" ), 26,
+	    EXACT ( Character, "b" ), 27,
+	    EXACT ( Character, "c" ), 28,
+	    EXACT ( Character, "d" ), 29,
+	    EXACT ( Character, "e" ), 30,
+	    EXACT ( Character, "f" ), 31,
+	    EXACT ( Character, "g" ), 32,
+	    EXACT ( Character, "h" ), 33,
+	    EXACT ( Character, "i" ), 34,
+	    EXACT ( Character, "j" ), 35,
+	    EXACT ( Character, "k" ), 36,
+	    EXACT ( Character, "l" ), 37,
+	    EXACT ( Character, "m" ), 38,
+	    EXACT ( Character, "n" ), 39,
+	    EXACT ( Character, "o" ), 40,
+	    EXACT ( Character, "p" ), 41,
+	    EXACT ( Character, "q" ), 42,
+	    EXACT ( Character, "r" ), 43,
+	    EXACT ( Character, "s" ), 44,
+	    EXACT ( Character, "t" ), 45,
+	    EXACT ( Character, "u" ), 46,
+	    EXACT ( Character, "v" ), 47,
+	    EXACT ( Character, "w" ), 48,
+	    EXACT ( Character, "x" ), 49,
+	    EXACT ( Character, "y" ), 50,
+	    EXACT ( Character, "z" ), 51,
+	    EXACT ( Character, "0" ), 52,
+	    EXACT ( Character, "1" ), 53,
+	    EXACT ( Character, "2" ), 54,
+	    EXACT ( Character, "3" ), 55,
+	    EXACT ( Character, "4" ), 56,
+	    EXACT ( Character, "5" ), 57,
+	    EXACT ( Character, "6" ), 58,
+	    EXACT ( Character, "7" ), 59,
+	    EXACT ( Character, "8" ), 60,
+	    EXACT ( Character, "9" ), 61,
+	    EXACT ( Character, "+" ), 62,
+	    EXACT ( Character, "/" ), 63
+	)
+
+	annotation DAXLIB_PackageId = EG.Base64
+	annotation DAXLIB_PackageVersion = 1.0.0
+
+function 'EG.Base64.BytePartition' =
+	( v1 : int64, v2 : int64, v3 : int64, v4 : int64 ) =>
+	VAR _Byte1 =
+	    BITOR (
+	        BITLSHIFT ( v1, 2 ),
+	        BITRSHIFT ( v2, 4 )
+	    )
+	VAR _Byte2 =
+	    BITOR (
+	        BITLSHIFT ( BITAND ( v2, 15 ), 4 ),
+	        BITRSHIFT ( v3, 2 )
+	    )
+	VAR _Byte3 =
+	    BITOR (
+	        BITLSHIFT ( BITAND ( v3, 3 ), 6 ),
+	        v4
+	    )
+	RETURN
+	    UNICHAR ( IF ( NOT _Byte1 == 0, _Byte1 ) ) &
+	    UNICHAR ( IF ( NOT _Byte2 == 0, _Byte2 ) ) &
+	    UNICHAR ( IF ( NOT _Byte3 == 0, _Byte3 ) )
+
+	annotation DAXLIB_PackageId = EG.Base64
+	annotation DAXLIB_PackageVersion = 1.0.0
+
+function 'EG.Base64.Decode' =
+	( Base64 : string ) =>
+	VAR _Input = Base64
+	VAR _Decoded =
+	    ADDCOLUMNS (
+	        GENERATESERIES ( 1, LEN ( _Input ), 4 ),
+	        "@String",
+	            VAR _v1 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value], 1 ) )
+	            VAR _v2 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value] + 1, 1 ) )
+	            VAR _v3 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value] + 2, 1 ) )
+	            VAR _v4 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value] + 3, 1 ) )
+	            RETURN
+	                'EG.Base64.BytePartition' ( _v1, _v2, _v3, _v4 )
+	    )
+	RETURN
+	    CONCATENATEX ( _Decoded, [@String], "", [Value], ASC )
+
+	annotation DAXLIB_PackageId = EG.Base64
+	annotation DAXLIB_PackageVersion = 1.0.0
