@@ -1,0 +1,46 @@
+function 'EG.HierarchyFilter.Compute' =
+	( valueExpr: EXPR, employeeKeyColumn: COLUMNREF, parentEmployeeColumn: COLUMNREF, pathColumn: COLUMNREF, parentEmployeeFilterColumn: COLUMNREF ) =>
+	SWITCH (
+	    TRUE (),
+	    -- With 1 single Parent selected
+	    HASONEFILTER ( parentEmployeeFilterColumn ),
+	        VAR _SelectedParent =
+	            SELECTEDVALUE ( parentEmployeeFilterColumn )
+	        RETURN
+	            CALCULATE (
+	                valueExpr,
+	                PATHCONTAINS ( pathColumn, _SelectedParent )
+	            ),
+	    -- With more than 1 Parent selected
+	    ISFILTERED ( parentEmployeeFilterColumn ),
+	        VAR _SelectedParent =
+	            DISTINCT ( parentEmployeeFilterColumn )
+	        VAR _ExpandedEmployee =
+	            TREATAS (
+	                SELECTCOLUMNS (
+	                    GENERATE (
+	                        ALLSELECTED ( employeeKeyColumn, pathColumn ),
+	                        ADDCOLUMNS (
+	                            GENERATESERIES ( 1, PATHLENGTH ( pathColumn ) ),
+	                            "@PivotPath", PATHITEM ( pathColumn, [Value], TEXT )
+	                        )
+	                    ),
+	                    "@ParentKey", [@PivotPath],
+	                    "@EmployeeKey", employeeKeyColumn
+	                ),
+	                parentEmployeeFilterColumn,
+	                employeeKeyColumn
+	            )
+	        VAR _Intersect =
+	            NATURALINNERJOIN ( _SelectedParent, _ExpandedEmployee )
+	        RETURN
+	            CALCULATE (
+	                valueExpr,
+	                KEEPFILTERS ( _Intersect )
+	            ),
+	    -- Without Parent selected
+	    valueExpr
+	)
+
+	annotation DAXLIB_PackageId = EG.HierarchyFilter
+	annotation DAXLIB_PackageVersion = 1.0.0
