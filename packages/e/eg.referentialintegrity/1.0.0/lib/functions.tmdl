@@ -1,0 +1,86 @@
+function 'EG.ReferentialIntegrity.Monitor' =
+	( ) =>
+	VAR _relationships =
+	    INFO.VIEW.RELATIONSHIPS ()
+	VAR _resultRelationships =
+	    SELECTCOLUMNS (
+	        FILTER (
+	            _relationships,
+	            NOT
+	            ( [FromCardinality], [ToCardinality], [CrossFilteringBehavior] )
+	                IN { ( "Many", "Many", "BothDirections" ) }
+	        ),
+	        "ID", [ID],
+	        "FromTable", [FromTable],
+	        "FromColumn", [FromColumn],
+	        "FromCardinality", [FromCardinality],
+	        "From",
+	            "'" & [FromTable] & "'" & "[" & [FromColumn] & "]",
+	        "ToTable", [ToTable],
+	        "ToColumn", [ToColumn],
+	        "ToCardinality", [ToCardinality],
+	        "To",
+	            "'" & [ToTable] & "'" & "[" & [ToColumn] & "]",
+	        "IsActive", [IsActive],
+	        "Direction", [CrossFilteringBehavior],
+	        "FromTo", [Relationship]
+	    )
+	VAR _tableConstructor =
+	    "SELECTCOLUMNS ( {("
+	        & CONCATENATEX (
+	            _resultRelationships,
+	            [ID] & ", """ & [FromTable] & """, """ & [FromColumn] & """, """ & [FromCardinality] & """, """ & [From]
+	            & """, """ & [ToTable] & """, """ & [ToColumn] & """, """ & [ToCardinality] & """, """ & [To]
+	            & """, " & [IsActive] & "(), """ & [Direction] & """, """ & [FromTo] & """",
+	            "), ("
+	        ) & ")},
+				""ID"", [Value1],
+				""FromTable"", [Value2],
+				""FromColumn"", [Value3],
+				""FromCardinality"", [Value4],
+				""From"", [Value5],
+				""ToTable"", [Value6],
+				""ToColumn"", [Value7],
+				""ToCardinality"", [Value8],
+				""To"", [Value9],
+				""IsActive"", [Value10],
+				""Direction"", [Value11],
+				""FromTo"", [Value12]
+			)"
+	VAR _Delimiter = "|"
+	VAR _DAX_Evaluate =
+	    "SWITCH ( [ID],"
+	        & CONCATENATEX (
+	            _resultRelationships,
+	            [ID] & ", "
+	                & IF (
+	                    [IsActive] = FALSE () || [FromCardinality] & [ToCardinality] = "ManyMany" || [FromCardinality] & [ToCardinality] = "OneOne",
+	                    "CONCATENATEX ( EXCEPT ( DISTINCT ( " & [From] & " ), DISTINCT ( " & [To] & " ) ), " & [From] & ", """ & _Delimiter & """ ) ",
+	                    "CONCATENATEX ( CALCULATETABLE ( DISTINCT ( " & [From] & " ), ISBLANK ( " & [To] & " ) ), " & [From] & ", """ & _Delimiter & """ ) "
+	                ),
+	            ", "
+	        ) & " )"
+	VAR _finalQuery =
+	    " = GENERATE ( " & _tableConstructor & ", VAR _InvalidValues = " & _DAX_Evaluate &
+	    "VAR _Length =
+		PATHLENGTH ( _InvalidValues ) + 0
+		VAR _InvalidValuesList =
+			SELECTCOLUMNS (
+				GENERATESERIES ( 1, _Length ),
+				""Item"", PATHITEM ( _InvalidValues, [Value], TEXT )
+			)
+		VAR _Count = COUNTROWS ( _InvalidValuesList )
+		RETURN
+			ROW (
+				""Invalid Values"", _InvalidValues,
+				""Invalid Rows"", _Count
+			)
+	)"
+	RETURN
+	    SELECTCOLUMNS (
+	        { _finalQuery },
+	        "Referential_Integrity", [Value]
+	    )
+
+	annotation DAXLIB_PackageId = EG.ReferentialIntegrity
+	annotation DAXLIB_PackageVersion = 1.0.0
