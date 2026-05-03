@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.GradientColor",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Replicates Power BI native gradient conditional formatting via a measure, enabling dynamic color palettes and support for visual calculations.",
+  "tags": "DAX,Gradient,Color,Conditional Formatting,RGBA,Visual Calculations,Heatmap",
+  "releaseNotes": "Initial release."
+}

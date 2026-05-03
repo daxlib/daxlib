@@ -1,0 +1,52 @@
+function 'EG.GradientColor.Compute' =
+	( valueExpr : EXPR, visualMatrix : TABLE, matrixValueColumn : COLUMNREF, RGBAMin : STRING, RGBAMid : STRING, RGBAMax : STRING ) =>
+	VAR _value = valueExpr
+	VAR _matrix = visualMatrix
+	VAR _value_min =
+	    MINX ( _matrix, matrixValueColumn )
+	VAR _value_max =
+	    MAXX ( _matrix, matrixValueColumn )
+	VAR _value_mid =
+	    DIVIDE ( _value_max + _value_min, 2 )
+	VAR _rgba_min = RGBAMin
+	VAR _rgba_mid = RGBAMid
+	VAR _rgba_max = RGBAMax
+	-- Clean the strings: "RGBA(255,128,0,1)" -> "255|128|0|1"
+	VAR _clean_min = SUBSTITUTE ( SUBSTITUTE ( SUBSTITUTE ( _rgba_min, "RGBA(", "" ), ")", "" ), ",", "|" )
+	VAR _clean_mid = SUBSTITUTE ( SUBSTITUTE ( SUBSTITUTE ( _rgba_mid, "RGBA(", "" ), ")", "" ), ",", "|" )
+	VAR _clean_max = SUBSTITUTE ( SUBSTITUTE ( SUBSTITUTE ( _rgba_max, "RGBA(", "" ), ")", "" ), ",", "|" )
+	-- Extract R, G, B, A channels from each color
+	VAR _min_r = PATHITEM ( _clean_min, 1, INTEGER )
+	VAR _min_g = PATHITEM ( _clean_min, 2, INTEGER )
+	VAR _min_b = PATHITEM ( _clean_min, 3, INTEGER )
+	VAR _mid_r = PATHITEM ( _clean_mid, 1, INTEGER )
+	VAR _mid_g = PATHITEM ( _clean_mid, 2, INTEGER )
+	VAR _mid_b = PATHITEM ( _clean_mid, 3, INTEGER )
+	VAR _mid_a = PATHITEM ( _clean_mid, 4, INTEGER )
+	VAR _max_r = PATHITEM ( _clean_max, 1, INTEGER )
+	VAR _max_g = PATHITEM ( _clean_max, 2, INTEGER )
+	VAR _max_b = PATHITEM ( _clean_max, 3, INTEGER )
+	VAR _max_a = PATHITEM ( _clean_max, 4, INTEGER )
+	-- Interpolation min -> mid
+	VAR _x_min_mid = DIVIDE ( _value - _value_min, _value_mid - _value_min, 0 )
+	VAR _min_mid_r = _x_min_mid * _mid_r + ( 1 - _x_min_mid ) * _min_r
+	VAR _min_mid_g = _x_min_mid * _mid_g + ( 1 - _x_min_mid ) * _min_g
+	VAR _min_mid_b = _x_min_mid * _mid_b + ( 1 - _x_min_mid ) * _min_b
+	VAR _min_mid_rgba =
+	    "RGBA(" & COMBINEVALUES ( ",", INT ( _min_mid_r ), INT ( _min_mid_g ), INT ( _min_mid_b ), _mid_a ) & ")"
+	-- Interpolation mid -> max
+	VAR _x_mid_max = DIVIDE ( _value - _value_mid, _value_max - _value_mid, 0 )
+	VAR _mid_max_r = _x_mid_max * _max_r + ( 1 - _x_mid_max ) * _mid_r
+	VAR _mid_max_g = _x_mid_max * _max_g + ( 1 - _x_mid_max ) * _mid_g
+	VAR _mid_max_b = _x_mid_max * _max_b + ( 1 - _x_mid_max ) * _mid_b
+	VAR _mid_max_rgba =
+	    "RGBA(" & COMBINEVALUES ( ",", INT ( _mid_max_r ), INT ( _mid_max_g ), INT ( _mid_max_b ), _max_a ) & ")"
+	RETURN
+	    IF.EAGER (
+	        _value <= _value_mid,
+	        _min_mid_rgba,
+	        _mid_max_rgba
+	    )
+
+	annotation DAXLIB_PackageId = EG.GradientColor
+	annotation DAXLIB_PackageVersion = 1.0.0
