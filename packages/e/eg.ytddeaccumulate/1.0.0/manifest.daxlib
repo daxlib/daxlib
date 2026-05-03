@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.YTDDeAccumulate",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Converts YTD (Year-to-Date) cumulative values into individual monthly values by subtracting the previous month YTD from the current month YTD.",
+  "tags": "DAX,YTD,Monthly,De-accumulate,Finance,Time Intelligence",
+  "releaseNotes": "Initial release."
+}

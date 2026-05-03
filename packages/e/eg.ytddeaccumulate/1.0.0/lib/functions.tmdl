@@ -1,0 +1,14 @@
+function 'EG.YTDDeAccumulate.Compute' =
+	( valueExpr : EXPR, YearMonthColumn : COLUMNREF, MonthNumberColumn : COLUMNREF, DateColumn : ANYREF ) =>
+	SUMX (
+	    KEEPFILTERS ( VALUES ( YearMonthColumn ) ),
+	    CALCULATE ( valueExpr )
+	        - CALCULATE (
+	            valueExpr,
+	            DATEADD ( DateColumn, -1, MONTH ),
+	            KEEPFILTERS ( NOT MonthNumberColumn = 12 )
+	        )
+	)
+
+	annotation DAXLIB_PackageId = EG.YTDDeAccumulate
+	annotation DAXLIB_PackageVersion = 1.0.0
