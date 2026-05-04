@@ -1,0 +1,72 @@
+/// this UDF generates the concatenated labels and values for Top and Bottom Performers, with delta value.
+FUNCTION 'lmolus.TopBottomDelta.ComputeTopBottomDelta' = 
+		( 
+			// Type column name to evaluate - it will be also be used as labels
+			ColumnReference :  ANYREF EXPR ,
+
+			//Type measure that will be evaluated against column reference
+			MeasureToEvaluate : ANYREF EXPR ,
+
+			// In what format results for delta sholud be displayed eg. "0.0%", "#,##0,.0K", etc.
+			FormatTypeForDeltaValue : STRING VAL
+		) =>
+
+			VAR _table = 
+				ADDCOLUMNS(
+					ALLSELECTED( ColumnReference ) ,
+					"@value" , MeasureToEvaluate
+				)
+
+			// find Top and Bottm 
+			// the INDEX function is used to ensure uniqueness, it also possible to use TOPn
+			// with ADDCOLUMNS we create an auxiliary column „Position” – it will tell users that this is the best performer
+			VAR _top = 
+				ADDCOLUMNS(
+					INDEX( 
+						1 , 
+						_table , 
+						ORDERBY( [@value] , DESC , ColumnReference , ASC )
+					),
+					"Position", "Top: "
+				)
+			VAR _bottom = 
+				ADDCOLUMNS(
+					INDEX( 
+						1 , 
+						_table , 
+						ORDERBY( [@value] , ASC BLANKS LAST , ColumnReference , ASC )
+					),
+				"Position", "Bottom: "
+				)
+
+			// we grab the min and max value to calculate the delta 
+			VAR _max_value = MAXX( _top , [@value] )
+			VAR _min_value = MINX( _bottom , [@value] )
+
+			// we use SELECTCOLUMNS over Table Contructor to create a third result/row of our measure, it will show the delta between min and max
+			VAR _delta =
+				SELECTCOLUMNS (
+					{ ( "Δ: ", _max_value - _min_value, "" ) },
+					"Column", [Value1],
+					"@Value", [Value2],
+					"Position", [Value3]
+				)
+
+			// apend results
+			VAR _union = 
+				UNION( _top , _bottom, _delta )
+
+			// we use CONCATENATEX to merge all of the information, we seperate rows using CONCATANATE with ", " and UNICHAR(10) – add a line break
+			VAR Result = 
+				CONCATENATEX( 
+					_union , 
+					[Position] & ColumnReference & " (" & 
+						FORMAT( [@value] , FormatTypeForDeltaValue , "en-EN" ) & ")" , 
+					CONCATENATE( ", " , UNICHAR( 10 ) )
+				)
+			RETURN
+				Result
+				
+	annotation DAXLIB_PackageId = lmolus.TopBottomDelta
+
+	annotation DAXLIB_PackageVersion = 1.0.1

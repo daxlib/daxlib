@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "PQL.Assert",
+  "version": "0.1.10",
+  "authors": "John Kerski",
+  "description": "A library that provides assertion functions to enable standardized testing of semantic models.",
+  "tags": "DQV, Testing, Assert, Validation",
+  "projectUrl": "https://www.pqlint.com/pql-assert",
+  "repositoryUrl": "https://github.com/clientfirsttech/PQL.Assert",
+  "readme": "/README.md",
+  "icon": "/icon.png"
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.ReferentialIntegrity",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Generates a DAX query string that, when evaluated, returns a table listing referential integrity violations across all model relationships.",
+  "tags": "DAX,Referential Integrity,Data Quality,Relationships,INFO.VIEW,Model",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://www.linkedin.com/pulse/referential-integrity-monitor-power-bi-reports-erick-oliveira-gghuf/",
+  "readme": "/README.md"
+}

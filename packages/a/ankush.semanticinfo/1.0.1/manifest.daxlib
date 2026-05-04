@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Ankush.SemanticInfo",
+  "version": "1.0.1",
+  "authors": "Ankush Sharma",
+  "description": "A DAX library that returns semantic model information ( metadata )  in a concise, easy-to-read format—designed to help with auditing semantic models and debugging Power BI reports",
+  "tags": "DAX,UDF",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/a/ankush.semanticinfo",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}

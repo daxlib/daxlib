@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EdwardCharles.WaterfallSVG",
+  "version": "1.0.0",
+  "authors": "Edward Charles",
+  "description": "Generate SVG waterfall charts for Power BI. Creates hierarchical bar charts with running totals, subtotals, and connector lines.",
+  "tags": "DAX,UDF,SVG,Waterfall,Chart,Visualization",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/e/edwardcharles.waterfallsvg",
+  "readme": "/README.md"
+}
+

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EdwardCharles.NativeHTML",
+  "version": "1.0.0",
+  "authors": "Edward Charles",
+  "description": "Render dynamic HTML and CSS inside Power BI using SVG foreignObject. Supports responsive layouts, custom styling, and handles special characters safely.",
+  "tags": "DAX,UDF,SVG,HTML,CSS,Visualization",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/e/edwardcharles.nativehtml",
+  "releaseNotes": "Initial release of NativeHTML UDF.",
+  "readme": "/README.md"
+}

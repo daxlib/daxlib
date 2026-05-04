@@ -1,0 +1,466 @@
+/// DAX Assertion Library Functions
+/// Publisher: PQL (Power Query Lint)
+/// These functions provide a standardized way to write unit tests for DAX models
+/// Basic Assertions - PQL.Assert namespace
+function 'PQL.Assert.ShouldBeTrue' =
+		(testName : STRING, actualCondition : BOOLEAN) =>
+		    VAR _Passed = actualCondition = TRUE
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "TRUE",
+		        "Actual", IF(actualCondition, "TRUE", "FALSE"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.ShouldBeFalse' =
+		(testName : STRING, actualCondition : BOOLEAN) =>
+		    VAR _Passed = actualCondition = FALSE
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "FALSE",
+		        "Actual", IF(actualCondition, "TRUE", "FALSE"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a value is NULL (DAX BLANK()).
+function 'PQL.Assert.ShouldBeNull' =
+		(testName : STRING, actualValue : VARIANT) =>
+		    VAR _Passed = ISBLANK(actualValue)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "NULL",
+		        "Actual", IF(ISBLANK(actualValue), "NULL", IF(actualValue = "", "BLANK (empty string)", "HAS VALUE")),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a value is not NULL (not DAX BLANK()). Accepts both simple values and expressions.
+function 'PQL.Assert.ShouldNotBeNull' =
+		(testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
+		    VAR _ActualResult = actualValue
+		    VAR _Passed = NOT ISBLANK(_ActualResult)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "NOT NULL",
+		        "Actual", IF(ISBLANK(_ActualResult), "NULL", IF(_ActualResult = "", "BLANK (empty string)", "HAS VALUE")),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a value is BLANK (empty string "").
+function 'PQL.Assert.ShouldBeBlank' =
+		(testName : STRING, actualValue : VARIANT) =>
+		    VAR _Passed = NOT ISBLANK(actualValue) && actualValue = ""
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "BLANK (empty string)",
+		        "Actual", IF(ISBLANK(actualValue), "NULL", IF(actualValue = "", "BLANK (empty string)", "HAS VALUE")),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a value is not BLANK (not empty string "").
+function 'PQL.Assert.ShouldNotBeBlank' =
+		(testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
+		    VAR _ActualResult = actualValue
+		    VAR _Passed = ISBLANK(_ActualResult) || _ActualResult <> ""
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "NOT BLANK (not empty string)",
+		        "Actual", IF(ISBLANK(_ActualResult), "NULL", IF(_ActualResult = "", "BLANK (empty string)", "HAS VALUE")),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a value is NULL or BLANK (BLANK() or empty string "").
+function 'PQL.Assert.ShouldBeNullOrBlank' =
+		(testName : STRING, actualValue : VARIANT) =>
+		    VAR _Passed = ISBLANK(actualValue) || actualValue = ""
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "NULL OR BLANK",
+		        "Actual", IF(ISBLANK(actualValue), "NULL", IF(actualValue = "", "BLANK (empty string)", "HAS VALUE")),
+		        "Passed", _Passed
+		    )
+
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a value is not NULL and not BLANK (has actual content).
+function 'PQL.Assert.ShouldNotBeNullOrBlank' =
+		(testName : STRING, actualValue : SCALAR VARIANT EXPR) =>
+		    VAR _ActualResult = actualValue
+		    VAR _Passed = NOT ISBLANK(_ActualResult) && _ActualResult <> ""
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "NOT NULL AND NOT BLANK",
+		        "Actual", IF(ISBLANK(_ActualResult), "NULL", IF(_ActualResult = "", "BLANK (empty string)", "HAS VALUE")),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.ShouldEqual' =
+		(testName : STRING, expected : VARIANT, actual : VARIANT) =>
+		    VAR _Passed = expected = actual
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", FORMAT(expected, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.ShouldNotEqual' =
+		(testName : STRING, notExpected : VARIANT, actual : VARIANT) =>
+		    VAR _Passed = notExpected <> actual
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "NOT " & FORMAT(notExpected, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that two strings are exactly equal (case-sensitive comparison).
+function 'PQL.Assert.ShouldEqualExactly' =
+		(testName : STRING, expected : STRING, actual : STRING) =>
+		    VAR _Passed = EXACT(expected, actual)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", expected,
+		        "Actual", actual,
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.ShouldBeGreaterThan' =
+		(testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+		    VAR _Passed = actual > threshold
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "> " & FORMAT(threshold, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.ShouldBeLessThan' =
+		(testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+		    VAR _Passed = actual < threshold
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "< " & FORMAT(threshold, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a number is greater than or equal to an expected value.
+function 'PQL.Assert.ShouldBeGreaterOrEqual' =
+		(testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+		    VAR _Passed = actual >= threshold
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", ">= " & FORMAT(threshold, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a number is less than or equal to an expected value.
+function 'PQL.Assert.ShouldBeLessOrEqual' =
+		(testName : STRING, threshold : DOUBLE, actual : DOUBLE) =>
+		    VAR _Passed = actual <= threshold
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "<= " & FORMAT(threshold, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.ShouldBeBetween' =
+		(testName : STRING, lowerBound : DOUBLE, upperBound : DOUBLE, actual : DOUBLE) =>
+		    VAR _Passed = actual >= lowerBound && actual <= upperBound
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", FORMAT(lowerBound, "") & " <= value <= " & FORMAT(upperBound, ""),
+		        "Actual", FORMAT(actual, ""),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// String Assertions - PQL.Assert namespace
+/// Asserts that a string starts with the specified prefix (case-insensitive).
+function 'PQL.Assert.ShouldStartWith' =
+		(testName : STRING, prefix : STRING, actual : STRING) =>
+		    VAR _Passed = LEFT(UPPER(actual), LEN(prefix)) = UPPER(prefix)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Starts with '" & prefix & "'",
+		        "Actual", actual,
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a string ends with the specified suffix (case-insensitive).
+function 'PQL.Assert.ShouldEndWith' =
+		(testName : STRING, suffix : STRING, actual : STRING) =>
+		    VAR _Passed = RIGHT(UPPER(actual), LEN(suffix)) = UPPER(suffix)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Ends with '" & suffix & "'",
+		        "Actual", actual,
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a string contains the specified substring (case-insensitive).
+function 'PQL.Assert.ShouldContainString' =
+		(testName : STRING, substring : STRING, actual : STRING) =>
+		    VAR _Passed = CONTAINSSTRING(actual, substring)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Contains '" & substring & "'",
+		        "Actual", actual,
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a string matches a pattern (case-insensitive).
+function 'PQL.Assert.ShouldMatch' =
+		(testName : STRING, pattern : STRING, actual : STRING) =>
+		    VAR _Passed = CONTAINSSTRING(actual, pattern)
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Matches '" & pattern & "'",
+		        "Actual", actual,
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Col Assertions - PQL.Assert.Col namespace
+/// Asserts that all values in a column are NULL (DAX BLANK()).
+function 'PQL.Assert.Col.ShouldBeNull' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _NonNullCount = DISTINCTCOUNTNOBLANK(columnRef)
+		    VAR _Passed = _NonNullCount = 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column is all NULL",
+		        "Actual", IF(_Passed, "ALL NULL", "HAS NON-NULL VALUES (" & FORMAT(_NonNullCount, "0") & " distinct)"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a column contains at least one non-NULL value (not DAX BLANK()).
+function 'PQL.Assert.Col.ShouldNotBeNull' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _NonNullCount = DISTINCTCOUNTNOBLANK(columnRef)
+		    VAR _Passed = _NonNullCount > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column has non-NULL values",
+		        "Actual", IF(_Passed, "HAS VALUES (" & FORMAT(_NonNullCount, "0") & " distinct)", "ALL NULL"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that all values in a column are BLANK (empty string "").
+function 'PQL.Assert.Col.ShouldBeBlank' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _BlankCount = COUNTAX(
+		        VALUES(columnRef),
+		        IF(FORMAT(columnRef, "") = "" && NOT ISBLANK(columnRef), 1, BLANK())
+		    )
+		    VAR _TotalCount = COUNTROWS(VALUES(columnRef))
+		    VAR _Passed = _BlankCount = _TotalCount
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column is all BLANK (empty string)",
+		        "Actual", IF(_Passed, "ALL BLANK", "HAS NON-BLANK VALUES (" & FORMAT(_TotalCount - _BlankCount, "0") & " non-blank)"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a column contains at least one non-BLANK value (not empty string "").
+function 'PQL.Assert.Col.ShouldNotBeBlank' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _NonBlankCount = COUNTAX(
+		        VALUES(columnRef),
+		        IF(FORMAT(columnRef, "") <> "", 1, BLANK())
+		    )
+		    VAR _Passed = _NonBlankCount > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column has non-BLANK values (not empty string)",
+		        "Actual", IF(_Passed, "HAS VALUES (" & FORMAT(_NonBlankCount, "0") & " non-blank)", "ALL BLANK"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that all values in a column are NULL or BLANK (BLANK() or empty string "").
+function 'PQL.Assert.Col.ShouldBeNullOrBlank' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _NonEmptyCount = COUNTAX(
+		        VALUES(columnRef),
+		        IF(ISBLANK(columnRef) || FORMAT(columnRef, "") = "", BLANK(), 1)
+		    )
+		    VAR _Passed = _NonEmptyCount = 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column is all NULL or BLANK",
+		        "Actual", IF(_Passed, "ALL NULL/BLANK", "HAS VALUES (" & FORMAT(_NonEmptyCount, "0") & " non-empty)"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a column contains at least one value that is not NULL and not BLANK.
+function 'PQL.Assert.Col.ShouldNotBeNullOrBlank' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _NonEmptyCount = COUNTAX(
+		        VALUES(columnRef),
+		        IF(ISBLANK(columnRef) || FORMAT(columnRef, "") = "", BLANK(), 1)
+		    )
+		    VAR _Passed = _NonEmptyCount > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column has non-NULL, non-BLANK values",
+		        "Actual", IF(_Passed, "HAS VALUES (" & FORMAT(_NonEmptyCount, "0") & " non-empty)", "ALL NULL/BLANK"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that all values in a column are unique (no duplicates).
+function 'PQL.Assert.Col.ShouldBeDistinct' =
+		(testName : STRING, columnRef : ANYREF EXPR) =>
+		    VAR _DistinctCount = DISTINCTCOUNT(columnRef)
+		    VAR _TotalCount = COUNTROWS(VALUES(columnRef))
+		    VAR _Passed = _DistinctCount = _TotalCount
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "All values distinct",
+		        "Actual", IF(_Passed, "ALL DISTINCT (" & FORMAT(_TotalCount, "0") & " rows)", "DUPLICATES FOUND (" & FORMAT(_DistinctCount, "0") & " distinct of " & FORMAT(_TotalCount, "0") & " rows)"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.Col.ShouldExist' =
+		(testName : STRING, tableName : STRING, columnName : STRING) =>
+		    VAR _Columns = INFO.VIEW.COLUMNS()
+		    VAR _Found = COUNTROWS(FILTER(_Columns, [Table] = tableName && [Name] = columnName)) > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Column '" & tableName & "[" & columnName & "]' exists",
+		        "Actual", IF(_Found, "EXISTS", "NOT FOUND"),
+		        "Passed", _Found
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Table Assertions - PQL.Assert.Table namespace
+/// Asserts that a table has at least one row.
+function 'PQL.Assert.Tbl.ShouldHaveRows' =
+		(testName : STRING, tableRef : TABLE EXPR) =>
+		    VAR _RowCount = COUNTROWS(tableRef)
+		    VAR _Passed = _RowCount > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Table has rows",
+		        "Actual", IF(_Passed, "HAS ROWS (" & FORMAT(_RowCount, "0") & ")", "EMPTY (0 rows)"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Asserts that a table has exactly the expected number of rows.
+function 'PQL.Assert.Tbl.ShouldHaveRowCount' =
+		(testName : STRING, tableRef : TABLE EXPR, expectedRowCount : INT64) =>
+		    VAR _RowCount = COUNTROWS(tableRef)
+		    VAR _Passed = _RowCount = expectedRowCount
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", FORMAT(expectedRowCount, "0") & " rows",
+		        "Actual", FORMAT(_RowCount, "0") & " rows",
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.Tbl.ShouldHaveMoreRowsThan' =
+		(testName : STRING, threshold : INT64, tableToCheck : TABLE) =>
+		    VAR _RowCount = COUNTROWS(tableToCheck)
+		    VAR _Passed = _RowCount > threshold
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "> " & FORMAT(threshold, "0"),
+		        "Actual", FORMAT(_RowCount, "0"),
+		        "Passed", _Passed
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+function 'PQL.Assert.Tbl.ShouldExist' =
+		(testName : STRING, tableName : STRING) =>
+		    VAR _Tables = INFO.VIEW.TABLES()
+		    VAR _Found = COUNTROWS(FILTER(_Tables, [Name] = tableName)) > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Table '" & tableName & "' exists",
+		        "Actual", IF(_Found, "EXISTS", "NOT FOUND"),
+		        "Passed", _Found
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Relationship Assertions - PQL.Assert.Relationship namespace
+function 'PQL.Assert.Relationship.ShouldExist' =
+		(testName : STRING, fromTable : STRING, fromColumn : STRING, toTable : STRING, toColumn : STRING) =>
+		    VAR _Relationships = INFO.VIEW.RELATIONSHIPS()
+		    VAR _Found = COUNTROWS(FILTER(_Relationships,
+		        [FromTable] = fromTable && [FromColumn] = fromColumn &&
+		        [ToTable] = toTable && [ToColumn] = toColumn)) > 0
+		    RETURN ROW(
+		        "TestName", testName,
+		        "Expected", "Relationship '" & fromTable & "[" & fromColumn & "] -> " & toTable & "[" & toColumn & "]' exists",
+		        "Actual", IF(_Found, "EXISTS", "NOT FOUND"),
+		        "Passed", _Found
+		    )
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
+/// Test Discovery Functions - PQL.Assert namespace
+function 'PQL.Assert.RetrieveTests' =
+		() =>
+		    FILTER(INFO.FUNCTIONS("ORIGIN", "2"), OR(RIGHT([FUNCTION_NAME],5) = ".Test", RIGHT([FUNCTION_NAME],6) = ".Tests"))
+	annotation DAXLIB_PackageId = PQL.Assert
+	annotation DAXLIB_PackageVersion = 0.1.2
+
