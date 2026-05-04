@@ -103,12 +103,12 @@ function 'EG.Base64.Decode' =
 	        ADDCOLUMNS (
 	            GENERATESERIES ( 1, LEN ( _Input ), 4 ),
 	            "@String",
-	                VAR _v1 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value], 1 ) )
-	                VAR _v2 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value] + 1, 1 ) )
-	                VAR _v3 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value] + 2, 1 ) )
-	                VAR _v4 = 'EG.Base64.ConvertASCII' ( MID ( _Input, [Value] + 3, 1 ) )
+	                VAR _v1 = EG.Base64.ConvertASCII ( MID ( _Input, [Value], 1 ) )
+	                VAR _v2 = EG.Base64.ConvertASCII ( MID ( _Input, [Value] + 1, 1 ) )
+	                VAR _v3 = EG.Base64.ConvertASCII ( MID ( _Input, [Value] + 2, 1 ) )
+	                VAR _v4 = EG.Base64.ConvertASCII ( MID ( _Input, [Value] + 3, 1 ) )
 	                RETURN
-	                    'EG.Base64.BytePartition' ( _v1, _v2, _v3, _v4 )
+	                    EG.Base64.BytePartition ( _v1, _v2, _v3, _v4 )
 	        )
 	    RETURN
 	        CONCATENATEX ( _Decoded, [@String], "", [Value], ASC )
