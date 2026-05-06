@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.RFMClassification",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Classifies customers using RFM analysis (Recency, Frequency, Monetary) and evaluates measures restricted to a given RFM class.",
+  "tags": "DAX,RFM,Customer Segmentation,Recency,Frequency,Monetary,Classification,Percentile",
+  "releaseNotes": "Initial release.",
+  "readme": "/README.md"
+}
