@@ -121,7 +121,7 @@ function 'EG.RFMClassification.ComputeInRFMClass' =
 	        RFMScoreColumn : COLUMNREF
 	    ) =>
 	    VAR _ItemsInClass =
-	        'EG.RFMClassification.ItemsInClass' ( todayDate, MonetaryExpr, transactionsDateColumn, ItemKeyColumn, RFMScoreColumn )
+	        EG.RFMClassification.ItemsInClass ( todayDate, MonetaryExpr, transactionsDateColumn, ItemKeyColumn, RFMScoreColumn )
 	    RETURN
 	        CALCULATE (
 	            valueExpr,
