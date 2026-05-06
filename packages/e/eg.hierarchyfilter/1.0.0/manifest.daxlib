@@ -5,5 +5,6 @@
   "authors": "ErickOliverG",
   "description": "Filters a hierarchy by one or more selected parent employees, returning the full subordinate chain using pre-computed PATH columns.",
   "tags": "DAX,Hierarchy,Filter,PATH,Employee,Calculation Group,PATHCONTAINS,TREATAS",
-  "releaseNotes": "Initial release."
+  "releaseNotes": "Initial release.",
+  "readme": "/README.md"
 }
