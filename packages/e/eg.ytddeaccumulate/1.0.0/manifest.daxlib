@@ -5,5 +5,6 @@
   "authors": "ErickOliverG",
   "description": "Converts YTD (Year-to-Date) cumulative values into individual monthly values by subtracting the previous month YTD from the current month YTD.",
   "tags": "DAX,YTD,Monthly,De-accumulate,Finance,Time Intelligence",
-  "releaseNotes": "Initial release."
+  "releaseNotes": "Initial release.",
+  "readme": "/README.md"
 }
