@@ -313,25 +313,25 @@
 	    annotation DAXLIB_PackageVersion = 0.1.3-beta
 	
 	function 'SavoryData.Selection2List.MinMaxCountDate' = 
-		(pDateRange : VAL, pColumnName : ANYREF EXPR) => 
-		FORMAT(MINX(pDateRange, pColumnName), "YYYY-MM-DD - ") & 
-	    FORMAT(MAXX(pDateRange, pColumnName), "YYYY-MM-DD (") &
-    	COUNTROWS(pDateRange) & 
-		IF(NOT ISBLANK(COUNTROWS(pDateRange)), ")")
+		    (pDateRange : VAL, pColumnName : ANYREF EXPR) => 
+		    FORMAT(MINX(pDateRange, pColumnName), "YYYY-MM-DD - ") & 
+	        FORMAT(MAXX(pDateRange, pColumnName), "YYYY-MM-DD (") &
+    	    COUNTROWS(pDateRange) & 
+		    IF(NOT ISBLANK(COUNTROWS(pDateRange)), ")")
 	    annotation DAXLIB_PackageId = SavoryData.Selection2List
 	
 	    annotation DAXLIB_PackageVersion = 0.1.3-beta
 
 	function 'SavoryData.Selection2List.MinMaxCount' = 
-		(pDateRange : VAL, pColumnName : ANYREF EXPR) => 
-		IF(NOT ISBLANK(COUNTROWS(pDateRange)),
-			CONVERT(MINX(pDateRange, pColumnName), TEXT) & 
-			" - " & 
-			CONVERT(MAXX(pDateRange, pColumnName), TEXT) &
-			" (" &
-			COUNTROWS(pDateRange) & 
-			")"
-		)
+		    (pDateRange : VAL, pColumnName : ANYREF EXPR) => 
+		    IF(NOT ISBLANK(COUNTROWS(pDateRange)),
+		    	CONVERT(MINX(pDateRange, pColumnName), TEXT) & 
+		    	" - " & 
+		    	CONVERT(MAXX(pDateRange, pColumnName), TEXT) &
+		    	" (" &
+		    	COUNTROWS(pDateRange) & 
+		    	")"
+		    )
 	    annotation DAXLIB_PackageId = SavoryData.Selection2List
 	
 	    annotation DAXLIB_PackageVersion = 0.1.3-beta
