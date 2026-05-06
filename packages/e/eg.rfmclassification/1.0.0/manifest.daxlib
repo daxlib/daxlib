@@ -5,5 +5,6 @@
   "authors": "ErickOliverG",
   "description": "Classifies customers using RFM analysis (Recency, Frequency, Monetary) and evaluates measures restricted to a given RFM class.",
   "tags": "DAX,RFM,Customer Segmentation,Recency,Frequency,Monetary,Classification,Percentile",
-  "releaseNotes": "Initial release."
+  "releaseNotes": "Initial release.",
+  "readme": "/README.md"
 }
