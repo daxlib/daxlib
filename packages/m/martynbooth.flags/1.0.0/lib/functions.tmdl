@@ -1299,5 +1299,5 @@
 			RETURN
 			    "data:image/svg+xml;utf8," & EncodedSvg
 			```
- annotation DAXLIB_PackageId = MartynBooth.Flags
- annotation DAXLIB_PackageVersion = 1.0.0
+	annotation DAXLIB_PackageId = MartynBooth.Flags
+	annotation DAXLIB_PackageVersion = 1.0.0
