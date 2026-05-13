@@ -1,8 +1,8 @@
-# MartynBooth.SVGFlags
+# MartynBooth.Flags
 
 Inline SVG country flags for Power BI and DAX.
 
-`MartynBooth.SVGFlags` provides a DAX user-defined function that returns country and territory flags as inline SVG data URIs. It is designed for use in Power BI reports where you want lightweight, portable flag icons without relying on external image URLs.
+`MartynBooth.Flags` provides a DAX user-defined function that returns country and territory flags as inline SVG data URIs. It is designed for use in Power BI reports where you want lightweight, portable flag icons without relying on external image URLs.
 
 The function supports ISO2 codes, ISO3 codes, country names, common synonyms, UK country names, multiple display shapes, and optional SVG borders.
 
@@ -259,7 +259,7 @@ For best results:
 
 | Property | Value |
 | --- | --- |
-| Package ID | `MartynBooth.SVGFlags` |
+| Package ID | `MartynBooth.Flags` |
 | Version | `1.0.0` |
 | Function | `MartynBooth.Flags.FlagSVG` |
 | Output | SVG data URI string |
