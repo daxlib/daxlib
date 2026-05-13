@@ -1,11 +1,11 @@
- /// Returns an inline SVG flag as a data URI for use in Power BI.
- /// Supports ISO2, ISO3, country names, supported synonyms, multiple display shapes, and optional borders.
- /// @param {string} CountryCode - ISO2, ISO3, country name, or supported synonym. Examples: GB, GBR, United Kingdom, Wales, Scotland, England.
- /// @param {string} FlagShape - Flag display shape. Supported values: rectangle, rounded, wavy, circle, square, roundedsquare, hexagon, shield, pin, badge, ribbon, and heart.
- /// @param {int64} BorderWidth - Border width in SVG units. Use 0 for no border. Values between 1 and 10 usually work well.
- /// @param {string} BorderColour - Border colour as a hex value or SVG colour name. Example: "#000000" or "black".
- /// @returns SVG data URI string.
- function 'MartynBooth.Flags.FlagSVG' = ```
+/// Returns an inline SVG flag as a data URI for use in Power BI.
+/// Supports ISO2, ISO3, country names, supported synonyms, multiple display shapes, and optional borders.
+/// @param {string} CountryCode - ISO2, ISO3, country name, or supported synonym. Examples: GB, GBR, United Kingdom, Wales, Scotland, England.
+/// @param {string} FlagShape - Flag display shape. Supported values: rectangle, rounded, wavy, circle, square, roundedsquare, hexagon, shield, pin, badge, ribbon, and heart.
+/// @param {int64} BorderWidth - Border width in SVG units. Use 0 for no border. Values between 1 and 10 usually work well.
+/// @param {string} BorderColour - Border colour as a hex value or SVG colour name. Example: "#000000" or "black".
+/// @returns SVG data URI string.
+function 'MartynBooth.Flags.FlagSVG' = ```
 		
 			(
 			    CountryCode : STRING,
