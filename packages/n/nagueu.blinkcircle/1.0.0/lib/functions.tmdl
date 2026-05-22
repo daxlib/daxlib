@@ -1,0 +1,253 @@
+
+	/// Smart.AlertIndicator — Bibliothèque TMDL universelle
+	/// Version      : 2.0.0
+	/// Compatibilité: Power BI / Tabular Editor
+	/// Description  : Bibliothèque universelle d’alertes KPI
+
+	/// ========================================================
+	/// BLOC 1 — MÉTADONNÉES
+	/// ========================================================
+
+function 'SmartAlert.Info.Author' =
+        () =>
+            DATATABLE(
+                "Name", STRING,
+                "Description", STRING,
+                {
+                    { "Library",       "Smart.AlertIndicator" },
+                    { "Version",       "2.0.0" },
+                    { "Compatibility", "Power BI Import / DirectQuery / Composite" },
+                    { "Author",        "Votre Nom" },
+                    { "Description",   "Alertes KPI universelles" }
+                }
+            )
+
+function 'SmartAlert.Info.Explain' =
+        () =>
+            DATATABLE(
+                "function", STRING,
+                "Description", STRING,
+                {
+                    {
+                        "SmartAlert.KPI.Status",
+                        "Retourne le niveau d’alerte KPI"
+                    },
+                    {
+                        "SmartAlert.KPI.Color",
+                        "Retourne la couleur selon le niveau"
+                    },
+                    {
+                        "SmartAlert.KPI.Evaluate",
+                        "Évalue un KPI unique"
+                    },
+                    {
+                        "SmartAlert.KPI.Summary",
+                        "Retourne un résumé agrégé"
+                    },
+                    {
+                        "SmartAlert.Model.MeasureAudit",
+                        "Audit complet des mesures"
+                    }
+                }
+            )
+
+    /// ========================================================
+    /// BLOC 2 — FONCTIONS KPI
+    /// ========================================================
+
+function 'SmartAlert.KPI.Status' =
+        (
+            kpi_value          : double,
+            threshold_critical : double,
+            threshold_warning  : double
+        ) =>
+            SWITCH(
+                TRUE(),
+
+                ISBLANK(kpi_value),
+                    "UNKNOWN",
+
+                NOT ISBLANK(threshold_critical)
+                    && kpi_value >= threshold_critical,
+                    "CRITICAL",
+
+                NOT ISBLANK(threshold_warning)
+                    && kpi_value >= threshold_warning,
+                    "WARNING",
+
+                "NORMAL"
+            )
+
+function 'SmartAlert.KPI.Color' =
+        (
+            kpi_value          : double,
+            threshold_critical : double,
+            threshold_warning  : double,
+            custom_color       : string
+        ) =>
+
+        VAR _status =
+            SmartAlert.KPI.Status(
+                kpi_value,
+                threshold_critical,
+                threshold_warning
+            )
+
+        RETURN
+            IF(
+                NOT ISBLANK(custom_color)
+                    && LEN(TRIM(custom_color)) > 0,
+
+                custom_color,
+
+                SWITCH(
+                    _status,
+                    "CRITICAL", "#FF0000",
+                    "WARNING",  "#FFA500",
+                    "NORMAL",   "#00C853",
+                    "INFO",     "#2196F3",
+                    "#9E9E9E"
+                )
+            )
+
+    /// ========================================================
+    /// BLOC 3 — ÉVALUATION KPI
+    /// ========================================================
+
+function 'SmartAlert.KPI.Evaluate' =
+        (
+            kpi_name           : string,
+            kpi_value          : double,
+            threshold_critical : double,
+            threshold_warning  : double,
+            unit               : string,
+            category           : string,
+            custom_color       : string
+        ) =>
+
+        VAR _status =
+            SmartAlert.KPI.Status(
+                kpi_value,
+                threshold_critical,
+                threshold_warning
+            )
+
+        VAR _color =
+            SmartAlert.KPI.Color(
+                kpi_value,
+                threshold_critical,
+                threshold_warning,
+                custom_color
+            )
+
+        VAR _emoji =
+            SWITCH(
+                _status,
+                "CRITICAL", "🔴",
+                "WARNING",  "🟡",
+                "NORMAL",   "🟢",
+                "INFO",     "🔵",
+                "⚪"
+            )
+
+        RETURN
+            ROW(
+                "Alert", _emoji & " " & _status,
+                "KPI Name", kpi_name,
+                "Current Value", kpi_value,
+                "Unit", COALESCE(unit, ""),
+                "Color", _color,
+                "Category", COALESCE(category, "")
+            )
+
+    /// ========================================================
+    /// BLOC 4 — SUMMARY
+    /// ========================================================
+
+    function 'SmartAlert.KPI.Summary' =
+        (
+            critical_count : integer,
+            warning_count  : integer,
+            normal_count   : integer
+        ) =>
+
+        VAR _total =
+            critical_count
+            + warning_count
+            + normal_count
+
+        RETURN
+            UNION(
+
+                ROW(
+                    "Level", "🔴 CRITICAL",
+                    "Count", critical_count,
+                    "Pct",
+                    FORMAT(
+                        DIVIDE(critical_count, _total) * 100,
+                        "0.0"
+                    ) & "%"
+                ),
+
+                ROW(
+                    "Level", "🟡 WARNING",
+                    "Count", warning_count,
+                    "Pct",
+                    FORMAT(
+                        DIVIDE(warning_count, _total) * 100,
+                        "0.0"
+                    ) & "%"
+                ),
+
+                ROW(
+                    "Level", "🟢 NORMAL",
+                    "Count", normal_count,
+                    "Pct",
+                    FORMAT(
+                        DIVIDE(normal_count, _total) * 100,
+                        "0.0"
+                    ) & "%"
+                )
+            )
+
+    /// ========================================================
+    /// BLOC 5 — AUDIT DU MODÈLE
+    /// ========================================================
+
+    function 'SmartAlert.Model.MeasureAudit' =
+        () =>
+
+        SELECTCOLUMNS(
+            FILTER(
+                INFO.VIEW.MEASURES(),
+                NOT STARTSWITH([Table], "LocalDateTable")
+            ),
+
+            "Table Name", [Table],
+            "Measure Name", [Name],
+            "Expression", [Expression],
+            "Data Type", [DataType],
+            "Display Folder", [DisplayFolder]
+        )
+
+    /// ========================================================
+    /// BLOC 6 — CONFIGURATION
+    /// ========================================================
+
+    function 'SmartAlert.Config.Default' =
+        () =>
+
+        DATATABLE(
+            "ConfigKey", STRING,
+            "ConfigValue", STRING,
+            {
+                { "blink_speed_ms", "800" },
+                { "circle_size_px", "40" },
+                { "animation_enabled", "true" },
+                { "color_critical", "#FF0000" },
+                { "color_warning", "#FFA500" },
+                { "color_normal", "#00C853" }
+            }
+        )
+	annotation DAXLIB_PackageId      = "SmartAlert.Info"
+    annotation DAXLIB_PackageVersion = "2.0.0"
