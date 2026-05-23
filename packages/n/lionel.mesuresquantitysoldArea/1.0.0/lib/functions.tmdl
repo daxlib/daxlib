@@ -1,0 +1,90 @@
+/// lionel.mesuresquantitysoldArea — QuantitySoldArea Sparkline
+/// Version       : 1.0.0
+/// Description   : SVG KPI QuantitySoldArea Sparkline
+FUNCTION 'nagueu.blinkcircle.AlertIndicator' =
+        (
+            AlertColor: STRING,
+            AlertLabel: STRING
+        )
+        =>
+
+        VAR SVG_Data_URL =
+            "data:image/svg+xml;utf8,"
+
+        VAR SVG_Start =
+            "<svg height='55' width='200' xmlns='http://www.w3.org/2000/svg'>"
+
+        VAR SVG_End =
+            "</svg>"
+
+        VAR _Body =
+            "<rect height='50' width='195' x='2' y='2' />" &
+            "<text x='50%' y='50%'>" & AlertLabel & "</text>"
+
+        VAR _No_Blink =
+            "<style>" &
+                "rect{" &
+                    "rx:15;" &
+                    "ry:15;" &
+                    "stroke:" & AlertColor & ";" &
+                    "stroke-width:2;" &
+                    "fill:" & AlertColor & ";" &
+                    "fill-opacity:0.30;" &
+                "}" &
+                "text{" &
+                    "font-family:'Segoe UI';" &
+                    "font-size:14px;" &
+                    "font-weight:600;" &
+                    "fill:black;" &
+                    "text-anchor:middle;" &
+                    "dominant-baseline:middle;" &
+                "}" &
+            "</style>" &
+            _Body
+
+        VAR _Blink =
+            "<style>" &
+                "@keyframes blink{" &
+                    "0%{fill:" & AlertColor & ";}" &
+                    "50%{fill:white;}" &
+                    "100%{fill:" & AlertColor & ";}" &
+                "}" &
+                "rect{" &
+                    "rx:15;" &
+                    "ry:15;" &
+                    "stroke:" & AlertColor & ";" &
+                    "stroke-width:2;" &
+                    "fill:" & AlertColor & ";" &
+                    "fill-opacity:0.30;" &
+                    "animation:blink 2s infinite;" &
+                "}" &
+                "text{" &
+                    "font-family:'Segoe UI';" &
+                    "font-size:14px;" &
+                    "font-weight:600;" &
+                    "fill:black;" &
+                    "text-anchor:middle;" &
+                    "dominant-baseline:middle;" &
+                "}" &
+            "</style>" &
+            _Body
+
+        VAR SVG_RESULT =
+            SVG_Data_URL &
+            SVG_Start &
+            IF(
+                LOWER(AlertColor) = "red"
+                    || AlertColor = "#f8291e"
+                    || AlertColor = "%23f8291e",
+                _Blink,
+                _No_Blink
+            ) &
+            SVG_End
+
+        = SVG_RESULT
+        
+    annotation DAXLIB_PackageId = "nagueu.blinkcircle"
+    annotation DAXLIB_PackageVersion = "1.0.0"
+    annotation DAXLIB_Description = "KPI SVG Badge Utility Library with blinking alert support"
+    annotation DAXLIB_Author = "Lionel Nagueu"
+    annotation DAXLIB_Tags = "SVG,KPI,Alert,Blinking,PowerBI,TMDL,UDF"
