@@ -59,7 +59,7 @@ All functions are model-independent—they work with any Power BI semantic model
 
 ## Author
 
-**Ankush Sharma**
+**Lionel Nagueu**
 
 - LinkedIn: [lionel-perin-nagueu-djambong-7a4a1715a](https://www.linkedin.com/in/lionel-perin-nagueu-djambong-7a4a1715a/)
 - GitHub: [nagueuleo/Nagueu.BlinkCircle](https://https://github.com/nagueuleo/Nagueu.BlinkCircle)
