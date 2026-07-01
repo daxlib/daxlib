@@ -2458,7 +2458,6 @@ function 'PQL.Assert.OLS.ColumnShouldBeVisible' =
 
 /// Partition Assertions - PQL.Assert.Partition namespace
 /// These functions validate partition configurations in semantic models
-
 /// Asserts that a table has the expected number of partitions, with optional date range filtering.
 /// Uses INFO.PARTITIONS() to check partition counts for data quality and model structure validation.
 /// @param {STRING} testName - Description of the test being performed
@@ -2631,7 +2630,6 @@ function 'PQL.Assert.Partitions.ShouldBeAtLeast' =
 
 /// Perspective Assertions - PQL.Assert.Perspective namespace
 /// These functions validate perspective configurations and membership in semantic models
-
 /// Asserts that a perspective exists and contains expected tables, columns, and measures.
 /// Uses INFO.PERSPECTIVES() and related DMV functions to validate perspective membership.
 /// @param {STRING} testName - Description of the test being performed
