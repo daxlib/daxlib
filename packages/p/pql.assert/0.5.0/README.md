@@ -177,8 +177,8 @@ EVALUATE PQL.Assert.Partitions.ShouldExist(
 PQL.Assert provides functions for validating perspective configurations and membership, ensuring that perspectives contain the expected tables, columns, and measures.
 
 - `PQL.Assert.Perspective.ShouldExist(testName, perspectiveName)` - Asserts that a perspective exists in the semantic model
-- `PQL.Assert.Perspective.ShouldContain(testName, perspectiveName, [expectedTables], [expectedColumns], [expectedMeasures])` - Asserts that a perspective contains expected objects. Tables, columns, and measures are validated using DATATABLE structures with a `[Name]` column.
-- `PQL.Assert.Perspective.ShouldMatchSchema(testName, perspectiveName, expectedTablesList, expectedColumnsList, expectedMeasuresList)` - Asserts exact perspective schema using comma-separated lists (consistent with other schema checks like `Tbl.ShouldHaveColumns` and `Tbl.ShouldNotHaveExtraColumns`). This validates both missing expected objects and unexpected extra objects.
+- `PQL.Assert.Perspective.ShouldContain(testName, perspectiveName, expectedTablesList, expectedColumnsList, expectedMeasuresList)` - Validates a perspective contains expected objects using comma-separated lists. Checks if all expected tables, columns, and measures are present in the perspective (does not fail if extra objects exist). Uses delimiter-safe case-insensitive matching to avoid substring false positives.
+- `PQL.Assert.Perspective.ShouldMatchSchema(testName, perspectiveName, expectedTablesList, expectedColumnsList, expectedMeasuresList)` - Exact perspective schema validation using comma-separated lists (consistent with other schema checks like `Tbl.ShouldHaveColumns` and `Tbl.ShouldNotHaveExtraColumns`). This validates both missing expected objects and unexpected extra objects.
 
 **Example Usage:**
 ```dax
@@ -189,49 +189,33 @@ EVALUATE PQL.Assert.Perspective.ShouldExist(
 )
 
 // Validate perspective contains expected tables
-VAR _ExpectedTables = DATATABLE(
-    "Name", STRING,
-    {
-        {"Sales"},
-        {"Customers"},
-        {"Products"}
-    }
-)
-
 EVALUATE PQL.Assert.Perspective.ShouldContain(
     "Finance perspective should contain core tables",
     "Finance",
-    _ExpectedTables,
-    BLANK(),
-    BLANK()
+    "Sales,Customers,Products",  // Expected tables
+    "",                           // No expected columns
+    ""                            // No expected measures
 )
 
 // Validate with columns and measures
-VAR _ExpectedColumns = DATATABLE(
-    "Name", STRING,
-    {
-        {"Sales[Amount]"},
-        {"Sales[OrderDate]"}
-    }
-)
-
-VAR _ExpectedMeasures = DATATABLE(
-    "Name", STRING,
-    {
-        {"Sales[Total Sales]"},
-        {"Sales[YTD Sales]"}
-    }
-)
-
 EVALUATE PQL.Assert.Perspective.ShouldContain(
     "Finance perspective should contain specific columns and measures",
     "Finance",
-    BLANK(),
-    _ExpectedColumns,
-    _ExpectedMeasures
+    "",                                           // No expected tables
+    "Sales[Amount],Sales[OrderDate]",            // Expected columns
+    "Sales[Total Sales],Sales[YTD Sales]"        // Expected measures
 )
 
-// Simplified exact schema validation using comma-separated lists
+// Validate with all object types
+EVALUATE PQL.Assert.Perspective.ShouldContain(
+    "Finance perspective should contain core objects",
+    "Finance",
+    "Sales,Customers",
+    "Sales[Amount],Customers[CustomerName]",
+    "Sales[Total Sales]"
+)
+
+// Exact schema validation - ensures no extra objects exist
 EVALUATE PQL.Assert.Perspective.ShouldMatchSchema(
     "Finance perspective should match expected schema",
     "Finance",
