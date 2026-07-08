@@ -352,3 +352,7 @@ function 'SavoryData.Selection2List.MinMaxCountV2' =
 			COUNTROWS(TABLEOF(pColumn)) &
 			")"
 		)
+
+	annotation DAXLIB_PackageId = SavoryData.Selection2List
+
+	annotation DAXLIB_PackageVersion = 0.1.4-beta
