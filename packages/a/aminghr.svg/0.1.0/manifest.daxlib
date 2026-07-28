@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "AminGhr.SVG",
+  "version": "0.1.0",
+  "authors": "Amin Gharaei",
+  "description": "Inline SVG bullet charts as DAX user-defined functions. BulletChart renders any two measures as a compact bullet chart with qualitative bands, a target line, a variance arrow and label, an optional star for values beyond the scale, and a built-in sort key.",
+  "tags": "SVG,Bullet Chart,KPI,Visual,Target",
+  "releaseNotes": "Initial release. Adds AminGhr.SVG.BulletChart.",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/a/aminghr.svg",
+  "readme": "/README.md",
+  "icon": "/icon.png"
+}
