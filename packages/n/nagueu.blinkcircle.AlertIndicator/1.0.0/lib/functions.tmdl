@@ -1,6 +1,6 @@
-/// lionel.mesuresquantitysoldArea — QuantitySoldArea Sparkline
+/// nagueu.blinkcircle.AlertIndicator
 /// Version       : 1.0.0
-/// Description   : SVG KPI QuantitySoldArea Sparkline
+/// Description   : SVG KPI color alert
 FUNCTION 'nagueu.blinkcircle.AlertIndicator' =
         (
             AlertColor: STRING,
