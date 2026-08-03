@@ -1,7 +1,7 @@
 /// nagueu.blinkcircle.AlertIndicator
 /// Version       : 1.0.0
 /// Description   : SVG KPI color alert
-FUNCTION 'nagueu.blinkcircle.AlertIndicator' =
+FUNCTION 'Nagueu.BlinkCircle.AlertIndicator' =
         (
             AlertColor: STRING,
             AlertLabel: STRING
@@ -83,8 +83,5 @@ FUNCTION 'nagueu.blinkcircle.AlertIndicator' =
 
         = SVG_RESULT
         
-    annotation DAXLIB_PackageId = "nagueu.blinkcircle"
+    annotation DAXLIB_PackageId = "Nagueu.BlinkCircle"
     annotation DAXLIB_PackageVersion = "1.0.0"
-    annotation DAXLIB_Description = "KPI SVG Badge Utility Library with blinking alert support"
-    annotation DAXLIB_Author = "Lionel Nagueu"
-    annotation DAXLIB_Tags = "SVG,KPI,Alert,Blinking,PowerBI,TMDL,UDF"
