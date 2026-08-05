@@ -35,7 +35,7 @@ The measure automatically calculates coordinates, scales values, and renders a r
 ## Getting Started
 
 1. Import the library into your Power BI semantic model using DAX View
-2. Start exploring with `lionel.mesuresquantitysoldArea.Explain()` to see all available functions
+2. Start exploring with to see all available functions.
 3. Use the examples above to get started
 
 ## Author
