@@ -43,6 +43,6 @@ The measure automatically calculates coordinates, scales values, and renders a r
 **Lionel Nagueu**
 
 - LinkedIn: [lionel-perin-nagueu-djambong-7a4a1715a](https://www.linkedin.com/in/lionel-perin-nagueu-djambong-7a4a1715a/)
-- GitHub: [nagueuleo/Nagueu.BlinkCircle](https://https://github.com/nagueuleo/Nagueu.BlinkCircle)
+- GitHub: [nagueuleo/Nagueu.BlinkCircle](https://github.com/nagueuleo/Nagueu.BlinkCircle)
 
 **Version:** 1.0.0
