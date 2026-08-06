@@ -84,5 +84,5 @@ FUNCTION 'Nagueu.BlinkCircle.AlertIndicator' =
         RETURN
             SVG_RESULT
         
-    annotation DAXLIB_PackageId = "Nagueu.BlinkCircle"
-    annotation DAXLIB_PackageVersion = "1.0.0"
+    annotation DAXLIB_PackageId = Nagueu.BlinkCircle
+    annotation DAXLIB_PackageVersion = 1.0.0
