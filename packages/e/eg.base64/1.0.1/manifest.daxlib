@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.Base64",
+  "version": "1.0.1",
+  "authors": "ErickOliverG",
+  "description": "Functions to decode Base64 encoded strings to plain text using DAX",
+  "tags": "DAX,Base64,Encoding,String,Decode",
+  "releaseNotes": "Performance improvement: EG.Base64.Decode is now a single self-contained function that maps Base64 characters to 6-bit values with FIND against the alphabet string, instead of the previous SWITCH-based helper functions (EG.Base64.ConvertASCII and EG.Base64.BytePartition, both removed).",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
