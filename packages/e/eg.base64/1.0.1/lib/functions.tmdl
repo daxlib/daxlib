@@ -1,0 +1,31 @@
+function 'EG.Base64.Decode' =
+	( Base64 : STRING VAL ) =>
+	VAR _B64 = Base64
+	VAR _Clean = TRIM ( _B64 )
+	VAR _Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	VAR _Len = LEN ( _Clean )
+	RETURN
+	    CONCATENATEX (
+	        GENERATESERIES ( 1, _Len + 0, 4 ),
+	        VAR _Pos = [Value]
+	        VAR _C1 = MID ( _Clean, _Pos, 1 )
+	        VAR _C2 = MID ( _Clean, _Pos + 1, 1 )
+	        VAR _C3 = MID ( _Clean, _Pos + 2, 1 )
+	        VAR _C4 = MID ( _Clean, _Pos + 3, 1 )
+	        VAR _V1 = FIND ( _C1, _Alphabet, 1, 0 ) - 1
+	        VAR _V2 = FIND ( _C2, _Alphabet, 1, 0 ) - 1
+	        VAR _V3 = IF.EAGER ( _C3 = "=" || _C3 = "", 0, FIND ( _C3, _Alphabet, 1, 0 ) - 1 )
+	        VAR _V4 = IF.EAGER ( _C4 = "=" || _C4 = "", 0, FIND ( _C4, _Alphabet, 1, 0 ) - 1 )
+	        VAR _N = _V1 * 262144 + _V2 * 4096 + _V3 * 64 + _V4
+	        VAR _B1 = QUOTIENT ( _N, 65536 )
+	        VAR _B2 = MOD ( QUOTIENT ( _N, 256 ), 256 )
+	        VAR _B3 = MOD ( _N, 256 )
+	        RETURN
+	            UNICHAR ( _B1 ) & IF.EAGER ( _C3 <> "=" && _C3 <> "", UNICHAR ( _B2 ), "" )
+	                & IF.EAGER ( _C4 <> "=" && _C4 <> "", UNICHAR ( _B3 ), "" ),
+	        "",
+	        [Value]
+	    )
+
+	annotation DAXLIB_PackageId = EG.Base64
+	annotation DAXLIB_PackageVersion = 1.0.1
