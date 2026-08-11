@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "SavoryData.Selection2List",
+  "version": "0.1.4-beta",
+  "authors": "Savory Data, Markus Ehrenmueller-Jensen",
+  "description": "A set of functions that can be used to show the selected values as a list of items.",
+  "tags": "DAX,UDF,FUNCTION,LIB,SLICER,LIST,TEXT,DATE,MONTH,QUARTER,YEAR,WEEK,DEBUG,COUNT,MIN,MAX",
+  "releaseNotes": "Rewrote readme; added YWD2List and MinMaxCountV2; made parameters of Text2List optional; clarified parameter types",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
