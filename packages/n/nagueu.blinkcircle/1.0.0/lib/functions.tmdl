@@ -32,4 +32,3 @@ function 'Nagueu.BlinkCircle.AlertIndicator' =
 	    annotation DAXLIB_PackageId = Nagueu.BlinkCircle
 	
 	    annotation DAXLIB_PackageVersion = 1.0.0
-	
