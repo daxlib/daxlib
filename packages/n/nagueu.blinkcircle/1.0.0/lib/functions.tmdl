@@ -24,7 +24,7 @@ function 'Nagueu.BlinkCircle.AlertIndicator' =
 	        
 	        VAR _Blink = "<style>" & "@keyframes blink{" & "0%{fill:" & AlertColor & ";}" & "50%{fill:white;}" & "100%{fill:" & AlertColor & ";}" & "}" & "circle{" & "stroke:" & AlertColor & ";" & "stroke-width:2;" & "fill:" & AlertColor & ";" & "fill-opacity:0.30;" & "animation:blink 2s infinite;" & "}" & "</style>" & _Body
 	        
-	        VAR SVG_RESULT = SVG_Data_URL & SVG_Start & IF( LOWER(AlertColor) = "red" || LOWER(AlertColor) = "#f8291e" || LOWER(AlertColor) = "%23f8291e", _Blink, _No_Blink ) & SVG_End
+	        VAR SVG_RESULT = SVG_Data_URL & SVG_Start & IF( LOWER(AlertColor) = "red" || LOWER(AlertColor) = "#f8291e" || LOWER(AlertColor) = "#23f8291e", _Blink, _No_Blink ) & SVG_End
 	        
 	        RETURN
 	            SVG_RESULT
