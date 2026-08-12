@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "Nagueu.BlinkCircle",
+  "version": "1.0.1",
+  "authors": "Lionel Nagueu",
+  "description": "A package that allows you to create alerts based on colors and circles, flashing red when the alert color is red and remaining static for other colors.",
+  "tags": "DAX,UDF",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/n/nagueu.blinkcircle/1.0.1",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
