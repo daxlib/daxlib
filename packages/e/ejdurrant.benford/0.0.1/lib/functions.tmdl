@@ -1,4 +1,5 @@
 /// Returns a scalar value representing the mean deviation from Benford's law of the numbers in the column provided.
+/// Based on the first two digits of each number. 
 /// The average is taken over the ninety possible two-digit numbers from 10 to 99.
 /// @param {toExamineColumn} - a column of numbers with absolute values not smaller than 0.0001.
 function 'EJDurrant.Benford.AverageDeviation' = 
@@ -36,6 +37,7 @@ function 'EJDurrant.Benford.AverageDeviation' =
 					Result
 
 /// Returns a table designed for visualising the level of conformance with Benford's Law of the column of numbers provided.
+/// Based on the first two digits of each number. 
 /// One row for each of the ninety two-digit numbers from 10 to 99.
 /// @param {toExamineColumn} - a column of numbers with absolute values not smaller than 0.0001.
 function 'EJDurrant.Benford.DetailedResults' =
