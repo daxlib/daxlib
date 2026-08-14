@@ -1,8 +1,6 @@
-/// Benford Average Deviation
-/// Takes a column of numbers and measures their average deviation from Benford's Law.
-/// Please see README for sources, references, limitations, and usage suggestions.
-/// This finds the first two digits the easy way, which introduces a limitation of 4 digits after the decimal point.
-/// That should be fine for accountancy purposes, but the next version will do it mathematically.
+/// Returns a scalar value representing the mean deviation from Benford's law of the numbers in the column provided.
+/// The average is taken over the ninety possible two-digit numbers from 10 to 99.
+/// @param {columnref} Column - a column of numbers with absolute value not smaller than 0.0001.
 function 'EJDurrant.Benford.AverageDeviation' = 
 		(
 					toExamineColumn : COLUMNREF
@@ -37,14 +35,9 @@ function 'EJDurrant.Benford.AverageDeviation' =
 				RETURN
 					Result
 
-	annotation DAXLIB_PackageId = EJDurrant.Benford
-
-	annotation DAXLIB_PackageVersion = 0.0.1
-
-/// Benford Detailed Results
-/// Takes a column of numbers and outputs a table you can use to visualise their degree of conformance with Benford's Law.
-/// Please see README for sources, references, limitations, and usage suggestions.
-
+/// Returns a table designed for visualising the level of conformance with Benford's Law of the column of numbers provided.
+/// One row for each of the ninety two-digit numbers from 10 to 99.
+/// @param {columnref} Column - a column of numbers with absolute value not smaller than 0.0001.
 function 'EJDurrant.Benford.DetailedResults' =
 		(
 					toExamineColumn : COLUMNREF
