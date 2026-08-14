@@ -1,5 +1,5 @@
 # EJDurrant.Benford
-Measure and visualise the conformance, or otherwise, of a column of numbers with Benford's Law.
+Measure and visualise the conformance, or otherwise, of a column of numbers with Benford's Law, based on the first two digits of each number. Very simple to use, and adaptable for use with Power Pivot.
 
 ## Benford.AverageDeviation
 Average Deviation outputs a scalar value which is the average, over the ninety possible two-digit values, of how much the row count for each value, as a proportion of the total rows, differs from the proportion that would conform to Benford's Law. 
