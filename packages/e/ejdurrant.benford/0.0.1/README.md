@@ -60,13 +60,13 @@ To use the results, you may for example:
 - place *First Two Digits* on the x-axis
 - place *Benford* on the y-axis as a Line
 - place *Actual* on the y-axis as a Clustered Column
+
 This results in a well-behaved chart. You may of course also add your own columns for further analysis.
 
 ## Limitations and warnings
 - The column must be considered numeric by PowerBI, or an error will occur. 
-- Small numbers of non-numeric values will be discarded if PowerBI sees the column as numeric overall. To be safe, clean your data.
+- Small numbers of non-numeric values will be discarded if PowerBI sees the column as numeric overall. Larger numbers of non-numeric rows might cause errors when it still looks like a numeric column in PowerBI. To be safe, clean your data and check that all your rows are numeric.
 - In this version, numbers with absolute values less than 0.0001 will give incorrect results. See "how they work".
-- Numbers larger than one ten-thousandth of the maximum supported size will generate an error.
 
 As always, bear in mind that Benford's law is not applicable to all data. Most financial data, and some other naturally-occuring kinds of data, usually conform. It does not apply to data where only a small range of numbers are possible, and there are many sets of numbers that cannot possibly, and should not, conform to Benford's Law. For example, it is usually impossible for election data to conform to this law. Study before drawing conclusions.
 
