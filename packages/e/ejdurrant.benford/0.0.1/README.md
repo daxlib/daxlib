@@ -31,7 +31,7 @@ These steps are:
 1. Calculate the absolute difference between this and LOG ( 1 + 1 / the two-digit number )
 1. For "Average Deviation", output the average absolute difference over the ninety rows.
 
-**Warning:** Currently, the first two digits are founding using the text way, which introduces an assumption that the maximum number of digits after the decimal point is 4. For accounting purposes that's fine, since we are working with currency data. It is not fine with naturally-occuring data. In a later version we will fix this by doing it mathematically, which has a lot more steps.
+**Warning:** Currently, the first two digits are found by converting the number to text, which introduces an assumption that the maximum number of digits after the decimal point is 4. For accounting purposes, that's fine, since we are working with currency data. It is not fine with other naturally-occuring data. In a later version we will fix this by doing it mathematically, which has a lot more steps.
 
 For detailed information on the derivation and appropriate usage of Benford's Law, a book is available:  
 *[Benford's Law: Applications for Forensic Accounting, Auditing, and Fraud Detection](https://nigrini.com/benfords-law/)*, Mark J. Nigrini, 2012, Wiley, ISBN 978-1-118-28226-7
