@@ -68,13 +68,13 @@ This results in a well-behaved chart. You may of course also add your own column
 - Small numbers of non-numeric values will be discarded if PowerBI sees the column as numeric overall. Larger numbers of non-numeric rows might cause errors when it still looks like a numeric column in PowerBI. To be safe, clean your data and check that all your rows are numeric.
 - In this version, numbers with absolute values less than 0.0001 will give incorrect results. See "how they work".
 
-As always, bear in mind that Benford's law is not applicable to all data. Most financial data, and some other naturally-occuring kinds of data, usually conform. It does not apply to data where only a small range of numbers are possible, and there are many sets of numbers that cannot possibly, and should not, conform to Benford's Law. For example, it is usually impossible for election data to conform to this law. Study before drawing conclusions.
+As always, bear in mind that Benford's law is not applicable to all data. It does not apply to data where only a small range of numbers are possible, and there are many sets of naturally-occurring numbers that cannot possibly conform to Benford's Law. Study and think before drawing conclusions.
 
 ## Power Pivot
-The Average Deviation function can be adapted to work in PowerPivot, which will almost always be more useful than Power BI in an accounting context. You will have to change the line that generates the initial list of numbers, by removing `GENERATESERIES ( 10, 99, 1 ), "First Two Digits", [Value]` and replacing it with `CALENDAR ( 10, 99 ), "First Two Digits", INT ( [Date] )`. This does exactly the same thing, and works in PowerPivot. The Detailed Results function will also work, with the same adaptation, in DAX Studio pointed at a PowerPivot model. However, since it is extremely inconvenient to create a calculated table in PowerPivot (even if technically possible in a very hacky way), you will probably do it in Power Query.
+The Average Deviation function can be adapted to work as a measure in PowerPivot, which will almost always be more immediately useful than Power BI in an accounting context. You will have to change the line that generates the initial list of numbers, by removing `GENERATESERIES ( 10, 99, 1 ), "First Two Digits", [Value]` and replacing it with `CALENDAR ( 10, 99 ), "First Two Digits", INT ( [Date] )`. This does exactly the same thing, and works in PowerPivot. The Detailed Results function will also work, with the same adaptation, in DAX Studio pointed at a PowerPivot model. However, since it is extremely inconvenient to create a calculated table in PowerPivot (even if technically possible in a very hacky way), you will probably do it in Power Query.
 
 ## About
-You can find me [on LinkedIn](https://www.linkedin.com/in/eleanordurrant/) and I would be interested to know if you found this useful.
+You can find me [on LinkedIn](https://www.linkedin.com/in/eleanordurrant/) and I would be interested to know if you found this useful, or have any feedback or requests.
 
 ## License
 This project is licensed under the MIT License.
