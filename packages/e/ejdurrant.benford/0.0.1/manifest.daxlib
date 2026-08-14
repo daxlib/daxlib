@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EJDurrant.Benford",
+  "version": "0.0.1",
+  "authors": "Eleanor Durrant",
+  "description": "Measure and visualise conformance with Benford's Law",
+  "tags": "FINANCE,FORENSIC,BENFORD,ACCOUNTING,DATA PROFILING",
+  "releaseNotes": "Initial release. Two functions, outputting a scalar value and a table for visualisation.",
+  "projectUrl": "https://github.com/EJDurrant/daxlib",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/e/ejdurrant.benford",
+  "readme": "/README.md",
+}
