@@ -1,5 +1,5 @@
 # EJDurrant.Benford
-Measure and visualise the conformance, or otherwise, of a column of numbers with Benford's Law, based on the first two digits of each number. Very simple to use, and adaptable for use with Power Pivot.
+Measure and visualise the conformance, or otherwise, of a column of numbers with Benford's Law, based on the first two digits of each number. Simple to use and understand, and adaptable for use with Power Pivot. This initial version is designed for use with financial data in which absolute values are not smaller than 0.0001.
 
 ## Benford.AverageDeviation
 Average Deviation outputs a scalar value which is the average, over the ninety possible two-digit values, of how much the row count for each value, as a proportion of the total rows, differs from the proportion that would conform to Benford's Law. 
@@ -31,7 +31,7 @@ These steps are:
 1. Calculate the absolute difference between this and LOG ( 1 + 1 / the two-digit number )
 1. For "Average Deviation", output the average absolute difference over the ninety rows.
 
-**Warning:** Currently, the first two digits are found by converting the number to text, which introduces an assumption that the maximum number of digits after the decimal point is 4. For accounting purposes, that's fine, since we are working with currency data. It is not fine with other naturally-occuring data. In a later version we will fix this by doing it mathematically, which has a lot more steps.
+**Warning:** Currently, the first two digits are found by converting the number to text, which introduces an assumption that the first digit occurs not more than four digits after the decimal point. For accounting purposes, that's fine, since we are working with currency data. In an accounting or auditing context, confidence and  understanding is more important than generalisability to numbers smaller than normally occur in currencies. This may make the function unsuitable for general or scientific use with other naturally-occuring data. If necessary, you can change the line `LEFT ( FORMAT ( ABS ( toExamineColumn ) * 100000, "General Number" ), 2 )` to multiply by a bigger number. A later version may do this mathematically, but it will be harder to understand.
 
 For detailed information on the derivation and appropriate usage of Benford's Law, a book is available:  
 *[Benford's Law: Applications for Forensic Accounting, Auditing, and Fraud Detection](https://nigrini.com/benfords-law/)*, Mark J. Nigrini, 2012, Wiley, ISBN 978-1-118-28226-7
