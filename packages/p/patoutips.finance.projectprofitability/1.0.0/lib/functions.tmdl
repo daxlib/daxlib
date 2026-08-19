@@ -49,7 +49,7 @@ function 'PatouTips.Finance.ProjectProfitability.DF' =
 				CALCULATE(
 					FIRSTNONBLANK(Year_date_of_calendar_table,Investment_measure),
 					ALLSELECTED(Year_date_of_calendar_table)
-				)
+				) 
 			VAR Last_Selected_Year = 
 				CALCULATE(
 					MAX(Year_date_of_calendar_table),
