@@ -20,7 +20,7 @@ Detailed Results outputs a table with ninety rows, 10 to 99, with the following 
 All the functions follow the method described by [Mark Nigrini](https://nigrini.com/) in the companion video to his 2022 Journal of Accountancy article and demonstrated in his accompanying spreadsheet.
 
 Article Reference: Journal of Accountancy Sept 2022 pp 12-19  
-Video: *[Using Benford's Law to reveal journal entry anomalies](www.youtube.com/watch?v=0gxAsvLeflk)*  
+Video: *[Using Benford's Law to reveal journal entry anomalies](https://www.youtube.com/watch?v=0gxAsvLeflk)*  
 See the video description for a demonstration spreadsheet.
 
 These steps are: 
