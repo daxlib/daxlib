@@ -36,6 +36,10 @@ function 'EJDurrant.Benford.AverageDeviation' =
 				RETURN
 					Result
 
+		annotation DAXLIB_PackageId = EJDurrant.Benford
+
+		annotation DAXLIB_PackageVersion = 0.0.1
+
 /// Returns a table designed for visualising the level of conformance with Benford's Law of the column of numbers provided.
 /// Based on the first two digits of each number. 
 /// One row for each of the ninety two-digit numbers from 10 to 99.
