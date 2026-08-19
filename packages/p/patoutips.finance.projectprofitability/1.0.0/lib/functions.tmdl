@@ -8,12 +8,12 @@ function 'PatouTips.Finance.ProjectProfitability.DCF' =
 				Discounted_rate : decimal
 		) =>
 		
-					VAR First_Selected_Year = 
+					VAR First_Selected_Year =
 						CALCULATE(
 							FIRSTNONBLANK(Year_date_of_calendar_table,Investment_measure),
 							ALLSELECTED(Year_date_of_calendar_table)
 						) 
-					VAR Last_Selected_Year = 
+					VAR Last_Selected_Year =
 						CALCULATE(
 							MAX(Year_date_of_calendar_table),
 							ALLSELECTED(Year_date_of_calendar_table)
