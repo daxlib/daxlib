@@ -8,5 +8,5 @@
   "releaseNotes": "Initial release. Two functions, outputting a scalar value and a table for visualisation.",
   "projectUrl": "https://github.com/EJDurrant/daxlib",
   "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/e/ejdurrant.benford",
-  "readme": "/README.md",
+  "readme": "/README.md"
 }
