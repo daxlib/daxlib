@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "lperin.intervalcolor",
+  "version": "1.0.0",
+  "authors": "Lionel Nagueu",
+  "description": "automatically determine a color based on the current month's KPI position relative to the other selected months.",
+  "tags": "DAX,KPI,Color,Visualization",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/l/lperin.intervalcolor",
+  "releaseNotes": "Initial release of intervalcolor.",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}

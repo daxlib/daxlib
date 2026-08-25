@@ -1,0 +1,43 @@
+/// Lionel.KPI.MonthColor
+/// Version       : 1.0.0
+/// Description   : Returns green for maximum, red for minimum and blue otherwise
+function 'Lionel.KPI.MonthColor' =
+        (
+            ValueKPI: NUMERIC
+        )
+        =>
+
+        VAR is_max =
+            MAXX(
+                ALLSELECTED(
+                    'DATE'[Année],
+                    'DATE'[mois],
+                    'DATE'[Mois_num]
+                ),
+                ValueKPI
+            ) = ValueKPI
+
+        VAR is_min =
+            MINX(
+                ALLSELECTED(
+                    'DATE'[Année],
+                    'DATE'[mois],
+                    'DATE'[Mois_num]
+                ),
+                ValueKPI
+            ) = ValueKPI
+
+        VAR Result =
+            SWITCH(
+                TRUE(),
+                is_max, "green",
+                is_min, "red",
+                "blue"
+            )
+
+        RETURN
+            Result
+
+    annotation DAXLIB_PackageId = Lionel.KPI
+
+    annotation DAXLIB_PackageVersion = 1.0.0
