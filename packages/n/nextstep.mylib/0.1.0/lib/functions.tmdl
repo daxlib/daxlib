@@ -1,0 +1,14 @@
+/// Sum of large values
+/// @param {columnref} colRef
+function NextStep.MyLib.SumLarge = ```
+		
+			( colRef: COLUMNREF,
+			num: INT64 EXPR ) =>
+			CALCULATE(
+				SUM( colRef ),
+				colRef > num
+			)
+		```
+	annotation DAXLIB_PackageId = NextStep.MyLib
+
+	annotation DAXLIB_PackageVersion = 0.1.0
