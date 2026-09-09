@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DataTides.AltText",
+  "version": "0.1.0",
+  "authors": "Juls-BI",
+  "description": "Library to generate Alt Text for visuals",
+  "tags": "Accessibility",
+  "releaseNotes": "Initial release of the DataTides.AltText library, providing functionality to generate alternative text for visual elements, enhancing accessibility for users with visual impairments.",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/d/datatides.alttext",
+  "readme": "/README.md",
+  "icon": "/icon.png"
+
+  
+}

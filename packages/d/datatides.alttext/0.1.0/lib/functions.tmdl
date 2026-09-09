@@ -1,0 +1,186 @@
+/// Generates an accessible narrative describing a KPI value, an optional comparison vs a previous period, and optional contextual text. Fully generic — works with any measure.
+/// @param {string} MetricLabel – Label for the metric, e.g. "Revenue", "Headcount", "Stock Level"
+/// @param {double} CurrentValue – Unformatted current metric value
+/// @param {double} PreviousValue – Unformatted prior-period value to compare against, e.g. from DATEADD/PREVIOUSMONTH — pass BLANK() to omit the comparison clause entirely
+/// @param {string} CurrentFormatted – Pre-formatted current value for the narrative, e.g. FORMAT(SUM(Sales[Amount]), "£#,0.0")
+/// @param {string} ContextText – Optional trailing context sentence, e.g. from 'DataTides.AltText.Context', or BLANK() to omit
+/// @returns "<MetricLabel> is <CurrentFormatted>. It has <increased/decreased/remained flat> by <pct> versus the previous period. <ContextText>" — the comparison clause is omitted entirely when PreviousValue is BLANK(). Example: 'DataTides.AltText.ChangeNarrative'("Total Sales", SUM(Sales[Amount]), CALCULATE(SUM(Sales[Amount]), DATEADD(Date[Date], -1, MONTH)), FORMAT(SUM(Sales[Amount]), "£#,0.0"), "Context: Category = Bikes, Department = Online") → "Total Sales is £125K. It has increased by 8.4% versus the previous period. Context: Category = Bikes, Department = Online."
+FUNCTION 'DataTides.AltText.ChangeNarrative' = 
+        (
+            MetricLabel        : STRING,
+            CurrentValue       : DOUBLE,
+            PreviousValue      : DOUBLE,
+            CurrentFormatted   : STRING,
+            ContextText        : STRING
+        ) =>
+        VAR HasPrev    = NOT ISBLANK( PreviousValue )
+        VAR Delta      = CurrentValue - PreviousValue
+        VAR DeltaPct   = DIVIDE( Delta, PreviousValue )
+
+        VAR Direction =
+            IF(
+                NOT HasPrev,
+                BLANK(),
+                IF( Delta > 0, "increased",
+                    IF( Delta < 0, "decreased", "remained flat" )
+                )
+            )
+
+        VAR PctText =
+            IF(
+                NOT HasPrev || Delta = 0,
+                BLANK(),
+                FORMAT( ABS( DeltaPct ), "0.0%" )
+            )
+
+        VAR ChangeClause =
+            IF(
+                NOT HasPrev,
+                "",
+                IF(
+                    Delta = 0,
+                    " It is unchanged versus the previous period.",
+                    " It has " & Direction & " by " & PctText & " versus the previous period."
+                )
+            )
+
+        VAR ContextClause =
+            IF( ISBLANK( ContextText ), "", " " & ContextText )
+
+        RETURN
+            MetricLabel & " is " & CurrentFormatted & "." & ChangeClause & ContextClause
+
+    annotation DAXLIB_PackageId = DataTides.AltText
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Creates a standardized context sentence for alt text from two generic label/value pairs and a date range, so it works with any slicer or filter combination (Category, Department, Region, Segment, Brand, etc.).
+/// @param {string} Label1Name – Name of the first filter/slicer, e.g. "Category"
+/// @param {string} Label1Value – Selected value for the first filter, e.g. SELECTEDVALUE(Category[Category])
+/// @param {string} Label2Name – Name of the second filter/slicer, e.g. "Department"
+/// @param {string} Label2Value – Selected value for the second filter, e.g. SELECTEDVALUE(Department[Department])
+/// @param {datetime} StartDate – Start of the period in view, e.g. MIN(Date[Date])
+/// @param {datetime} EndDate – End of the period in view, e.g. MAX(Date[Date])
+/// @returns "Context: <Label1Name> = <Label1Value>, <Label2Name> = <Label2Value>. Period between <StartDate> and <EndDate>." Example output: "Context: Category = Bikes, Department = Sales. Period between 01 Jan 2024 and 31 Mar 2024."
+FUNCTION 'DataTides.AltText.Context' = 
+        (
+            Label1Name    : STRING,
+            Label1Value   : STRING,
+            Label2Name    : STRING,
+            Label2Value   : STRING,
+            StartDate     : DATETIME,
+            EndDate       : DATETIME
+        ) =>
+        "Context: "
+        & Label1Name & " = " & Label1Value & ", "
+        & Label2Name & " = " & Label2Value & ". "
+        & "Period between "
+        & FORMAT( StartDate, "dd MMM yyyy" )
+        & " and "
+        & FORMAT( EndDate, "dd MMM yyyy" )
+        & "."
+
+    annotation DAXLIB_PackageId = DataTides.AltText
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Generates dynamic, descriptive alt text for line charts showing Revenue and Cost trends, with month-over-month and year-to-date insight clauses. Detects trend strength (strong, slight, stable), formats numeric and percentage comparisons, and summarises YTD totals — designed for accessibility and executive-level clarity.
+/// @param {string} TrendPeriod – Describes the period the trend covers, e.g. "the last 12 months" — pass BLANK() to omit the clause
+/// @param {string} MeasuresText – Describes which measures are shown, e.g. "Revenue, Cost" — pass BLANK() to omit the clause
+/// @param {string} CategoryText – Describes the categories/series shown — pass BLANK() to omit the clause
+/// @param {string} FiltersText – Describes filters currently applied — pass BLANK() to omit the clause
+/// @param {string} UnitsText – Describes the units the values are in, e.g. "GBP, thousands" — pass BLANK() to omit the clause
+/// @param {double} RevChange – Revenue month-over-month change as a fraction, e.g. 0.084 for +8.4%
+/// @param {double} CostChange – Cost month-over-month change as a fraction
+/// @param {double} RevCurrent – Current month revenue, unformatted
+/// @param {double} RevPrev – Previous month revenue, unformatted
+/// @param {double} CostCurrent – Current month cost, unformatted
+/// @param {double} CostPrev – Previous month cost, unformatted
+/// @param {double} RevYTD – Year-to-date revenue total, unformatted
+/// @param {double} CostYTD – Year-to-date cost total, unformatted
+/// @returns A structured narrative combining, in order: the trend/measures/category/filters clauses (each omitted when its input is BLANK()), a cost insight clause, a revenue insight clause, the YTD summary, and the units clause.
+/// NOTE: RevChange/CostChange thresholds are fixed at ±5% for "strongly"/"significantly" vs "slightly" — not parameterised, so callers can't adjust sensitivity per visual.
+FUNCTION 'DataTides.AltText.LineChart' = 
+        (
+            TrendPeriod   : STRING,
+            MeasuresText  : STRING,
+            CategoryText  : STRING,
+            FiltersText   : STRING,
+            UnitsText     : STRING,
+
+            RevChange     : DOUBLE,
+            CostChange    : DOUBLE,
+            RevCurrent    : DOUBLE,
+            RevPrev       : DOUBLE,
+            CostCurrent   : DOUBLE,
+            CostPrev      : DOUBLE,
+            RevYTD        : DOUBLE,
+            CostYTD       : DOUBLE
+        ) =>
+        VAR RevTrendText =
+            SWITCH(
+                TRUE(),
+                ISBLANK( RevChange ), "Revenue trend unavailable",
+                RevChange > 0.05, "Revenue is increasing strongly",
+                RevChange > 0, "Revenue is increasing slightly",
+                RevChange < -0.05, "Revenue is decreasing significantly",
+                RevChange < 0, "Revenue is decreasing slightly",
+                "Revenue is stable"
+            )
+
+        VAR CostTrendText =
+            SWITCH(
+                TRUE(),
+                ISBLANK( CostChange ), "Cost trend unavailable",
+                CostChange > 0.05, "Cost is increasing strongly",
+                CostChange > 0, "Cost is increasing slightly",
+                CostChange < -0.05, "Cost is decreasing significantly",
+                CostChange < 0, "Cost is decreasing slightly",
+                "Cost is stable"
+            )
+
+        VAR CostInsight =
+            CostTrendText & ". Current month cost is " &
+            FORMAT( CostCurrent, "#,##0" ) & ", " &
+            FORMAT( CostChange, "0.0%" ) & " " &
+            IF( CostChange < 0, "lower", "higher" ) &
+            " than the previous month (" &
+            FORMAT( CostPrev, "#,##0" ) & "). "
+
+        VAR RevInsight =
+            RevTrendText & ". Current month revenue is " &
+            FORMAT( RevCurrent, "#,##0" ) & ", " &
+            FORMAT( RevChange, "0.0%" ) & " " &
+            IF( RevChange < 0, "lower", "higher" ) &
+            " than the previous month (" &
+            FORMAT( RevPrev, "#,##0" ) & "). "
+
+        VAR YTDInsight =
+            "Year-to-date revenue is " & FORMAT( RevYTD, "#,##0" ) &
+            " and year-to-date cost is " & FORMAT( CostYTD, "#,##0" ) & ". "
+
+        VAR TrendClause =
+            IF( ISBLANK( TrendPeriod ), "", "Trend over " & TrendPeriod & ". " )
+
+        VAR MeasuresClause =
+            IF( ISBLANK( MeasuresText ), "", "Measures shown: " & MeasuresText & ". " )
+
+        VAR CategoryClause =
+            IF( ISBLANK( CategoryText ), "", "Categories: " & CategoryText & ". " )
+
+        VAR FiltersClause =
+            IF( ISBLANK( FiltersText ), "", "Filters applied: " & FiltersText & ". " )
+
+        VAR UnitsClause =
+            IF( ISBLANK( UnitsText ), "", "Units: " & UnitsText & ". " )
+
+        RETURN
+            TrendClause &
+            MeasuresClause &
+            CategoryClause &
+            FiltersClause &
+            CostInsight &
+            RevInsight &
+            YTDInsight &
+            UnitsClause
+
+    annotation DAXLIB_PackageId = DataTides.AltText
+    annotation DAXLIB_PackageVersion = 0.1.0
