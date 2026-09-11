@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "authors": "Juls-BI",
   "description": "Library of statistical significance and outlier detection tests (Z-Score, Grubbs' test, IQR, Modified Z-Score, Gaussian) plus helpers for surfacing flagged periods and values.",
-  "tags": "Statistics,Outliers,Anomaly Detection,Significant Change,DAX,UDF",
+  "tags": "Statistics,Outliers,Anomaly Detection",
   "releaseNotes": "Initial release of the DataTides.SignificantChange library, providing Z-Score, Grubbs' test, IQR, Modified Z-Score, and Gaussian significance tests for flagging statistically significant changes, along with FlaggedPeriods/FlaggedValue helpers for surfacing the results.",
   "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/d/datatides.significantchange",
   "readme": "/README.md",
