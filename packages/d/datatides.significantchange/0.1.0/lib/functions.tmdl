@@ -1,0 +1,217 @@
+/// Concatenates every period (from a given column) where a boolean flag
+/// measure evaluates TRUE. Powers the "which years were flagged" card/
+/// table pattern for any of the five tests, without repeating the same
+/// FILTER(ALL(...)) block five times.
+/// @param {COLUMNREF} _PeriodColumn – The period column to scan (e.g. DimYear[Year])
+/// @param {MEASUREREF} _FlagMeasure – A measure that returns TRUE/FALSE/BLANK per period
+/// @returns A comma-separated string of periods where _FlagMeasure is TRUE
+FUNCTION 'DataTides.SignificantChange.FlaggedPeriods' =
+        (
+            _PeriodColumn  : COLUMNREF,
+            _FlagMeasure   : MEASUREREF
+        ) =>
+        VAR _Flagged =
+            FILTER(
+                ALL( _PeriodColumn ),
+                _FlagMeasure = TRUE()
+            )
+        RETURN CONCATENATEX( _Flagged, _PeriodColumn, ", ", _PeriodColumn, ASC )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Returns a value measure's result only where a flag measure is TRUE,
+/// blank otherwise. Powers the "show the score only on flagged rows"
+/// table pattern.
+///
+/// IMPORTANT LIMITATION: both parameters use MEASUREREF, which only
+/// accepts a bare measure reference (e.g. [Spike Z-Score]), not a
+/// computed expression (e.g. GrubbsStatistic(...)). Calling this with a
+/// live function call as _ValueMeasure raises: "An invalid argument type
+/// was passed into parameter '_ValueMeasure'. Expected 'MEASUREREF' but
+/// got 'SCALAR'." For tests whose "value" isn't already its own saved
+/// measure (Grubbs, Gaussian in the worked example), write the equivalent
+/// logic directly in that measure instead of calling this function – see
+/// examples/WorldHealthData-Example.dax for both patterns side by side.
+/// @param {MEASUREREF} _FlagMeasure – A measure that returns TRUE/FALSE/BLANK
+/// @param {MEASUREREF} _ValueMeasure – The measure to surface when flagged
+/// @returns _ValueMeasure's result if _FlagMeasure is TRUE, else BLANK()
+FUNCTION 'DataTides.SignificantChange.FlaggedValue' =
+        (
+            _FlagMeasure   : MEASUREREF,
+            _ValueMeasure  : MEASUREREF
+        ) =>
+        IF( _FlagMeasure = TRUE(), _ValueMeasure, BLANK() )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Returns the height of the normal (bell curve) density at a given point.
+/// Returns BLANK() if _X is blank, rather than treating a blank as zero.
+/// @param {DECIMAL} _X – The value being evaluated
+/// @param {DECIMAL} _Mean – The mean of the comparison set
+/// @param {DECIMAL} _StdDev – The standard deviation of the comparison set
+/// @returns The probability density at _X
+FUNCTION 'DataTides.SignificantChange.NormalPDF' =
+        (
+            _X       : DECIMAL,
+            _Mean    : DECIMAL,
+            _StdDev  : DECIMAL
+        ) =>
+        IF( ISBLANK( _X ), BLANK(), NORM.DIST( _X, _Mean, _StdDev, FALSE ) )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates the two-tailed probability of a value at least this extreme occurring by chance.
+/// Returns BLANK() if _X is blank, rather than treating a blank as zero.
+/// @param {DECIMAL} _X – The value being tested
+/// @param {DECIMAL} _Mean – The mean of the comparison set
+/// @param {DECIMAL} _StdDev – The standard deviation of the comparison set
+/// @returns A two-tailed p-value; smaller means less likely to be ordinary variation
+FUNCTION 'DataTides.SignificantChange.NormalTailProbability' =
+        (
+            _X       : DECIMAL,
+            _Mean    : DECIMAL,
+            _StdDev  : DECIMAL
+        ) =>
+        VAR _Z              = DIVIDE( _X - _Mean, _StdDev )
+        VAR _CumulativeProb = NORM.S.DIST( ABS( _Z ), TRUE() )
+        RETURN IF( ISBLANK( _X ), BLANK(), 2 * ( 1 - _CumulativeProb ) )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Runs a full Gaussian significance test: TRUE if _X is unlikely under a normal distribution.
+/// Returns BLANK() if _X is blank, since NormalTailProbability already propagates that.
+/// @param {DECIMAL} _X – The value being tested
+/// @param {DECIMAL} _Mean – The mean of the comparison set
+/// @param {DECIMAL} _StdDev – The standard deviation of the comparison set
+/// @param {DECIMAL} [_Alpha] – Significance level, default 0.05
+/// @returns TRUE if the p-value falls below _Alpha
+FUNCTION 'DataTides.SignificantChange.IsGaussianOutlier' =
+        (
+            _X       : DECIMAL,
+            _Mean    : DECIMAL,
+            _StdDev  : DECIMAL,
+            _Alpha   : DECIMAL VAL = 0.05
+        ) =>
+        VAR _PValue = NormalTailProbability( _X, _Mean, _StdDev )
+        RETURN IF( ISBLANK( _PValue ), BLANK(), _PValue < _Alpha )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates the Grubbs' G statistic: absolute distance from the mean, in standard deviations.
+/// Returns BLANK() if _X is blank, rather than treating a blank as zero.
+/// @param {DECIMAL} _X – The value being tested
+/// @param {DECIMAL} _Mean – The mean of the comparison set
+/// @param {DECIMAL} _StdDev – The standard deviation of the comparison set
+/// @returns The G statistic, to be compared against GrubbsCriticalValue
+FUNCTION 'DataTides.SignificantChange.GrubbsStatistic' =
+        (
+            _X       : DECIMAL,
+            _Mean    : DECIMAL,
+            _StdDev  : DECIMAL
+        ) =>
+        IF( ISBLANK( _X ), BLANK(), DIVIDE( ABS( _X - _Mean ), _StdDev ) )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates the critical G value for Grubbs' test at a given sample size and significance level.
+/// @param {INT64} _N – Number of observations in the comparison set
+/// @param {DECIMAL} [_Alpha] – Significance level, default 0.05
+/// @returns The critical threshold; a G statistic above this is a significant outlier
+FUNCTION 'DataTides.SignificantChange.GrubbsCriticalValue' =
+        (
+            _N      : INT64,
+            _Alpha  : DECIMAL VAL = 0.05
+        ) =>
+        VAR _TValue   = T.INV.2T( DIVIDE( _Alpha, _N * 2 ), _N - 2 )
+        VAR _TValueSq = _TValue * _TValue
+        RETURN DIVIDE( _N - 1, SQRT( _N ) ) * SQRT( DIVIDE( _TValueSq, _N - 2 + _TValueSq ) )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Runs the full Grubbs' test: TRUE if _X is a statistically significant outlier.
+/// Returns BLANK() if _X is blank, since GrubbsStatistic already propagates that.
+/// @param {DECIMAL} _X – The value being tested
+/// @param {DECIMAL} _Mean – The mean of the comparison set
+/// @param {DECIMAL} _StdDev – The standard deviation of the comparison set
+/// @param {INT64} _N – Number of observations in the comparison set
+/// @param {DECIMAL} [_Alpha] – Significance level, default 0.05
+/// @returns TRUE if the value is a significant outlier under Grubbs' test
+FUNCTION 'DataTides.SignificantChange.IsGrubbsOutlier' =
+        (
+            _X       : DECIMAL,
+            _Mean    : DECIMAL,
+            _StdDev  : DECIMAL,
+            _N       : INT64,
+            _Alpha   : DECIMAL VAL = 0.05
+        ) =>
+        VAR _G         = GrubbsStatistic( _X, _Mean, _StdDev )
+        VAR _GCritical = GrubbsCriticalValue( _N, _Alpha )
+        RETURN IF( ISBLANK( _G ), BLANK(), _G > _GCritical )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Flags whether a value falls outside the IQR-based outlier bounds.
+/// Returns BLANK() if _X is blank, rather than treating a blank as zero
+/// and potentially flagging it as an outlier.
+/// @param {DECIMAL} _X – The value being tested
+/// @param {DECIMAL} _Q1 – The 25th percentile of the comparison set
+/// @param {DECIMAL} _Q3 – The 75th percentile of the comparison set
+/// @param {DECIMAL} [_Multiplier] – Spread multiplier, default 1.5 (use 3 for a stricter cut)
+/// @returns TRUE if _X falls outside [Q1 - k*IQR, Q3 + k*IQR], BLANK() if _X is blank
+FUNCTION 'DataTides.SignificantChange.IsIQROutlier' =
+        (
+            _X           : DECIMAL,
+            _Q1          : DECIMAL,
+            _Q3          : DECIMAL,
+            _Multiplier  : DECIMAL VAL = 1.5
+        ) =>
+        VAR _IQR        = _Q3 - _Q1
+        VAR _LowerBound = _Q1 - _Multiplier * _IQR
+        VAR _UpperBound = _Q3 + _Multiplier * _IQR
+        RETURN IF( ISBLANK( _X ), BLANK(), _X < _LowerBound || _X > _UpperBound )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates a modified z-score using median and MAD, less sensitive to the outlier itself than a standard z-score.
+/// Returns BLANK() if _X is blank, rather than treating a blank as zero.
+/// @param {DECIMAL} _X – The value being tested
+/// @param {DECIMAL} _Median – The median of the comparison set
+/// @param {DECIMAL} _MAD – The median absolute deviation of the comparison set
+/// @returns The modified z-score. |M| > 3.5 is a common significance threshold.
+FUNCTION 'DataTides.SignificantChange.ModifiedZScore' =
+        (
+            _X       : DECIMAL,
+            _Median  : DECIMAL,
+            _MAD     : DECIMAL
+        ) =>
+        IF( ISBLANK( _X ), BLANK(), DIVIDE( 0.6745 * ( _X - _Median ), _MAD ) )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates a z-score: how many standard deviations a value sits from the mean.
+/// Returns BLANK() if _X is blank (e.g. the first period in a series with no
+/// prior period to compare against), rather than treating a blank as zero.
+/// @param {DECIMAL} _X – The value being tested (e.g. a year-on-year change)
+/// @param {DECIMAL} _Mean – The mean of the comparison set
+/// @param {DECIMAL} _StdDev – The standard deviation of the comparison set
+/// @returns The z-score. |z| > 3 is a common significance rule of thumb.
+FUNCTION 'DataTides.SignificantChange.ZScore' =
+        (
+            _X       : DECIMAL,
+            _Mean    : DECIMAL,
+            _StdDev  : DECIMAL
+        ) =>
+        IF( ISBLANK( _X ), BLANK(), DIVIDE( _X - _Mean, _StdDev ) )
+
+    annotation DAXLIB_PackageId = DataTides.SignificantChange
+    annotation DAXLIB_PackageVersion = 0.1.0
