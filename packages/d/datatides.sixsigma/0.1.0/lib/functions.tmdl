@@ -59,8 +59,8 @@ FUNCTION 'SixSigma.UDFs.NormSInv' =
                 )
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Defects Per Million Opportunities — the standard Six Sigma defect-rate metric.
 /// @param {double} Defects – Count of defective units/readings
@@ -81,8 +81,8 @@ FUNCTION 'SixSigma.UDFs.DPMO' =
                 DIVIDE( Defects, TotalOpportunities ) * 1000000
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Converts a DPMO value into a Sigma Level. IncludeShift = 1 applies the standard 1.5-sigma long-term shift convention; 0 returns the unshifted value.
 /// @param {double} Dpmo – Defects per million opportunities, e.g. from SixSigma.UDFs.DPMO
@@ -104,17 +104,17 @@ FUNCTION 'SixSigma.UDFs.SigmaLevel' =
                 ZLongTerm + Shift
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Short-term process sigma estimated via average moving range / d2 — the "within-subgroup" variation used by Cp/Cpk. Table/columns are fully generic; pass any fact table and its value/time columns.
-/// @param {table} Table – The table of readings to evaluate, e.g. ALLSELECTED(Fact_GridFrequency)
+/// @param {tableref} Table – The table of readings to evaluate, e.g. ALLSELECTED(Fact_GridFrequency)
 /// @param {columnref} ValueColumn – The numeric measurement column, e.g. Fact_GridFrequency[f]
 /// @param {columnref} OrderColumn – The column that defines reading order, e.g. Fact_GridFrequency[dtm]
 /// @returns The estimated short-term sigma, or BLANK() if it can't be computed. Example: 'SixSigma.UDFs.ProcessSigmaWithin'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm])
 FUNCTION 'SixSigma.UDFs.ProcessSigmaWithin' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF
         ) =>
@@ -142,11 +142,11 @@ FUNCTION 'SixSigma.UDFs.ProcessSigmaWithin' =
         RETURN
             IF( ISBLANK( AvgMovingRange ), BLANK(), DIVIDE( AvgMovingRange, D2 ) )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Cp — potential process capability, short-term. Compares specification width to short-term (within-subgroup) spread; does not account for centering.
-/// @param {table} Table – The table of readings to evaluate
+/// @param {tableref} Table – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @param {double} USL – Upper specification limit
@@ -154,7 +154,7 @@ FUNCTION 'SixSigma.UDFs.ProcessSigmaWithin' =
 /// @returns Cp, or BLANK() if inputs are blank or sigma is zero
 FUNCTION 'SixSigma.UDFs.Cp' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF,
             USL          : DOUBLE,
@@ -168,11 +168,11 @@ FUNCTION 'SixSigma.UDFs.Cp' =
                 DIVIDE( USL - LSL, 6 * Sigma )
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Cpk — actual process capability, short-term. Like Cp, but accounts for how centred the process is between the limits.
-/// @param {table} Table – The table of readings to evaluate
+/// @param {tableref} Table – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @param {double} USL – Upper specification limit
@@ -180,7 +180,7 @@ FUNCTION 'SixSigma.UDFs.Cp' =
 /// @returns Cpk, or BLANK() if inputs are blank or sigma is zero
 FUNCTION 'SixSigma.UDFs.Cpk' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF,
             USL          : DOUBLE,
@@ -197,18 +197,18 @@ FUNCTION 'SixSigma.UDFs.Cpk' =
                 MIN( CpkUpper, CpkLower )
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Pp — potential process capability, long-term. Uses the overall population standard deviation rather than a short-term estimate.
-/// @param {table} Table – The table of readings to evaluate
+/// @param {tableref} Table – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Pp, or BLANK() if inputs are blank or sigma is zero
 FUNCTION 'SixSigma.UDFs.Pp' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
@@ -221,18 +221,18 @@ FUNCTION 'SixSigma.UDFs.Pp' =
                 DIVIDE( USL - LSL, 6 * Sigma )
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Ppk — actual process capability, long-term. Uses the overall population standard deviation and accounts for centering.
-/// @param {table} Table – The table of readings to evaluate
+/// @param {tableref} Table – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Ppk, or BLANK() if inputs are blank or sigma is zero
 FUNCTION 'SixSigma.UDFs.Ppk' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
@@ -248,17 +248,17 @@ FUNCTION 'SixSigma.UDFs.Ppk' =
                 MIN( PpkUpper, PpkLower )
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Computes the control chart center line, upper control limit and lower control limit (mean ± 3σ) for a table of readings.
-/// @param {table} Table – The table of readings to evaluate
+/// @param {tableref} Table – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (accepted for signature consistency with the other functions; not used internally)
 /// @returns A single-row table with columns CenterLine, UCL, LCL, Sigma
 FUNCTION 'SixSigma.UDFs.ControlLimits' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF
         ) =>
@@ -272,19 +272,19 @@ FUNCTION 'SixSigma.UDFs.ControlLimits' =
                 "Sigma", Sigma
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 1: flags a single point beyond 3 sigma from the mean.
 /// @param {double} CurrentValue – The reading being evaluated
-/// @param {table} Table – The table providing the mean/sigma context
+/// @param {tableref} Table – The table providing the mean/sigma context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (accepted for signature consistency; not used internally)
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if it can't be evaluated
 FUNCTION 'SixSigma.UDFs.IsNelsonRule1' = 
         (
             CurrentValue  : DOUBLE,
-            Table         : TABLE,
+            Table         : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
@@ -297,19 +297,19 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule1' =
                 ABS( CurrentValue - Mean ) > 3 * Sigma
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 2: flags 9 consecutive points, ending at CurrentOrder, all on the same side of the mean.
 /// @param {scalar} CurrentOrder – The order-column value of the point being evaluated; type matches whatever OrderColumn actually is (date, datetime, integer sequence, etc.)
-/// @param {table} Table – The table providing the mean/window context
+/// @param {tableref} Table – The table providing the mean/window context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 9 points are available
 FUNCTION 'SixSigma.UDFs.IsNelsonRule2' = 
         (
             CurrentOrder  : SCALAR,
-            Table         : TABLE,
+            Table         : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
@@ -327,19 +327,19 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule2' =
                 AboveCount = 9 || BelowCount = 9
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 3: flags 6 consecutive points, ending at CurrentOrder, steadily increasing or steadily decreasing.
 /// @param {scalar} CurrentOrder – The order-column value of the point being evaluated
-/// @param {table} Table – The table providing the window context
+/// @param {tableref} Table – The table providing the window context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 6 points are available
 FUNCTION 'SixSigma.UDFs.IsNelsonRule3' = 
         (
             CurrentOrder  : SCALAR,
-            Table         : TABLE,
+            Table         : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
@@ -367,19 +367,19 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule3' =
                 (IncreasingCount = DiffCount && DiffCount > 0) || (DecreasingCount = DiffCount && DiffCount > 0)
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 4: flags 14 consecutive points, ending at CurrentOrder, that alternate up/down throughout.
 /// @param {scalar} CurrentOrder – The order-column value of the point being evaluated
-/// @param {table} Table – The table providing the window context
+/// @param {tableref} Table – The table providing the window context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 14 points are available
 FUNCTION 'SixSigma.UDFs.IsNelsonRule4' = 
         (
             CurrentOrder  : SCALAR,
-            Table         : TABLE,
+            Table         : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
@@ -423,11 +423,11 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule4' =
                 FailCount = 0
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Builds a short anomaly-flagging string for a control chart period, naming which day(s) an anomaly was flagged on (either a Nelson Rule 1 violation or a reading beyond the specification range), or stating plainly that none were.
-/// @param {table} Table – The table of readings to evaluate
+/// @param {tableref} Table – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (must resolve to a date/datetime for the day-grouping to be meaningful)
 /// @param {double} USL – Upper specification limit; pass BLANK() to skip the range check
@@ -435,7 +435,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule4' =
 /// @returns "No anomalies flagged" or "Anomalies flagged: <day list>". Example: 'SixSigma.UDFs.ChartSummary'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm], 50.5, 49.5) → "Anomalies flagged: 31 August"
 FUNCTION 'SixSigma.UDFs.ChartSummary' = 
         (
-            Table        : TABLE,
+            Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF,
             USL          : DOUBLE,
@@ -460,5 +460,5 @@ FUNCTION 'SixSigma.UDFs.ChartSummary' =
                 "Anomalies flagged: " & FlaggedDatesList
             )
 
-    annotation DAXLIB_PackageId = SixSigma.UDFs
-    annotation DAXLIB_PackageVersion = 1.0.0
+    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageVersion = 0.1.0
