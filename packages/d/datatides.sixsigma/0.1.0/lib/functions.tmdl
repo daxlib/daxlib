@@ -107,7 +107,7 @@ FUNCTION 'DataTides.SixSigma.SigmaLevel' =
     annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
-/// Short-term process sigma estimated via average moving range / d2 — the "within-subgroup" variation used by Cp/Cpk. Table/columns are fully generic; pass any fact table and its value/time columns.
+/// Short-term process sigma estimated via average moving range / d2 — the "within-subgroup" variation used by 'DataTides.SixSigma.Cp' and 'DataTides.SixSigma.Cpk'. Table/columns are fully generic; pass any fact table and its value/time columns.
 /// @param {tableref} Table – The table of readings to evaluate, e.g. ALLSELECTED(Fact_GridFrequency)
 /// @param {columnref} ValueColumn – The numeric measurement column, e.g. Fact_GridFrequency[f]
 /// @param {columnref} OrderColumn – The column that defines reading order, e.g. Fact_GridFrequency[dtm]
