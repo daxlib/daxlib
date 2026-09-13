@@ -1,7 +1,7 @@
-/// Inverse standard normal cumulative distribution function (probit). Converts a probability into its corresponding Z-score. Used internally by SixSigma.UDFs.SigmaLevel.
+/// Inverse standard normal cumulative distribution function (probit). Converts a probability into its corresponding Z-score. Used internally by DataTides.SixSigma.SigmaLevel.
 /// @param {double} P – Probability, strictly between 0 and 1
-/// @returns The Z-score corresponding to P, or BLANK() if P is blank or outside (0, 1). Example: 'SixSigma.UDFs.NormSInv'(0.9999966) → approximately 4.5
-FUNCTION 'SixSigma.UDFs.NormSInv' = 
+/// @returns The Z-score corresponding to P, or BLANK() if P is blank or outside (0, 1). Example: 'DataTides.SixSigma.NormSInv'(0.9999966) → approximately 4.5
+FUNCTION 'DataTides.SixSigma.NormSInv' = 
         (
             P : DOUBLE
         ) =>
@@ -59,15 +59,15 @@ FUNCTION 'SixSigma.UDFs.NormSInv' =
                 )
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Defects Per Million Opportunities — the standard Six Sigma defect-rate metric.
 /// @param {double} Defects – Count of defective units/readings
 /// @param {double} Units – Count of units/readings inspected
 /// @param {double} OpportunitiesPerUnit – Number of ways each unit could fail, typically 1 for a single continuous measurement
-/// @returns Defects per million opportunities, or BLANK() if inputs are blank or total opportunities is zero. Example: 'SixSigma.UDFs.DPMO'(2, 172800, 1) → approximately 11.6
-FUNCTION 'SixSigma.UDFs.DPMO' = 
+/// @returns Defects per million opportunities, or BLANK() if inputs are blank or total opportunities is zero. Example: 'DataTides.SixSigma.DPMO'(2, 172800, 1) → approximately 11.6
+FUNCTION 'DataTides.SixSigma.DPMO' = 
         (
             Defects              : DOUBLE,
             Units                : DOUBLE,
@@ -81,21 +81,21 @@ FUNCTION 'SixSigma.UDFs.DPMO' =
                 DIVIDE( Defects, TotalOpportunities ) * 1000000
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Converts a DPMO value into a Sigma Level. IncludeShift = 1 applies the standard 1.5-sigma long-term shift convention; 0 returns the unshifted value.
-/// @param {double} Dpmo – Defects per million opportunities, e.g. from SixSigma.UDFs.DPMO
+/// @param {double} Dpmo – Defects per million opportunities, e.g. from DataTides.SixSigma.DPMO
 /// @param {integer} IncludeShift – 1 to apply the 1.5-sigma long-term shift, 0 to omit it
-/// @returns The Sigma Level, or BLANK() if Dpmo is blank. Example: 'SixSigma.UDFs.SigmaLevel'(11.6, 1) → approximately 6.0
-FUNCTION 'SixSigma.UDFs.SigmaLevel' = 
+/// @returns The Sigma Level, or BLANK() if Dpmo is blank. Example: 'DataTides.SixSigma.SigmaLevel'(11.6, 1) → approximately 6.0
+FUNCTION 'DataTides.SixSigma.SigmaLevel' = 
         (
             Dpmo          : DOUBLE,
             IncludeShift  : INTEGER
         ) =>
         VAR DefectRate = DIVIDE( Dpmo, 1000000 )
         VAR Yield = 1 - DefectRate
-        VAR ZLongTerm = 'SixSigma.UDFs.NormSInv'( Yield )
+        VAR ZLongTerm = 'DataTides.SixSigma.NormSInv'( Yield )
         VAR Shift = IF( IncludeShift = 1, 1.5, 0 )
         RETURN
             IF(
@@ -104,15 +104,15 @@ FUNCTION 'SixSigma.UDFs.SigmaLevel' =
                 ZLongTerm + Shift
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Short-term process sigma estimated via average moving range / d2 — the "within-subgroup" variation used by Cp/Cpk. Table/columns are fully generic; pass any fact table and its value/time columns.
 /// @param {tableref} Table – The table of readings to evaluate, e.g. ALLSELECTED(Fact_GridFrequency)
 /// @param {columnref} ValueColumn – The numeric measurement column, e.g. Fact_GridFrequency[f]
 /// @param {columnref} OrderColumn – The column that defines reading order, e.g. Fact_GridFrequency[dtm]
-/// @returns The estimated short-term sigma, or BLANK() if it can't be computed. Example: 'SixSigma.UDFs.ProcessSigmaWithin'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm])
-FUNCTION 'SixSigma.UDFs.ProcessSigmaWithin' = 
+/// @returns The estimated short-term sigma, or BLANK() if it can't be computed. Example: 'DataTides.SixSigma.ProcessSigmaWithin'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm])
+FUNCTION 'DataTides.SixSigma.ProcessSigmaWithin' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -142,7 +142,7 @@ FUNCTION 'SixSigma.UDFs.ProcessSigmaWithin' =
         RETURN
             IF( ISBLANK( AvgMovingRange ), BLANK(), DIVIDE( AvgMovingRange, D2 ) )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Cp — potential process capability, short-term. Compares specification width to short-term (within-subgroup) spread; does not account for centering.
@@ -152,7 +152,7 @@ FUNCTION 'SixSigma.UDFs.ProcessSigmaWithin' =
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Cp, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'SixSigma.UDFs.Cp' = 
+FUNCTION 'DataTides.SixSigma.Cp' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -160,7 +160,7 @@ FUNCTION 'SixSigma.UDFs.Cp' =
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Sigma = 'SixSigma.UDFs.ProcessSigmaWithin'( Table, ValueColumn, OrderColumn )
+        VAR Sigma = 'DataTides.SixSigma.ProcessSigmaWithin'( Table, ValueColumn, OrderColumn )
         RETURN
             IF(
                 ISBLANK( USL ) || ISBLANK( LSL ) || ISBLANK( Sigma ) || Sigma = 0,
@@ -168,7 +168,7 @@ FUNCTION 'SixSigma.UDFs.Cp' =
                 DIVIDE( USL - LSL, 6 * Sigma )
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Cpk — actual process capability, short-term. Like Cp, but accounts for how centred the process is between the limits.
@@ -178,7 +178,7 @@ FUNCTION 'SixSigma.UDFs.Cp' =
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Cpk, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'SixSigma.UDFs.Cpk' = 
+FUNCTION 'DataTides.SixSigma.Cpk' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -186,7 +186,7 @@ FUNCTION 'SixSigma.UDFs.Cpk' =
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Sigma = 'SixSigma.UDFs.ProcessSigmaWithin'( Table, ValueColumn, OrderColumn )
+        VAR Sigma = 'DataTides.SixSigma.ProcessSigmaWithin'( Table, ValueColumn, OrderColumn )
         VAR Mean = AVERAGEX( Table, ValueColumn )
         VAR CpkUpper = DIVIDE( USL - Mean, 3 * Sigma )
         VAR CpkLower = DIVIDE( Mean - LSL, 3 * Sigma )
@@ -197,7 +197,7 @@ FUNCTION 'SixSigma.UDFs.Cpk' =
                 MIN( CpkUpper, CpkLower )
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Pp — potential process capability, long-term. Uses the overall population standard deviation rather than a short-term estimate.
@@ -206,7 +206,7 @@ FUNCTION 'SixSigma.UDFs.Cpk' =
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Pp, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'SixSigma.UDFs.Pp' = 
+FUNCTION 'DataTides.SixSigma.Pp' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -221,7 +221,7 @@ FUNCTION 'SixSigma.UDFs.Pp' =
                 DIVIDE( USL - LSL, 6 * Sigma )
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Ppk — actual process capability, long-term. Uses the overall population standard deviation and accounts for centering.
@@ -230,7 +230,7 @@ FUNCTION 'SixSigma.UDFs.Pp' =
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Ppk, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'SixSigma.UDFs.Ppk' = 
+FUNCTION 'DataTides.SixSigma.Ppk' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -248,7 +248,7 @@ FUNCTION 'SixSigma.UDFs.Ppk' =
                 MIN( PpkUpper, PpkLower )
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Computes the control chart center line, upper control limit and lower control limit (mean ± 3σ) for a table of readings.
@@ -256,7 +256,7 @@ FUNCTION 'SixSigma.UDFs.Ppk' =
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (accepted for signature consistency with the other functions; not used internally)
 /// @returns A single-row table with columns CenterLine, UCL, LCL, Sigma
-FUNCTION 'SixSigma.UDFs.ControlLimits' = 
+FUNCTION 'DataTides.SixSigma.ControlLimits' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -272,7 +272,7 @@ FUNCTION 'SixSigma.UDFs.ControlLimits' =
                 "Sigma", Sigma
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 1: flags a single point beyond 3 sigma from the mean.
@@ -281,7 +281,7 @@ FUNCTION 'SixSigma.UDFs.ControlLimits' =
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (accepted for signature consistency; not used internally)
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if it can't be evaluated
-FUNCTION 'SixSigma.UDFs.IsNelsonRule1' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule1' = 
         (
             CurrentValue  : DOUBLE,
             Table         : TABLEREF,
@@ -297,7 +297,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule1' =
                 ABS( CurrentValue - Mean ) > 3 * Sigma
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 2: flags 9 consecutive points, ending at CurrentOrder, all on the same side of the mean.
@@ -306,7 +306,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule1' =
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 9 points are available
-FUNCTION 'SixSigma.UDFs.IsNelsonRule2' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule2' = 
         (
             CurrentOrder  : SCALAR,
             Table         : TABLEREF,
@@ -327,7 +327,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule2' =
                 AboveCount = 9 || BelowCount = 9
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 3: flags 6 consecutive points, ending at CurrentOrder, steadily increasing or steadily decreasing.
@@ -336,7 +336,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule2' =
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 6 points are available
-FUNCTION 'SixSigma.UDFs.IsNelsonRule3' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule3' = 
         (
             CurrentOrder  : SCALAR,
             Table         : TABLEREF,
@@ -367,7 +367,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule3' =
                 (IncreasingCount = DiffCount && DiffCount > 0) || (DecreasingCount = DiffCount && DiffCount > 0)
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Nelson Rule 4: flags 14 consecutive points, ending at CurrentOrder, that alternate up/down throughout.
@@ -376,7 +376,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule3' =
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 14 points are available
-FUNCTION 'SixSigma.UDFs.IsNelsonRule4' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule4' = 
         (
             CurrentOrder  : SCALAR,
             Table         : TABLEREF,
@@ -423,7 +423,7 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule4' =
                 FailCount = 0
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Builds a short anomaly-flagging string for a control chart period, naming which day(s) an anomaly was flagged on (either a Nelson Rule 1 violation or a reading beyond the specification range), or stating plainly that none were.
@@ -432,8 +432,8 @@ FUNCTION 'SixSigma.UDFs.IsNelsonRule4' =
 /// @param {columnref} OrderColumn – The column that defines reading order (must resolve to a date/datetime for the day-grouping to be meaningful)
 /// @param {double} USL – Upper specification limit; pass BLANK() to skip the range check
 /// @param {double} LSL – Lower specification limit; pass BLANK() to skip the range check
-/// @returns "No anomalies flagged" or "Anomalies flagged: <day list>". Example: 'SixSigma.UDFs.ChartSummary'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm], 50.5, 49.5) → "Anomalies flagged: 31 August"
-FUNCTION 'SixSigma.UDFs.ChartSummary' = 
+/// @returns "No anomalies flagged" or "Anomalies flagged: <day list>". Example: 'DataTides.SixSigma.ChartSummary'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm], 50.5, 49.5) → "Anomalies flagged: 31 August"
+FUNCTION 'DataTides.SixSigma.ChartSummary' = 
         (
             Table        : TABLEREF,
             ValueColumn  : COLUMNREF,
@@ -460,5 +460,5 @@ FUNCTION 'SixSigma.UDFs.ChartSummary' =
                 "Anomalies flagged: " & FlaggedDatesList
             )
 
-    annotation DAXLIB_PackageId = Datatides.SixSigma
+    annotation DAXLIB_PackageId = DataTides.SixSigma
     annotation DAXLIB_PackageVersion = 0.1.0
