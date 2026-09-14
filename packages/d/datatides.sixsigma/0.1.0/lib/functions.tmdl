@@ -1,7 +1,7 @@
 /// Inverse standard normal cumulative distribution function (probit). Converts a probability into its corresponding Z-score. Used internally by DataTides.SixSigma.SigmaLevel.
 /// @param {double} P – Probability, strictly between 0 and 1
 /// @returns The Z-score corresponding to P, or BLANK() if P is blank or outside (0, 1). Example: 'DataTides.SixSigma.NormSInv'(0.9999966) → approximately 4.5
-FUNCTION 'DataTides.SixSigma.NormSInv' = 
+FUNCTION 'DataTides.SixSigma.NormSInv' =
         (
             P : DOUBLE
         ) =>
@@ -67,7 +67,7 @@ FUNCTION 'DataTides.SixSigma.NormSInv' =
 /// @param {double} Units – Count of units/readings inspected
 /// @param {double} OpportunitiesPerUnit – Number of ways each unit could fail, typically 1 for a single continuous measurement
 /// @returns Defects per million opportunities, or BLANK() if inputs are blank or total opportunities is zero. Example: 'DataTides.SixSigma.DPMO'(2, 172800, 1) → approximately 11.6
-FUNCTION 'DataTides.SixSigma.DPMO' = 
+FUNCTION 'DataTides.SixSigma.DPMO' =
         (
             Defects              : DOUBLE,
             Units                : DOUBLE,
@@ -88,14 +88,14 @@ FUNCTION 'DataTides.SixSigma.DPMO' =
 /// @param {double} Dpmo – Defects per million opportunities, e.g. from DataTides.SixSigma.DPMO
 /// @param {integer} IncludeShift – 1 to apply the 1.5-sigma long-term shift, 0 to omit it
 /// @returns The Sigma Level, or BLANK() if Dpmo is blank. Example: 'DataTides.SixSigma.SigmaLevel'(11.6, 1) → approximately 6.0
-FUNCTION 'DataTides.SixSigma.SigmaLevel' = 
+FUNCTION 'DataTides.SixSigma.SigmaLevel' =
         (
             Dpmo          : DOUBLE,
-            IncludeShift  : INTEGER
+            IncludeShift  : INT64
         ) =>
         VAR DefectRate = DIVIDE( Dpmo, 1000000 )
         VAR Yield = 1 - DefectRate
-        VAR ZLongTerm = 'DataTides.SixSigma.NormSInv'( Yield )
+        VAR ZLongTerm = DataTides.SixSigma.NormSInv( Yield )
         VAR Shift = IF( IncludeShift = 1, 1.5, 0 )
         RETURN
             IF(
@@ -108,20 +108,20 @@ FUNCTION 'DataTides.SixSigma.SigmaLevel' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Short-term process sigma estimated via average moving range / d2 — the "within-subgroup" variation used by 'DataTides.SixSigma.Cp' and 'DataTides.SixSigma.Cpk'. Table/columns are fully generic; pass any fact table and its value/time columns.
-/// @param {tableref} Table – The table of readings to evaluate, e.g. ALLSELECTED(Fact_GridFrequency)
+/// @param {tableref} SourceTable – The table of readings to evaluate, e.g. ALLSELECTED(Fact_GridFrequency)
 /// @param {columnref} ValueColumn – The numeric measurement column, e.g. Fact_GridFrequency[f]
 /// @param {columnref} OrderColumn – The column that defines reading order, e.g. Fact_GridFrequency[dtm]
 /// @returns The estimated short-term sigma, or BLANK() if it can't be computed. Example: 'DataTides.SixSigma.ProcessSigmaWithin'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm])
-FUNCTION 'DataTides.SixSigma.ProcessSigmaWithin' = 
+FUNCTION 'DataTides.SixSigma.ProcessSigmaWithin' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF
         ) =>
         VAR Ranked =
             ADDCOLUMNS(
-                Table,
-                "RN", RANKX( Table, OrderColumn, , ASC, DENSE )
+                SourceTable,
+                "RN", RANKX( SourceTable, OrderColumn, , ASC, DENSE )
             )
         VAR WithRanges =
             ADDCOLUMNS(
@@ -146,21 +146,21 @@ FUNCTION 'DataTides.SixSigma.ProcessSigmaWithin' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Cp — potential process capability, short-term. Compares specification width to short-term (within-subgroup) spread; does not account for centering.
-/// @param {tableref} Table – The table of readings to evaluate
+/// @param {tableref} SourceTable – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Cp, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'DataTides.SixSigma.Cp' = 
+FUNCTION 'DataTides.SixSigma.Cp' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Sigma = 'DataTides.SixSigma.ProcessSigmaWithin'( Table, ValueColumn, OrderColumn )
+        VAR Sigma = DataTides.SixSigma.ProcessSigmaWithin( SourceTable, ValueColumn, OrderColumn )
         RETURN
             IF(
                 ISBLANK( USL ) || ISBLANK( LSL ) || ISBLANK( Sigma ) || Sigma = 0,
@@ -172,22 +172,22 @@ FUNCTION 'DataTides.SixSigma.Cp' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Cpk — actual process capability, short-term. Like Cp, but accounts for how centred the process is between the limits.
-/// @param {tableref} Table – The table of readings to evaluate
+/// @param {tableref} SourceTable – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Cpk, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'DataTides.SixSigma.Cpk' = 
+FUNCTION 'DataTides.SixSigma.Cpk' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Sigma = 'DataTides.SixSigma.ProcessSigmaWithin'( Table, ValueColumn, OrderColumn )
-        VAR Mean = AVERAGEX( Table, ValueColumn )
+        VAR Sigma = DataTides.SixSigma.ProcessSigmaWithin( SourceTable, ValueColumn, OrderColumn )
+        VAR Mean = AVERAGEX( SourceTable, ValueColumn )
         VAR CpkUpper = DIVIDE( USL - Mean, 3 * Sigma )
         VAR CpkLower = DIVIDE( Mean - LSL, 3 * Sigma )
         RETURN
@@ -201,19 +201,19 @@ FUNCTION 'DataTides.SixSigma.Cpk' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Pp — potential process capability, long-term. Uses the overall population standard deviation rather than a short-term estimate.
-/// @param {tableref} Table – The table of readings to evaluate
+/// @param {tableref} SourceTable – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Pp, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'DataTides.SixSigma.Pp' = 
+FUNCTION 'DataTides.SixSigma.Pp' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Sigma = STDEVX.P( Table, ValueColumn )
+        VAR Sigma = STDEVX.P( SourceTable, ValueColumn )
         RETURN
             IF(
                 ISBLANK( USL ) || ISBLANK( LSL ) || ISBLANK( Sigma ) || Sigma = 0,
@@ -225,20 +225,20 @@ FUNCTION 'DataTides.SixSigma.Pp' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Ppk — actual process capability, long-term. Uses the overall population standard deviation and accounts for centering.
-/// @param {tableref} Table – The table of readings to evaluate
+/// @param {tableref} SourceTable – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {double} USL – Upper specification limit
 /// @param {double} LSL – Lower specification limit
 /// @returns Ppk, or BLANK() if inputs are blank or sigma is zero
-FUNCTION 'DataTides.SixSigma.Ppk' = 
+FUNCTION 'DataTides.SixSigma.Ppk' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Sigma = STDEVX.P( Table, ValueColumn )
-        VAR Mean = AVERAGEX( Table, ValueColumn )
+        VAR Sigma = STDEVX.P( SourceTable, ValueColumn )
+        VAR Mean = AVERAGEX( SourceTable, ValueColumn )
         VAR PpkUpper = DIVIDE( USL - Mean, 3 * Sigma )
         VAR PpkLower = DIVIDE( Mean - LSL, 3 * Sigma )
         RETURN
@@ -252,18 +252,18 @@ FUNCTION 'DataTides.SixSigma.Ppk' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Computes the control chart center line, upper control limit and lower control limit (mean ± 3σ) for a table of readings.
-/// @param {tableref} Table – The table of readings to evaluate
+/// @param {tableref} SourceTable – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (accepted for signature consistency with the other functions; not used internally)
 /// @returns A single-row table with columns CenterLine, UCL, LCL, Sigma
-FUNCTION 'DataTides.SixSigma.ControlLimits' = 
+FUNCTION 'DataTides.SixSigma.ControlLimits' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF
         ) =>
-        VAR Mean = AVERAGEX( Table, ValueColumn )
-        VAR Sigma = STDEVX.P( Table, ValueColumn )
+        VAR Mean = AVERAGEX( SourceTable, ValueColumn )
+        VAR Sigma = STDEVX.P( SourceTable, ValueColumn )
         RETURN
             ROW(
                 "CenterLine", Mean,
@@ -277,19 +277,19 @@ FUNCTION 'DataTides.SixSigma.ControlLimits' =
 
 /// Nelson Rule 1: flags a single point beyond 3 sigma from the mean.
 /// @param {double} CurrentValue – The reading being evaluated
-/// @param {tableref} Table – The table providing the mean/sigma context
+/// @param {tableref} SourceTable – The table providing the mean/sigma context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (accepted for signature consistency; not used internally)
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if it can't be evaluated
-FUNCTION 'DataTides.SixSigma.IsNelsonRule1' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule1' =
         (
             CurrentValue  : DOUBLE,
-            Table         : TABLEREF,
+            SourceTable   : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
-        VAR Mean = AVERAGEX( Table, ValueColumn )
-        VAR Sigma = STDEVX.P( Table, ValueColumn )
+        VAR Mean = AVERAGEX( SourceTable, ValueColumn )
+        VAR Sigma = STDEVX.P( SourceTable, ValueColumn )
         RETURN
             IF(
                 ISBLANK( CurrentValue ) || ISBLANK( Sigma ) || Sigma = 0,
@@ -302,19 +302,19 @@ FUNCTION 'DataTides.SixSigma.IsNelsonRule1' =
 
 /// Nelson Rule 2: flags 9 consecutive points, ending at CurrentOrder, all on the same side of the mean.
 /// @param {scalar} CurrentOrder – The order-column value of the point being evaluated; type matches whatever OrderColumn actually is (date, datetime, integer sequence, etc.)
-/// @param {tableref} Table – The table providing the mean/window context
+/// @param {tableref} SourceTable – The table providing the mean/window context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 9 points are available
-FUNCTION 'DataTides.SixSigma.IsNelsonRule2' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule2' =
         (
             CurrentOrder  : SCALAR,
-            Table         : TABLEREF,
+            SourceTable   : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
-        VAR Mean = AVERAGEX( Table, ValueColumn )
-        VAR Ranked = ADDCOLUMNS( Table, "RN", RANKX( Table, OrderColumn, , ASC, DENSE ) )
+        VAR Mean = AVERAGEX( SourceTable, ValueColumn )
+        VAR Ranked = ADDCOLUMNS( SourceTable, "RN", RANKX( SourceTable, OrderColumn, , ASC, DENSE ) )
         VAR CurrentRN = MAXX( FILTER( Ranked, OrderColumn = CurrentOrder ), [RN] )
         VAR Window = FILTER( Ranked, ISNUMBER( CurrentRN ) && [RN] > CurrentRN - 9 && [RN] <= CurrentRN )
         VAR PointCount = COUNTROWS( Window )
@@ -332,18 +332,18 @@ FUNCTION 'DataTides.SixSigma.IsNelsonRule2' =
 
 /// Nelson Rule 3: flags 6 consecutive points, ending at CurrentOrder, steadily increasing or steadily decreasing.
 /// @param {scalar} CurrentOrder – The order-column value of the point being evaluated
-/// @param {tableref} Table – The table providing the window context
+/// @param {tableref} SourceTable – The table providing the window context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 6 points are available
-FUNCTION 'DataTides.SixSigma.IsNelsonRule3' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule3' =
         (
             CurrentOrder  : SCALAR,
-            Table         : TABLEREF,
+            SourceTable   : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
-        VAR Ranked = ADDCOLUMNS( Table, "RN", RANKX( Table, OrderColumn, , ASC, DENSE ) )
+        VAR Ranked = ADDCOLUMNS( SourceTable, "RN", RANKX( SourceTable, OrderColumn, , ASC, DENSE ) )
         VAR CurrentRN = MAXX( FILTER( Ranked, OrderColumn = CurrentOrder ), [RN] )
         VAR Window = FILTER( Ranked, ISNUMBER( CurrentRN ) && [RN] > CurrentRN - 6 && [RN] <= CurrentRN )
         VAR WithDiffs =
@@ -372,18 +372,18 @@ FUNCTION 'DataTides.SixSigma.IsNelsonRule3' =
 
 /// Nelson Rule 4: flags 14 consecutive points, ending at CurrentOrder, that alternate up/down throughout.
 /// @param {scalar} CurrentOrder – The order-column value of the point being evaluated
-/// @param {tableref} Table – The table providing the window context
+/// @param {tableref} SourceTable – The table providing the window context
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order
 /// @returns TRUE if the rule is violated, FALSE if not, BLANK() if fewer than 14 points are available
-FUNCTION 'DataTides.SixSigma.IsNelsonRule4' = 
+FUNCTION 'DataTides.SixSigma.IsNelsonRule4' =
         (
             CurrentOrder  : SCALAR,
-            Table         : TABLEREF,
+            SourceTable   : TABLEREF,
             ValueColumn   : COLUMNREF,
             OrderColumn   : COLUMNREF
         ) =>
-        VAR Ranked = ADDCOLUMNS( Table, "RN", RANKX( Table, OrderColumn, , ASC, DENSE ) )
+        VAR Ranked = ADDCOLUMNS( SourceTable, "RN", RANKX( SourceTable, OrderColumn, , ASC, DENSE ) )
         VAR CurrentRN = MAXX( FILTER( Ranked, OrderColumn = CurrentOrder ), [RN] )
         VAR Window = FILTER( Ranked, ISNUMBER( CurrentRN ) && [RN] > CurrentRN - 14 && [RN] <= CurrentRN )
         VAR WithDirection =
@@ -427,28 +427,28 @@ FUNCTION 'DataTides.SixSigma.IsNelsonRule4' =
     annotation DAXLIB_PackageVersion = 0.1.0
 
 /// Builds a short anomaly-flagging string for a control chart period, naming which day(s) an anomaly was flagged on (either a Nelson Rule 1 violation or a reading beyond the specification range), or stating plainly that none were.
-/// @param {tableref} Table – The table of readings to evaluate
+/// @param {tableref} SourceTable – The table of readings to evaluate
 /// @param {columnref} ValueColumn – The numeric measurement column
 /// @param {columnref} OrderColumn – The column that defines reading order (must resolve to a date/datetime for the day-grouping to be meaningful)
 /// @param {double} USL – Upper specification limit; pass BLANK() to skip the range check
 /// @param {double} LSL – Lower specification limit; pass BLANK() to skip the range check
 /// @returns "No anomalies flagged" or "Anomalies flagged: <day list>". Example: 'DataTides.SixSigma.ChartSummary'(ALLSELECTED(Fact_GridFrequency), Fact_GridFrequency[f], Fact_GridFrequency[dtm], 50.5, 49.5) → "Anomalies flagged: 31 August"
-FUNCTION 'DataTides.SixSigma.ChartSummary' = 
+FUNCTION 'DataTides.SixSigma.ChartSummary' =
         (
-            Table        : TABLEREF,
+            SourceTable  : TABLEREF,
             ValueColumn  : COLUMNREF,
             OrderColumn  : COLUMNREF,
             USL          : DOUBLE,
             LSL          : DOUBLE
         ) =>
-        VAR Avg = AVERAGEX( Table, ValueColumn )
-        VAR Sigma = STDEVX.P( Table, ValueColumn )
+        VAR Mean = AVERAGEX( SourceTable, ValueColumn )
+        VAR Sigma = STDEVX.P( SourceTable, ValueColumn )
         VAR SigmaValid = NOT ISBLANK( Sigma ) && Sigma <> 0
         VAR RangeValid = NOT ISBLANK( USL ) && NOT ISBLANK( LSL )
         VAR AllFlaggedRows =
             FILTER(
-                Table,
-                (SigmaValid && ABS( ValueColumn - Avg ) > 3 * Sigma) || (RangeValid && (ValueColumn > USL || ValueColumn < LSL))
+                SourceTable,
+                (SigmaValid && ABS( ValueColumn - Mean ) > 3 * Sigma) || (RangeValid && (ValueColumn > USL || ValueColumn < LSL))
             )
         VAR FlaggedCount = COUNTROWS( AllFlaggedRows )
         VAR FlaggedDatesTable = DISTINCT( SELECTCOLUMNS( AllFlaggedRows, "Date", DATE( YEAR( OrderColumn ), MONTH( OrderColumn ), DAY( OrderColumn ) ) ) )
