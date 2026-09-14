@@ -96,7 +96,7 @@ FUNCTION 'DataTides.SignificantChange.IsGaussianOutlier' =
             _StdDev  : DECIMAL,
             _Alpha   : DECIMAL VAL = 0.05
         ) =>
-        VAR _PValue = NormalTailProbability( _X, _Mean, _StdDev )
+        VAR _PValue = DataTides.SignificantChange.NormalTailProbability( _X, _Mean, _StdDev )
         RETURN IF( ISBLANK( _PValue ), BLANK(), _PValue < _Alpha )
 
     annotation DAXLIB_PackageId = DataTides.SignificantChange
@@ -151,8 +151,8 @@ FUNCTION 'DataTides.SignificantChange.IsGrubbsOutlier' =
             _N       : INT64,
             _Alpha   : DECIMAL VAL = 0.05
         ) =>
-        VAR _G         = GrubbsStatistic( _X, _Mean, _StdDev )
-        VAR _GCritical = GrubbsCriticalValue( _N, _Alpha )
+        VAR _G         = DataTides.SignificantChange.GrubbsStatistic( _X, _Mean, _StdDev )
+        VAR _GCritical = DataTides.SignificantChange.GrubbsCriticalValue( _N, _Alpha )
         RETURN IF( ISBLANK( _G ), BLANK(), _G > _GCritical )
 
     annotation DAXLIB_PackageId = DataTides.SignificantChange
