@@ -1,0 +1,17 @@
+function 'EG.MultiValuedKeys.Keep' =
+	    ( KeyColumn : COLUMNREF, AttributeColumn : COLUMNREF ) =>
+	    VAR _InitialTable =
+	        SUMMARIZE ( TABLEOF ( KeyColumn ), KeyColumn, AttributeColumn )
+	    VAR _RowsCount =
+	        GROUPBY (
+	            _InitialTable,
+	            KeyColumn,
+	            "@RowsCount", SUMX ( CURRENTGROUP (), 1 )
+	        )
+	    VAR _DuplicatedRows =
+	        FILTER ( _RowsCount, [@RowsCount] > 1 )
+	    RETURN
+	        NATURALINNERJOIN ( _InitialTable, _DuplicatedRows )
+
+	annotation DAXLIB_PackageId = EG.MultiValuedKeys
+	annotation DAXLIB_PackageVersion = 1.0.0
