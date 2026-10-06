@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.MultiValuedKeys",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Finds values that are linked to more than one identifier and returns only those rows with the resulting count, helping detect duplicate registrations such as the same product, customer, or supplier stored under different IDs.",
+  "tags": "DAX,Data Quality,Referential Integrity,Duplicate,GROUPBY",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}

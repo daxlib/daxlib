@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DataTides.SixSigma",
+  "version": "0.1.0",
+  "authors": "Juls-BI",
+  "description": "Reusable Six Sigma statistical process control (SPC) functions — DPMO, Sigma Level, Cp/Cpk, Pp/Ppk, control limits, and Nelson Rule checks — as model-agnostic DAX UDFs.",
+  "tags": "Statistics, Quality Control, SixSigma",
+  "releaseNotes": "Initial release of the DataTides.SixSigma library, providing DAX UDFs for Six Sigma process capability analysis and control chart rule checking.",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/d/datatides.sixsigma",
+  "readme": "/README.md",
+  "icon": "/icon.png"
+}

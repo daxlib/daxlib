@@ -1,0 +1,132 @@
+function 'EG.RFMClassification.ItemsInClass' =
+	    (
+	        todayDate : DATETIME,
+	        MonetaryExpr : EXPR,
+	        transactionsDateColumn : COLUMNREF,
+	        ItemKeyColumn : COLUMNREF,
+	        RFMScoreColumn : COLUMNREF
+	    ) =>
+	    VAR _Today = todayDate
+	    VAR _MainTable =
+	        CALCULATETABLE (
+	            FILTER (
+	                ADDCOLUMNS (
+	                    SUMMARIZE ( TABLEOF ( transactionsDateColumn ), ItemKeyColumn ),
+	                    "@Recency",
+	                        VAR _LastDate =
+	                            CALCULATE ( MAX ( transactionsDateColumn ) )
+	                        VAR _Recency =
+	                            DATEDIFF ( _LastDate, _Today, DAY )
+	                        RETURN
+	                            _Recency,
+	                    "@Frequency",
+	                        CALCULATE ( COUNTROWS ( TABLEOF ( transactionsDateColumn ) ) ),
+	                    "@Value",
+	                        CALCULATE ( MonetaryExpr )
+	                ),
+	                [@Value]
+	            ),
+	            REMOVEFILTERS ( TABLEOF ( transactionsDateColumn ) )
+	        )
+	    VAR _Quartile_Recency_1 =
+	        PERCENTILEX.EXC ( _MainTable, [@Recency], 0.2 )
+	    VAR _Quartile_Recency_2 =
+	        PERCENTILEX.EXC ( _MainTable, [@Recency], 0.4 )
+	    VAR _Quartile_Recency_3 =
+	        PERCENTILEX.EXC ( _MainTable, [@Recency], 0.6 )
+	    VAR _Quartile_Recency_4 =
+	        PERCENTILEX.EXC ( _MainTable, [@Recency], 0.8 )
+	    VAR _Quartile_Frequency_1 =
+	        PERCENTILEX.EXC ( _MainTable, [@Frequency], 0.2 )
+	    VAR _Quartile_Frequency_2 =
+	        PERCENTILEX.EXC ( _MainTable, [@Frequency], 0.4 )
+	    VAR _Quartile_Frequency_3 =
+	        PERCENTILEX.EXC ( _MainTable, [@Frequency], 0.6 )
+	    VAR _Quartile_Frequency_4 =
+	        PERCENTILEX.EXC ( _MainTable, [@Frequency], 0.8 )
+	    VAR _Quartile_Value_1 =
+	        PERCENTILEX.EXC ( _MainTable, [@Value], 0.2 )
+	    VAR _Quartile_Value_2 =
+	        PERCENTILEX.EXC ( _MainTable, [@Value], 0.4 )
+	    VAR _Quartile_Value_3 =
+	        PERCENTILEX.EXC ( _MainTable, [@Value], 0.6 )
+	    VAR _Quartile_Value_4 =
+	        PERCENTILEX.EXC ( _MainTable, [@Value], 0.8 )
+	    VAR _ScoreTable =
+	        ADDCOLUMNS (
+	            _MainTable,
+	            "@RecencyScore",
+	                VAR _Recency = [@Recency]
+	                RETURN
+	                    SWITCH (
+	                        TRUE (),
+	                        ISBLANK ( _Recency ), BLANK (),
+	                        _Recency >= _Quartile_Recency_4, 5,
+	                        _Recency >= _Quartile_Recency_3, 4,
+	                        _Recency >= _Quartile_Recency_2, 3,
+	                        _Recency >= _Quartile_Recency_1, 2,
+	                        1
+	                    ),
+	            "@FrequencyValueScore",
+	                VAR _Value = [@Value]
+	                VAR _Frequency = [@Frequency]
+	                VAR _ValueScore =
+	                    SWITCH (
+	                        TRUE (),
+	                        ISBLANK ( _Value ), BLANK (),
+	                        _Value >= _Quartile_Value_4, 5,
+	                        _Value >= _Quartile_Value_3, 4,
+	                        _Value >= _Quartile_Value_2, 3,
+	                        _Value >= _Quartile_Value_1, 2,
+	                        1
+	                    )
+	                VAR _FrequencyScore =
+	                    SWITCH (
+	                        TRUE (),
+	                        ISBLANK ( _Frequency ), BLANK (),
+	                        _Frequency >= _Quartile_Frequency_4, 5,
+	                        _Frequency >= _Quartile_Frequency_3, 4,
+	                        _Frequency >= _Quartile_Frequency_2, 3,
+	                        _Frequency >= _Quartile_Frequency_1, 2,
+	                        1
+	                    )
+	                RETURN
+	                    ROUND ( DIVIDE ( _FrequencyScore + _ValueScore, 2 ), 0 )
+	        )
+	    VAR _RFVTable =
+	        FILTER (
+	            CROSSJOIN (
+	                ADDCOLUMNS (
+	                    _ScoreTable,
+	                    "@RFVScore",
+	                        [@FrequencyValueScore] * 10 + [@RecencyScore]
+	                ),
+	                TABLEOF ( RFMScoreColumn )
+	            ),
+	            [@RFVScore] = RFMScoreColumn
+	        )
+	    RETURN
+	        _RFVTable
+
+	annotation DAXLIB_PackageId = EG.RFMClassification
+	annotation DAXLIB_PackageVersion = 1.0.0
+
+function 'EG.RFMClassification.ComputeInRFMClass' =
+	    (
+	        valueExpr : EXPR,
+	        todayDate : DATETIME,
+	        MonetaryExpr : EXPR,
+	        transactionsDateColumn : COLUMNREF,
+	        ItemKeyColumn : COLUMNREF,
+	        RFMScoreColumn : COLUMNREF
+	    ) =>
+	    VAR _ItemsInClass =
+	        EG.RFMClassification.ItemsInClass ( todayDate, MonetaryExpr, transactionsDateColumn, ItemKeyColumn, RFMScoreColumn )
+	    RETURN
+	        CALCULATE (
+	            valueExpr,
+	            KEEPFILTERS ( _ItemsInClass )
+	        )
+
+	annotation DAXLIB_PackageId = EG.RFMClassification
+	annotation DAXLIB_PackageVersion = 1.0.0

@@ -1,0 +1,190 @@
+/// Renders a compact inline SVG trend/sparkline chart as a data URI.
+/// Returns a `data:image/svg+xml;utf8,...` string that can be displayed in a
+/// Power BI table/matrix column formatted as Image URL, or in a card visual.
+/// The chart shows the N most recent periods (grain-agnostic: day / month / year / etc.),
+/// with a polyline, dot markers, vertical guides, and period axis labels.
+/// When `hover` is TRUE, additional shading (green rising / red falling) and bold
+/// value labels are included.
+/// @param valueExpression The measure or scalar expression to plot (evaluated per period).
+/// @param periodDateColumn The date/period column used for the X axis (e.g. 'Date'[Month]).
+/// @param numberOfPeriods How many of the most recent periods to include (e.g. 12).
+/// @param axisLabelCharactersToShow Number of characters to keep from the formatted period label (e.g. 3 for "JAN").
+/// @param dateFormatString FORMAT string for the period axis labels (e.g. "MMM", "yyyy").
+/// @param valueFormatString FORMAT string for the value data labels (e.g. "#,0", "$#,0", "0.0%").
+/// @param lineColor Hex color used for the line and markers (e.g. "#0078D4").
+/// @param hover TRUE to include hover-only shading and value labels, FALSE for a minimal chart.
+/// @returns A `data:image/svg+xml;utf8,...` string, or BLANK when there is insufficient data.
+FUNCTION 'DataZoe.SVG.TrendSVG' =
+        (
+            valueExpression: ANYREF EXPR,
+            periodDateColumn: ANYREF EXPR,
+            numberOfPeriods: INT64,
+            axisLabelCharactersToShow: INT64,
+            dateFormatString: STRING,
+            valueFormatString: STRING,
+            lineColor: STRING,
+            hover: BOOLEAN
+        ) =>
+        VAR _LastPeriod = MAX ( periodDateColumn )
+        VAR _BasePeriods =
+            TOPN (
+                numberOfPeriods,
+                FILTER ( ALL ( periodDateColumn ), periodDateColumn <= _LastPeriod ),
+                periodDateColumn,
+                DESC
+            )
+        VAR _Data =
+            ADDCOLUMNS (
+                _BasePeriods,
+                "Value",
+                    VAR _v = CALCULATE ( valueExpression )
+                    RETURN IF ( ISBLANK ( _v ), 0, _v )
+            )
+        VAR _DataIndexed =
+            ADDCOLUMNS (
+                _Data,
+                "Idx",
+                    RANKX ( _Data, periodDateColumn, periodDateColumn, ASC, DENSE ),
+                "PeriodLabel",
+                    UPPER ( LEFT ( FORMAT ( periodDateColumn, dateFormatString ), axisLabelCharactersToShow ) )
+            )
+        VAR _Count = COUNTROWS ( _DataIndexed )
+        VAR _MaxVal = MAXX ( _DataIndexed, [Value] )
+        VAR _PerPointX = 32
+        VAR _PadX = 18
+        VAR _Width = 2 * _PadX + MAX ( 1, _Count - 1 ) * _PerPointX
+        VAR _Height = 86
+        VAR _PadTop = 10
+        VAR _LabelBandH = 26
+        VAR _ChartBottom = _Height - _LabelBandH
+        VAR _GoodColor = "#107C10"
+        VAR _BadColor = "#A80000"
+        VAR _LineColor = lineColor
+        VAR _XStep =
+            IF ( _Count > 1, DIVIDE ( _Width - 2 * _PadX, _Count - 1 ), 0 )
+        VAR _HasData =
+            _Count >= 2 && NOT ISBLANK ( _MaxVal )
+        VAR _Points =
+            CONCATENATEX (
+                _DataIndexed,
+                VAR _Idx = [Idx]
+                VAR _Val = [Value]
+                VAR _Norm = IF ( _MaxVal = 0, 0, DIVIDE ( _Val, _MaxVal ) )
+                VAR _X = _PadX + ( _Idx - 1 ) * _XStep
+                VAR _Y = _ChartBottom - _Norm * ( _ChartBottom - _PadTop )
+                RETURN FORMAT ( _X, "0.0" ) & "," & FORMAT ( _Y, "0.0" ),
+                " ",
+                [Idx], ASC
+            )
+        VAR _Markers =
+            CONCATENATEX (
+                _DataIndexed,
+                VAR _mIdx = [Idx]
+                VAR _mVal = [Value]
+                VAR _mNorm = IF ( _MaxVal = 0, 0, DIVIDE ( _mVal, _MaxVal ) )
+                VAR _mX = _PadX + ( _mIdx - 1 ) * _XStep
+                VAR _mY = _ChartBottom - _mNorm * ( _ChartBottom - _PadTop )
+                RETURN
+                    "<circle cx='" & FORMAT ( _mX, "0.0" )
+                        & "' cy='" & FORMAT ( _mY, "0.0" )
+                        & "' r='2.2' fill='" & _LineColor & "' />",
+                "",
+                [Idx], ASC
+            )
+        VAR _GuideBottom = _ChartBottom
+        VAR _Guides =
+            CONCATENATEX (
+                _DataIndexed,
+                VAR _gIdx = [Idx]
+                VAR _gVal = [Value]
+                VAR _gNorm = IF ( _MaxVal = 0, 0, DIVIDE ( _gVal, _MaxVal ) )
+                VAR _gX = _PadX + ( _gIdx - 1 ) * _XStep
+                VAR _gY = _ChartBottom - _gNorm * ( _ChartBottom - _PadTop )
+                RETURN
+                    "<line x1='" & FORMAT ( _gX, "0.0" )
+                        & "' y1='" & FORMAT ( _gY, "0.0" )
+                        & "' x2='" & FORMAT ( _gX, "0.0" )
+                        & "' y2='" & FORMAT ( _GuideBottom, "0.0" )
+                        & "' stroke='#CCCCCC' stroke-width='0.75' />",
+                "",
+                [Idx], ASC
+            )
+        VAR _LabelY = _Height - 16
+        VAR _Labels =
+            CONCATENATEX (
+                _DataIndexed,
+                VAR _lIdx = [Idx]
+                VAR _lX = _PadX + ( _lIdx - 1 ) * _XStep
+                RETURN
+                    "<text x='" & FORMAT ( _lX, "0.0" )
+                        & "' y='" & FORMAT ( _LabelY, "0.0" )
+                        & "' text-anchor='middle' font-family='DIN, &quot;DIN Alternate&quot;, &quot;DIN Next&quot;, &quot;Segoe UI&quot;, Tahoma, Arial, sans-serif' font-size='8' fill='#666'>"
+                        & [PeriodLabel]
+                        & "</text>",
+                "",
+                [Idx], ASC
+            )
+        VAR _Shades =
+            CONCATENATEX (
+                FILTER ( _DataIndexed, [Idx] < _Count ),
+                VAR _sIdx = [Idx]
+                VAR _sVal = [Value]
+                VAR _sNext = MAXX ( FILTER ( _DataIndexed, [Idx] = _sIdx + 1 ), [Value] )
+                VAR _sNorm1 = IF ( _MaxVal = 0, 0, DIVIDE ( _sVal, _MaxVal ) )
+                VAR _sNorm2 = IF ( _MaxVal = 0, 0, DIVIDE ( _sNext, _MaxVal ) )
+                VAR _sX1 = _PadX + ( _sIdx - 1 ) * _XStep
+                VAR _sX2 = _PadX + _sIdx * _XStep
+                VAR _sY1 = _ChartBottom - _sNorm1 * ( _ChartBottom - _PadTop )
+                VAR _sY2 = _ChartBottom - _sNorm2 * ( _ChartBottom - _PadTop )
+                VAR _sColor = IF ( _sNext >= _sVal, _GoodColor, _BadColor )
+                RETURN
+                    "<polygon points='"
+                        & FORMAT ( _sX1, "0.0" ) & "," & FORMAT ( _sY1, "0.0" ) & " "
+                        & FORMAT ( _sX2, "0.0" ) & "," & FORMAT ( _sY2, "0.0" ) & " "
+                        & FORMAT ( _sX2, "0.0" ) & "," & FORMAT ( _ChartBottom, "0.0" ) & " "
+                        & FORMAT ( _sX1, "0.0" ) & "," & FORMAT ( _ChartBottom, "0.0" )
+                        & "' fill='" & _sColor & "' fill-opacity='0.05' stroke='none' />",
+                "",
+                [Idx], ASC
+            )
+        VAR _ValueLabelY = _Height - 6
+        VAR _DataLabels =
+            CONCATENATEX (
+                _DataIndexed,
+                VAR _dIdx = [Idx]
+                VAR _dVal = [Value]
+                VAR _dX = _PadX + ( _dIdx - 1 ) * _XStep
+                RETURN
+                    "<text x='" & FORMAT ( _dX, "0.0" )
+                        & "' y='" & FORMAT ( _ValueLabelY, "0.0" )
+                        & "' text-anchor='middle' font-family='DIN, &quot;DIN Alternate&quot;, &quot;DIN Next&quot;, &quot;Segoe UI&quot;, Tahoma, Arial, sans-serif' font-size='7' font-weight='bold' fill='#333'>"
+                        & FORMAT ( _dVal, valueFormatString )
+                        & "</text>",
+                "",
+                [Idx], ASC
+            )
+        VAR _HoverExtras = IF ( hover, _Shades, "" )
+        VAR _HoverLabels = IF ( hover, _DataLabels, "" )
+        VAR _SVGContent =
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 "
+                & FORMAT ( _Width, "0" ) & " " & FORMAT ( _Height, "0" )
+                & "' preserveAspectRatio='xMidYMid meet'>"
+                & _HoverExtras
+                & _Guides
+                & "<polyline fill='none' stroke='" & _LineColor
+                & "' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' points='"
+                & _Points
+                & "' />"
+                & _Markers
+                & _Labels
+                & _HoverLabels
+                & "</svg>"
+        RETURN
+            IF (
+                _HasData,
+                "data:image/svg+xml;utf8," & _SVGContent,
+                BLANK ()
+            )
+
+    annotation DAXLIB_PackageId = DataZoe.SVG
+    annotation DAXLIB_PackageVersion = 0.1.0

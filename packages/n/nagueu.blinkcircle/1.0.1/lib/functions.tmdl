@@ -1,0 +1,34 @@
+/// nagueu.blinkcircle.AlertIndicator
+/// Version       : 1.0.1
+/// Description   : SVG KPI color alert
+function 'Nagueu.BlinkCircle.AlertIndicator' =
+	        (
+	            AlertColor: STRING
+	            
+	        )
+	        =>
+	        
+	        VAR SVG_Data_URL =
+	            "data:image/svg+xml;utf8,"
+	        
+	        VAR SVG_Start =
+	            "<svg height='55' width='200' xmlns='http://www.w3.org/2000/svg'>"
+	        
+	        VAR SVG_End =
+	            "</svg>"
+	        
+	        VAR _Body =
+	            "<circle cx='27.5' cy='27.5' r='22' />"
+	        
+	        VAR _No_Blink = "<style>" & "circle{" & "stroke:" & AlertColor & ";" & "stroke-width:2;" & "fill:" & AlertColor & ";" & "fill-opacity:0.30;" & "}" & "</style>" & _Body
+	        
+	        VAR _Blink = "<style>" & "@keyframes blink{" & "0%{fill:" & AlertColor & ";}" & "50%{fill:white;}" & "100%{fill:" & AlertColor & ";}" & "}" & "circle{" & "stroke:" & AlertColor & ";" & "stroke-width:2;" & "fill:" & AlertColor & ";" & "fill-opacity:0.30;" & "animation:blink 2s infinite;" & "}" & "</style>" & _Body
+	        
+	        VAR SVG_RESULT = SVG_Data_URL & SVG_Start & IF( LOWER(AlertColor) = "red" || LOWER(AlertColor) = "#f8291e" || LOWER(AlertColor) = "#23f8291e", _Blink, _No_Blink ) & SVG_End
+	        
+	        RETURN
+	            SVG_RESULT
+	
+	    annotation DAXLIB_PackageId = Nagueu.BlinkCircle
+	
+	    annotation DAXLIB_PackageVersion = 1.0.1

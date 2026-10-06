@@ -1,0 +1,32 @@
+/// Lperin.IntervalColor
+/// Version       : 1.0.0
+/// Description   : Returns green for maximum, red for minimum and blue otherwise
+function 'Lperin.IntervalColor.LineColor' =
+        (
+            ValueKPI: NUMERIC,
+            MinKPI: NUMERIC,
+            MaxKPI: NUMERIC
+        )
+        =>
+
+        VAR is_max =
+            ValueKPI = MaxKPI
+
+        VAR is_min =
+            ValueKPI = MinKPI
+
+        VAR Result =
+            SWITCH(
+                TRUE(),
+                is_max, "green",
+                is_min, "red",
+                "blue"
+            )
+
+        RETURN
+            Result
+
+    annotation DAXLIB_PackageId = Lperin.IntervalColor
+
+    annotation DAXLIB_PackageVersion = 1.0.0
+

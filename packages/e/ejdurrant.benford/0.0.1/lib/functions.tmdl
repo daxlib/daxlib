@@ -1,0 +1,96 @@
+/// Returns a scalar value representing the mean deviation from Benford's law of the numbers in the column provided.
+/// Based on the first two digits of each number. 
+/// The average is taken over the ninety possible two-digit numbers from 10 to 99.
+/// @param {toExamineColumn} - a column of numbers with absolute values not smaller than 0.0001.
+function 'EJDurrant.Benford.AverageDeviation' = 
+		(
+					toExamineColumn : COLUMNREF
+				) =>
+				VAR toExamineTable =
+					TABLEOF ( toExamineColumn )
+				VAR Result =
+					CALCULATE (
+						AVERAGEX (
+							SELECTCOLUMNS ( GENERATESERIES ( 10, 99, 1 ), "@Two Digits", [Value] ),
+							VAR numeratorRows =
+								COUNTROWS (
+									FILTER (
+										toExamineTable,
+										VALUE (
+											LEFT ( FORMAT ( ABS ( toExamineColumn ) * 100000, "General Number" ), 2 ) // make 0.0001 the same as 10
+										) = [@Two Digits]
+									)
+								)
+							VAR denominatorRows =
+								COUNTROWS ( toExamineTable )
+							VAR benfordExpected =
+								LOG ( 1 + 1 / [@Two Digits] )
+							VAR actualResult =
+								DIVIDE ( numeratorRows, denominatorRows, 0 )
+							RETURN
+								ABS ( actualResult - benfordExpected ) 
+						),
+						toExamineColumn <> 0,        // Zeros not considered in numerator or denominator
+						ISNUMBER ( toExamineColumn ) // Non-number rows not considered in numerator or denominator
+					)
+				RETURN
+					Result
+
+	annotation DAXLIB_PackageId = EJDurrant.Benford
+
+	annotation DAXLIB_PackageVersion = 0.0.1
+
+/// Returns a table designed for visualising the level of conformance with Benford's Law of the column of numbers provided.
+/// Based on the first two digits of each number. 
+/// One row for each of the ninety two-digit numbers from 10 to 99.
+/// @param {toExamineColumn} - a column of numbers with absolute values not smaller than 0.0001.
+function 'EJDurrant.Benford.DetailedResults' =
+		(
+					toExamineColumn : COLUMNREF
+				) =>
+				VAR toExamineTable =
+					TABLEOF ( toExamineColumn )
+				VAR Result =
+					CALCULATETABLE (
+						ADDCOLUMNS (
+							ADDCOLUMNS (
+								ADDCOLUMNS (
+									SELECTCOLUMNS ( GENERATESERIES ( 10, 99, 1 ), "First Two Digits", [Value] ),
+									"Rows",
+										VAR numeratorRows =
+											COUNTROWS (
+												FILTER (
+													toExamineTable,
+													VALUE (
+														LEFT ( FORMAT ( ABS ( toExamineColumn ) * 100000, "General Number" ), 2 ) // make 0.0001 the same as 10
+													) = [First Two Digits]
+												)
+											)
+										RETURN
+											numeratorRows,
+									"Benford",
+										VAR benfordExpected =
+											LOG ( 1 + 1 / [First Two Digits] )
+										RETURN
+											benfordExpected
+								),
+								"Actual",
+									VAR denominatorRows =
+										COUNTROWS ( toExamineTable )
+									VAR actualForRow =
+										DIVIDE ( [Rows], denominatorRows )
+									RETURN
+										actualForRow
+							),
+							"Difference", [Actual] - [Benford],
+							"Absolute Difference", ABS([Actual] - [Benford])
+						),
+						toExamineColumn <> 0,        // Zeros not considered in numerator or denominator
+						ISNUMBER ( toExamineColumn ) // Non-number rows not considered in numerator or denominator
+					)
+				RETURN
+					Result
+
+	annotation DAXLIB_PackageId = EJDurrant.Benford
+
+	annotation DAXLIB_PackageVersion = 0.0.1

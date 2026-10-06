@@ -1,0 +1,161 @@
+/// Renders a bullet chart as an inline SVG data URI: three qualitative background bands, a bar for the current value, a target line at 100% of target, an arrow with a variance label, and an optional star for values beyond the top of the scale. Recommended Image size property: 150 x 20
+/// @param {MEASUREREF} currentValueMeasure – The measure drawn as the actual bar, for example [Sales Amount] or [Total Cost]. Only a measure reference is accepted.
+/// @param {MEASUREREF} targetValueMeasure – The measure that represents 100% on the scale, for example [Sales Amount PY] or [Sales Amount Target]. Only a measure reference is accepted.
+/// @param {BOOLEAN} [hideAtLevel] – Optional. Pass an expression that returns TRUE wherever the chart should be suppressed, for example NOT ISINSCOPE ( 'Table'[Column] ) to hide it on subtotal and grand total rows. Default is FALSE.
+/// @param {INT64} [axisMaxPercent] – Optional. Percent of target at the right edge of the axis. Longer bars are clamped to the axis. Default is 130.
+/// @param {INT64} [badPercent] – Optional. Anything below this percent of target is a bad result. Default is 75.
+/// @param {INT64} [acceptablePercent] – Optional. Upper bound of the acceptable band, in percent of target. Default is 90.
+/// @param {INT64} [satisfactoryPercent] – Optional. Upper bound of the satisfactory band, in percent of target. Default is 105.
+/// @param {STRING} [bandColor] – Optional. Base color of the three background bands, which are drawn in this color at decreasing opacity from bad to satisfactory. Any CSS color value is accepted. Default is "#C4C9CF".
+/// @param {STRING} [baselineColor] – Optional. Color of the vertical tick that marks the start of the axis. Default is "#737373".
+/// @param {STRING} [targetLineColor] – Optional. Color of the target line drawn at 100% of target. Default is "#737373".
+/// @param {STRING} [unfavorableColor] – Optional. Color of the bar, arrow and variance label when the value is below target. Default is "#E4A35F".
+/// @param {STRING} [favorableColor] – Optional. Color of the bar, arrow and variance label when the value is at or above target. Default is "#78A1B7".
+/// @param {INT64} [starAtPercent] – Optional. Percent of target above which the star is drawn. Default is the value of axisMaxPercent.
+/// @param {STRING} [starColor] – Optional. Color of the star. Default is "#FFD700".
+/// @param {BOOLEAN} [showStar] – Optional. Draws a star to the right of the axis when the value exceeds starAtPercent. Default is TRUE.
+/// @returns {STRING} A data:image/svg+xml;utf8 string, or BLANK when the chart is hidden, when either measure is blank, or when the target is zero.
+function 'AminGhr.SVG.BulletChart' =
+		(
+			currentValueMeasure : MEASUREREF,
+			targetValueMeasure : MEASUREREF,
+			hideAtLevel : BOOLEAN = FALSE,
+			axisMaxPercent : INT64 = 130,
+			badPercent : INT64 = 75,
+			acceptablePercent : INT64 = 90,
+			satisfactoryPercent : INT64 = 105,
+			bandColor : STRING = "#C4C9CF",
+			baselineColor : STRING = "#737373",
+			targetLineColor : STRING = "#737373",
+			unfavorableColor : STRING = "#E4A35F",
+			favorableColor : STRING = "#78A1B7",
+			starAtPercent : INT64 = BLANK (),
+			starColor : STRING = "#FFD700",
+			showStar : BOOLEAN = TRUE
+		) =>
+		VAR _Current = currentValueMeasure
+		VAR _Target = targetValueMeasure
+		VAR _Render =
+			NOT hideAtLevel
+				&& NOT ISBLANK ( _Current )
+				&& NOT ISBLANK ( _Target )
+				&& _Target <> 0
+		VAR _Result =
+			IF (
+				_Render,
+				VAR _Difference = _Current - _Target
+				VAR _Performance = DIVIDE ( _Difference, _Target )
+				VAR _Percent = DIVIDE ( _Current, _Target, 0 ) * 100
+				// Fixed vertical layout, in viewBox units: baseline 0 to 200, bands 8 to 158,
+				// target line 24 to 144, bar 48 to 114.
+				VAR _AxisStart = 350
+				VAR _AxisWidth = 870
+				VAR _AxisEnd = _AxisStart + _AxisWidth
+				VAR _StarMargin = 10
+				VAR _xStar = _AxisEnd + _StarMargin
+				// Thresholds clamped to 0 <= bad <= acceptable <= satisfactory <= axisMax so that
+				// no band can be given a negative width, which is invalid SVG.
+				VAR _AxisMax =
+					IF ( ISBLANK ( axisMaxPercent ) || axisMaxPercent <= 0, 130, axisMaxPercent )
+				VAR _PctBad = MIN ( MAX ( badPercent, 0 ), _AxisMax )
+				VAR _PctAcceptable = MIN ( MAX ( acceptablePercent, _PctBad ), _AxisMax )
+				VAR _PctSatisfactory = MIN ( MAX ( satisfactoryPercent, _PctAcceptable ), _AxisMax )
+				// A default expression cannot reference another parameter, so the axis maximum
+				// is substituted here when starAtPercent is omitted.
+				VAR _StarAt = IF ( ISBLANK ( starAtPercent ), _AxisMax, starAtPercent )
+				// Band edges are rounded first and the widths derived from the rounded edges, so
+				// the three bands stay exactly contiguous with no sub-pixel seam between them.
+				VAR _xBadEnd = ROUND ( _AxisStart + ( _PctBad / _AxisMax ) * _AxisWidth, 0 )
+				VAR _xAcceptableEnd = ROUND ( _AxisStart + ( _PctAcceptable / _AxisMax ) * _AxisWidth, 0 )
+				VAR _xSatisfactoryEnd = ROUND ( _AxisStart + ( _PctSatisfactory / _AxisMax ) * _AxisWidth, 0 )
+				VAR _xTarget = ROUND ( MIN ( _AxisStart + ( 100 / _AxisMax ) * _AxisWidth, _AxisEnd ), 0 )
+				VAR _ActualWidth =
+					ROUND ( MAX ( MIN ( ( _Percent / _AxisMax ) * _AxisWidth, _AxisWidth ), 0 ), 0 )
+				// The signature defaults only apply when an argument is omitted entirely. These
+				// fall back to the same values when a caller passes a blank or empty color.
+				VAR _BandColor = IF ( bandColor = "", "#C4C9CF", bandColor )
+				VAR _BaselineColor = IF ( baselineColor = "", "#737373", baselineColor )
+				VAR _TargetColor = IF ( targetLineColor = "", "#737373", targetLineColor )
+				VAR _UnfavorableColor = IF ( unfavorableColor = "", "#E4A35F", unfavorableColor )
+				VAR _FavorableColor = IF ( favorableColor = "", "#78A1B7", favorableColor )
+				VAR _StarColor = IF ( starColor = "", "#FFD700", starColor )
+				VAR _IsNegative = _Performance < 0
+				VAR _SentimentColor = IF ( _IsNegative, _UnfavorableColor, _FavorableColor )
+				VAR _Arrow = IF ( _IsNegative, "▼", "▲" )
+				VAR _LabelText = FORMAT ( _Performance, "#,##0%" )
+				// The label occupies the 285 unit gutter between x = 65 and the axis. Labels longer
+				// than six characters shrink so they cannot run underneath the bands.
+				VAR _LabelFontSize = ROUND ( MIN ( 80, DIVIDE ( 480, LEN ( _LabelText ), 80 ) ), 0 )
+				VAR _sAxisStart = FORMAT ( _AxisStart, "0", "en-US" )
+				VAR _sBadEnd = FORMAT ( _xBadEnd, "0", "en-US" )
+				VAR _sAcceptableEnd = FORMAT ( _xAcceptableEnd, "0", "en-US" )
+				VAR _sBadWidth = FORMAT ( _xBadEnd - _AxisStart, "0", "en-US" )
+				VAR _sAcceptableWidth = FORMAT ( _xAcceptableEnd - _xBadEnd, "0", "en-US" )
+				VAR _sSatisfactoryWidth = FORMAT ( _xSatisfactoryEnd - _xAcceptableEnd, "0", "en-US" )
+				VAR _sBarWidth = FORMAT ( _ActualWidth, "0", "en-US" )
+				VAR _sTargetX = FORMAT ( _xTarget, "0", "en-US" )
+				VAR _sStarX = FORMAT ( _xStar, "0", "en-US" )
+				VAR _sLabelFontSize = FORMAT ( _LabelFontSize, "0", "en-US" )
+				// Zero-padded sort key. Every string shares the same prefix, so sorting the column
+				// alphabetically sorts it by variance. Clamped to 8 digits so that an extreme
+				// variance cannot break the lexical ordering.
+				VAR _SortKey = MIN ( MAX ( ROUND ( _Performance * 10000, 0 ) + 10000000, 0 ), 99999999 )
+				VAR _Sort = "<desc>" & FORMAT ( _SortKey, "00000000", "en-US" ) & "</desc>"
+				VAR _Icon =
+					"<text x='0' y='84' font-family='Segoe UI' font-size='48' font-weight='700' fill='"
+						& _SentimentColor & "'>" & _Arrow & "</text>"
+				VAR _Label =
+					"<text x='65' y='96' font-family='Segoe UI' font-size='" & _sLabelFontSize
+						& "' font-weight='700' fill='" & _SentimentColor & "'>" & _LabelText & "</text>"
+				// The three bands share one color and are separated by opacity, so a caller supplies
+				// a single band color and the ramp stays internally consistent.
+				VAR _BandBad =
+					"<rect x='" & _sAxisStart & "' y='8' width='" & _sBadWidth
+						& "' height='150' fill='" & _BandColor & "' fill-opacity='1'/>"
+				VAR _BandAcceptable =
+					"<rect x='" & _sBadEnd & "' y='8' width='" & _sAcceptableWidth
+						& "' height='150' fill='" & _BandColor & "' fill-opacity='0.75'/>"
+				VAR _BandSatisfactory =
+					"<rect x='" & _sAcceptableEnd & "' y='8' width='" & _sSatisfactoryWidth
+						& "' height='150' fill='" & _BandColor & "' fill-opacity='0.55'/>"
+				VAR _ActualBar =
+					"<rect x='" & _sAxisStart & "' y='48' width='" & _sBarWidth
+						& "' height='66' fill='" & _SentimentColor & "'/>"
+				VAR _TargetLine =
+					"<rect x='" & _sTargetX & "' y='24' width='10' height='120' fill='"
+						& _TargetColor & "'/>"
+				VAR _Baseline =
+					"<rect x='" & _sAxisStart & "' y='0' width='10' height='200' fill='"
+						& _BaselineColor & "'/>"
+				VAR _Star =
+					IF (
+						showStar && _Percent > _StarAt,
+						"<text x='" & _sStarX
+							& "' y='108' font-family='Segoe UI' font-size='88' fill='" & _StarColor
+							& "'>★</text>",
+						""
+					)
+				// The bands are drawn after the label so that an unusually long label is masked
+				// rather than overlapping the axis.
+				VAR _Svg =
+					"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1500 200' preserveAspectRatio='none'>"
+						& _Sort
+						& _Icon
+						& _Label
+						& _BandBad
+						& _BandAcceptable
+						& _BandSatisfactory
+						& _ActualBar
+						& _TargetLine
+						& _Baseline
+						& _Star
+						& "</svg>"
+				RETURN
+					_Svg
+			)
+		RETURN
+			_Result
+
+	annotation DAXLIB_PackageId = AminGhr.SVG
+
+	annotation DAXLIB_PackageVersion = 0.1.0

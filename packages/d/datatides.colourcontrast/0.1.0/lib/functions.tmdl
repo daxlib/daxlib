@@ -1,0 +1,131 @@
+/// Returns the WCAG relative luminance (0..1) for a HEX colour string.
+/// Accepts HEX codes with or without a leading "#" (e.g. "#1A1A1A" or "1A1A1A").
+/// @param {SCALAR STRING} HexCode – The HEX colour to evaluate, with or without a leading "#"
+/// @returns The relative luminance, a value between 0 (black) and 1 (white)
+FUNCTION 'DataTides.ColourContrast.HexLuminance' =
+        (
+            HexCode  : SCALAR STRING
+        ) =>
+        VAR Hex    = UPPER( SUBSTITUTE( HexCode, "#", "" ) )
+        VAR Digits = "0123456789ABCDEF"
+
+        VAR Rdec = ( SEARCH( LEFT( Hex, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( Hex, 2, 1 ), Digits, 1, 0 ) - 1 )
+        VAR Gdec = ( SEARCH( MID( Hex, 3, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( Hex, 4, 1 ), Digits, 1, 0 ) - 1 )
+        VAR Bdec = ( SEARCH( MID( Hex, 5, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( Hex, 6, 1 ), Digits, 1, 0 ) - 1 )
+
+        VAR R = Rdec / 255.0
+        VAR G = Gdec / 255.0
+        VAR B = Bdec / 255.0
+
+        // Use current WCAG sRGB threshold (0.04045). Change to 0.03928 to match legacy materials.
+        VAR thresh = 0.04045
+        VAR Rlin   = IF( R <= thresh, R / 12.92, POWER( ( R + 0.055 ) / 1.055, 2.4 ) )
+        VAR Glin   = IF( G <= thresh, G / 12.92, POWER( ( G + 0.055 ) / 1.055, 2.4 ) )
+        VAR Blin   = IF( B <= thresh, B / 12.92, POWER( ( B + 0.055 ) / 1.055, 2.4 ) )
+
+        RETURN 0.2126 * Rlin + 0.7152 * Glin + 0.0722 * Blin
+
+    annotation DAXLIB_PackageId = DataTides.ColourContrast
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates the squared Euclidean distance between two colours in sRGB space.
+/// @param {SCALAR STRING} Hex1 – The first HEX colour, with or without a leading "#"
+/// @param {SCALAR STRING} Hex2 – The second HEX colour, with or without a leading "#"
+/// @returns The squared distance between the two colours' R, G, B components
+FUNCTION 'DataTides.ColourContrast.ColorDistance2' =
+        (
+            Hex1  : SCALAR STRING,
+            Hex2  : SCALAR STRING
+        ) =>
+        VAR H1 = UPPER( SUBSTITUTE( Hex1, "#", "" ) )
+        VAR H2 = UPPER( SUBSTITUTE( Hex2, "#", "" ) )
+        VAR D  = "0123456789ABCDEF"
+
+        VAR R1 = ( SEARCH( LEFT( H1, 1 ), D, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( H1, 2, 1 ), D, 1, 0 ) - 1 )
+        VAR G1 = ( SEARCH( MID( H1, 3, 1 ), D, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( H1, 4, 1 ), D, 1, 0 ) - 1 )
+        VAR B1 = ( SEARCH( MID( H1, 5, 1 ), D, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( H1, 6, 1 ), D, 1, 0 ) - 1 )
+
+        VAR R2 = ( SEARCH( LEFT( H2, 1 ), D, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( H2, 2, 1 ), D, 1, 0 ) - 1 )
+        VAR G2 = ( SEARCH( MID( H2, 3, 1 ), D, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( H2, 4, 1 ), D, 1, 0 ) - 1 )
+        VAR B2 = ( SEARCH( MID( H2, 5, 1 ), D, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( H2, 6, 1 ), D, 1, 0 ) - 1 )
+
+        RETURN ( R1 - R2 ) ^ 2 + ( G1 - G2 ) ^ 2 + ( B1 - B2 ) ^ 2
+
+    annotation DAXLIB_PackageId = DataTides.ColourContrast
+    annotation DAXLIB_PackageVersion = 0.1.0
+
+/// Calculates the APCA (Advanced Perceptual Contrast Algorithm) Lc value for a
+/// given pair of HEX colours. Converts HEX to linearised RGB, applies APCA's
+/// perceptual luminance model, and includes soft-black clamp and polarity
+/// handling.
+///
+/// NOTE: APCA is a modern perceptual contrast method and differs from WCAG 2.x.
+/// It is not yet an official standard, but is widely used for improved
+/// readability assessment.
+/// @param {SCALAR STRING} ForeHex – Text colour in HEX (e.g. "#1A1A1A")
+/// @param {SCALAR STRING} BackHex – Background colour in HEX (e.g. "#FFFFFF")
+/// @returns The Lc contrast value; positive means dark text on a light background
+FUNCTION 'DataTides.ColourContrast.APCA_Lc' =
+        (
+            ForeHex  : SCALAR STRING,
+            BackHex  : SCALAR STRING
+        ) =>
+        VAR Digits = "0123456789ABCDEF"
+        VAR F      = UPPER( SUBSTITUTE( ForeHex, "#", "" ) )
+        VAR B      = UPPER( SUBSTITUTE( BackHex, "#", "" ) )
+
+        VAR FxR = ( SEARCH( LEFT( F, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( F, 2, 1 ), Digits, 1, 0 ) - 1 )
+        VAR FxG = ( SEARCH( MID( F, 3, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( F, 4, 1 ), Digits, 1, 0 ) - 1 )
+        VAR FxB = ( SEARCH( MID( F, 5, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( F, 6, 1 ), Digits, 1, 0 ) - 1 )
+        VAR BxR = ( SEARCH( LEFT( B, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( B, 2, 1 ), Digits, 1, 0 ) - 1 )
+        VAR BxG = ( SEARCH( MID( B, 3, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( B, 4, 1 ), Digits, 1, 0 ) - 1 )
+        VAR BxB = ( SEARCH( MID( B, 5, 1 ), Digits, 1, 0 ) - 1 ) * 16 + ( SEARCH( MID( B, 6, 1 ), Digits, 1, 0 ) - 1 )
+
+        VAR Fr = FxR / 255.0
+        VAR Fg = FxG / 255.0
+        VAR Fb = FxB / 255.0
+        VAR Br = BxR / 255.0
+        VAR Bg = BxG / 255.0
+        VAR Bb = BxB / 255.0
+
+        // APCA linearization (gamma ~2.4), then sRGB coefficients
+        VAR Fr_lin = POWER( Fr, 2.4 )
+        VAR Fg_lin = POWER( Fg, 2.4 )
+        VAR Fb_lin = POWER( Fb, 2.4 )
+        VAR Br_lin = POWER( Br, 2.4 )
+        VAR Bg_lin = POWER( Bg, 2.4 )
+        VAR Bb_lin = POWER( Bb, 2.4 )
+
+        VAR Yt = 0.2126 * Fr_lin + 0.7152 * Fg_lin + 0.0722 * Fb_lin
+        VAR Yb = 0.2126 * Br_lin + 0.7152 * Bg_lin + 0.0722 * Bb_lin
+
+        // Soft black clamp (0.022, 1.414) on darker value
+        VAR blkThrs = 0.022
+        VAR blkClmp = 1.414
+        VAR Ymin    = MIN( Yt, Yb )
+        VAR Yt_c    = IF( Yt = Ymin && Yt < blkThrs, Yt + POWER( blkThrs - Yt, blkClmp ), Yt )
+        VAR Yb_c    = IF( Yb = Ymin && Yb < blkThrs, Yb + POWER( blkThrs - Yb, blkClmp ), Yb )
+
+        // Polarity
+        VAR BoW    = Yb_c > Yt_c    // dark text on light bg => positive Lc
+        VAR scale  = 1.14
+        VAR offset = 2.7
+
+        VAR Lc_raw =
+            IF(
+                BoW,
+                scale * ( POWER( Yb_c, 0.56 ) - POWER( Yt_c, 0.57 ) ),
+                scale * ( POWER( Yb_c, 0.65 ) - POWER( Yt_c, 0.62 ) )
+            )
+
+        VAR Lc =
+            IF(
+                BoW,
+                IF( Lc_raw < 0.1, 0, Lc_raw * 100 - offset ),
+                IF( Lc_raw > -0.1, 0, Lc_raw * 100 + offset )
+            )
+
+        RETURN Lc
+
+    annotation DAXLIB_PackageId = DataTides.ColourContrast
+    annotation DAXLIB_PackageVersion = 0.1.0

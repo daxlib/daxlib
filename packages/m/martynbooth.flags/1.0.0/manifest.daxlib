@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "MartynBooth.Flags",
+  "version": "1.0.0",
+  "authors": "Martyn Booth",
+  "description": "DAX user-defined function for returning inline SVG country flags for use in Power BI.",
+  "tags": "DAX,UDF,Power BI,SVG,Flags",
+  "releaseNotes": "Initial release of MartynBooth.Flags.",
+  "repositoryUrl": "https://github.com/daxlib/daxlib/tree/main/packages/m/MartynBooth.Flags/1.0.0",
+  "readme": "/README.md",
+  "icon": "/icon.png"
+}

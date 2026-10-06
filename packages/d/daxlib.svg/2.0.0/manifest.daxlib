@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "DaxLib.SVG",
+  "version": "2.0.0",
+  "authors": "Kurt Buhler, Jake Duddy, Tom Shanley",
+  "description": "A DAX User-Defined Functions (UDF) library designed to make creating SVG visuals in Power BI easier",
+  "releaseNotes": "BREAKING CHANGE: Adopt native DAX UDF optional parameters with defaults; some functions have optional parameters reordered to the end of the parameter list (e.g. `viewBox` in DaxLib.SVG.SVG). DaxLib.SVG.Element.Txt now XML-escapes text by default (resolves https://github.com/EvaluationContext/daxlib.svg/issues/4); pass `escape: FALSE()` to opt out. DaxLib.SVG.Compound.Bars reworked to match the native Power BI bar chart: bar centers align with Line/Area points via DaxLib.SVG.Axes.Point, and bar thickness is sized to the data grain (smallest gap between consecutive axis values).",
+  "projectUrl": "https://evaluationcontext.github.io/daxlib.svg",
+  "repositoryUrl": "https://github.com/daxlib/dev-daxlib-svg",
+  "tags": "DAX,UDF,FUNCTION,LIB,SVG",
+  "icon": "/icon.png",
+  "readme": "/README.md"
+}
