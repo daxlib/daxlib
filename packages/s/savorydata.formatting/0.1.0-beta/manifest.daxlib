@@ -6,5 +6,6 @@
   "description": "A set of functions that can be used to format a text as a scalable vector graphic (SVG).",
   "tags": "DAX,UDF,FUNCTION,LIB,FORMAT",
   "releaseNotes": "Initial beta release of. Provides functions to format a text as a SVG.",
-  "icon": "/icon.png"
+  "icon": "/icon.png",
+  "readme": "/README.md"
 }
