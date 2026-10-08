@@ -1,0 +1,221 @@
+/// default font size
+function 'SavoryData.Formatting.FontSize' = ```
+		() => 18
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// default font
+function 'SavoryData.Formatting.FontFamily' = ```
+		() => "Arial, sans-serif"
+		--() => "Consolas"
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// default font family factor
+function 'SavoryData.Formatting.FontFamilyFactor' = ```
+		() => 1 -- Arial
+		--() => 1.2 -- Consolas
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// default font color
+function 'SavoryData.Formatting.FontColor' = ```
+		() => "#888888"
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// default background color
+function 'SavoryData.Formatting.BackgroundColor' = ```
+		() => "#ffffff"
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+
+/// default background color
+function 'SavoryData.Formatting.ConvertColor' = ```
+		(
+			vColor = BLANK(),
+			vDefaultColor = BLANK()
+		) => 
+			SWITCH(
+				TRUE(),
+				vColor="Previous",  "#6e6e6e", --→ neutral gray (#6e6e6e) for historical comparison
+				vColor="Actual",    "#000000", --→ dark (#404040) = primary value
+				vColor="Forecast",  "#b0b0b0", -- → light gray (#b0b0b0) = planned/expected
+				COALESCE(LOWER(vColor), vDefaultColor, SavoryData.Formatting.FontColor())
+			)
+
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// Transforms a plain text into SVG which contains the formatted text
+/// @param {scalar} pText - text to format
+/// @param {scalar} mainValueExpr - main value (actuals): [AC]
+/// @returns SVG image (data:image/svg+xml URI for embedding in table cells)
+/// Don't forget:
+/// a) Set "Data Category" to "Image URL" for measures using these functions
+/// b) Set Width in "Image size" in Matrix visual to 512px
+/// c) Set Height in "Image size" in Matrix visual to a value approx 2x the font size
+/// d) Create measures with the help of SavoryData.Formatting.WidthMeasure & SavoryData.Formatting.WidthText and put them into Layout - Column width of the matrix visual
+function 'SavoryData.Formatting.FormatText' = ```
+		(
+			pText = BLANK(),
+			pFontFamily = BLANK(),
+			pFontColor = BLANK(), /*
+				Previous → neutral gray (#6e6e6e) for historical comparison
+				Actual → dark (#404040) = primary value
+				Forecast → light gray (#b0b0b0) = planned/expected
+			*/
+			pFontStyle = BLANK(),
+			pFontWeight = BLANK(),
+			pWidth = BLANK(),
+			pHeight = BLANK(),
+			pIndentation = BLANK(),
+			pY = BLANK(),
+			pFontSize = BLANK(),
+			pLineAbove = BLANK(),
+			pLineBelow = BLANK(),
+			pStrokeWidth = BLANK(),
+			pTextAnchor = BLANK(),
+			pBackgroundColor = BLANK(),
+			pLineColor = BLANK()) =>
+		VAR vCRLF = UNICHAR(10)
+		VAR vText = SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(pText, "&", "&amp;"), "<", "&lt;"), ">", "&gt;") -- escape special characters for SVG - Kudos to Robert Lochner
+		VAR vFontFamily = COALESCE(pFontFamily, SavoryData.Formatting.FontFamily())
+		VAR vFontColor = SavoryData.Formatting.ConvertColor(pFontColor,  SavoryData.Formatting.FontColor())
+		VAR vBackgroundColor = SavoryData.Formatting.ConvertColor(pBackgroundColor,  SavoryData.Formatting.BackgroundColor())
+		VAR vFontStyle = COALESCE(pFontStyle, "") 
+		VAR vFontWeight = COALESCE(pFontWeight, "")
+		VAR vFontSize = FORMAT(VALUE(COALESCE(pFontSize, SavoryData.Formatting.FontSize()) * 1.33), "0")
+		VAR vWidth = COALESCE(pWidth, "512") 
+		VAR vHeight = COALESCE(pHeight, "auto")
+		VAR vIndentation = COALESCE(pIndentation, "0")
+		VAR vY = COALESCE(pY,"80%") 
+		VAR vStrokeWidth = COALESCE(pStrokeWidth, "3")
+		VAR vLineColor = SavoryData.Formatting.ConvertColor(pLineColor,  SavoryData.Formatting.FontColor())
+		VAR vLineAbove = 
+			IF(
+				NOT(ISBLANK(pLineAbove)),
+				"<line x1='0' y1='0' x2='100%' y2='0' stroke='" & vLineColor & "' stroke-width='" & vStrokeWidth & "'/>" & vCRLF
+				, ""
+			)
+		VAR vLineBelow = 
+			IF(
+				NOT(ISBLANK(pLineBelow)),
+				"<line x1='0' y1='100%' x2='100%' y2='100%' stroke='" & vLineColor & "' stroke-width='" & vStrokeWidth & "'/>" & vCRLF
+				, ""
+			)
+		VAR vBackground = 
+				"<line x1='0' y1='100%' x2='100%' y2='100%' stroke='" & vBackgroundColor & "' stroke-width='100%'/>" & vCRLF
+		VAR vTextAnchor = COALESCE(pTextAnchor, "start")
+		RETURN 
+		  "data:image/svg+xml;utf8,"
+		& "<svg xmlns='http://www.w3.org/2000/svg' width='" & vWidth & "' height='" & vHeight & "'>"
+		& "<defs>" 
+		& "<pattern id='hatch' patternUnits='userSpaceOnUse' width='6' height='6' patternTransform='rotate(45)'> <line x1='0' y1='0' x2='0' y2='6' stroke='#b0b0b0' stroke-width='2'/> </pattern>"
+		& "</defs>"  & vCRLF
+		& vBackground
+		& vLineAbove
+		& "<text x='" & vIndentation & "' y='" & vY & "' font-family='" & vFontFamily & "' font-size='" & vFontSize & "' font-style='" & vFontStyle & "' font-weight='" & vFontWeight & "'  fill='" & vFontColor & "' text-anchor='" & vTextAnchor & "'>"
+		& vText
+		&  "</text>"  & vCRLF
+		& vLineBelow
+		& "</svg>"
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+
+/// Calculate width
+function 'SavoryData.Formatting.Width' = ```
+		(
+			pNumberOfDigits = BLANK(),
+			pPt2Px = BLANK(),
+			pFontFamilyFactor = BLANK(),
+			pFontSize = BLANK()
+		) =>
+				VAR vFontSize = COALESCE(pFontSize, SavoryData.Formatting.FontSize())          -- Font Size of the text
+				VAR vNumberOfDigits = COALESCE(pNumberOfDigits, 25)     -- Max number of numeric digits of the expected values
+				VAR vFontFamilyFactor = COALESCE(pFontFamilyFactor, SavoryData.Formatting.FontFamilyFactor())
+				VAR vPt2Px = 
+					COALESCE(
+						SWITCH(
+							TRUE(),
+							pPt2Px = "Text", 1.33,
+							pPt2Px = "Number", 1.9,
+							pPt2Px = "Number Indentation", 2,
+							VALUE(pPt2Px)
+						),
+						1.33) / vFontFamilyFactor      -- Factor to convert Points (Font Size) to Pixel (Width in SVG)
+				RETURN
+				FORMAT(
+					(vNumberOfDigits * vFontSize / vPt2Px),
+					"0"
+				)
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// Calculate width for a measure
+function 'SavoryData.Formatting.WidthMeasure' = ```
+		(
+			pAmountMeasureRef : MEASUREREF,
+			pFormatColumnRef : COLUMNREF,
+			pPt2Px = BLANK(),
+			pFontFamilyFactor = BLANK(),
+			pFontSize = BLANK()
+		) =>
+				VAR vNumberOfDigits =
+						CALCULATE(
+							MAXX(
+								ALL(TABLEOF(pFormatColumnRef)),
+									LEN(
+										FORMAT(
+											pAmountMeasureRef, 
+											SELECTEDVALUE(pFormatColumnRef)
+										)
+									)
+							),
+							ALL() -- remove any filter to reach maximum length of measure value
+						)
+				RETURN VALUE(SavoryData.Formatting.Width(vNumberOfDigits, pPt2Px, pFontFamilyFactor, pFontSize))
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
+
+/// Calculate width for a text
+function 'SavoryData.Formatting.WidthText' = ```
+		(
+			pTextColumnRef : COLUMNREF,
+			pPt2Px = BLANK(),
+			pFontFamilyFactor = BLANK(),
+			pFontSize = BLANK()
+		) =>
+				VAR vNumberOfDigits =
+						CALCULATE(
+							MAXX(
+								ALL(TABLEOF(pTextColumnRef)),
+								LEN(pTextColumnRef)
+							),
+							ALL() -- remove any filter to reach maximum length of measure value
+						)
+				RETURN VALUE(SavoryData.Formatting.Width(vNumberOfDigits, pPt2Px, pFontFamilyFactor, pFontSize))
+		```
+	annotation DAXLIB_PackageId = SavoryData.Formatting
+
+	annotation DAXLIB_PackageVersion = 0.1.0-beta
