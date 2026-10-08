@@ -573,8 +573,8 @@ The example demonstrates the available parameters and their effects in a Power B
 
 For more details about the implementation and available functions, see:
 
-- [`manifest.daxlib`](manifest.daxlib)
-- [`lib/functions.tmdl`](lib/functions.tmdl)
+- manifest.daxlib
+- lib/functions.tmdl
 
 These files contain the detailed function definitions and additional implementation information.
 
