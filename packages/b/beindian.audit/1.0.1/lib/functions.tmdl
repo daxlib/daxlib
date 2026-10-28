@@ -1010,17 +1010,32 @@ function 'BeIndian.Audit.SVGVisuals_RenderWordBoxSVG' = ```
 		(WordFrequencyTable: table) =>
 		IF(ISEMPTY(WordFrequencyTable), BLANK(),
 		    VAR WordLimit = MIN(COUNTROWS(WordFrequencyTable), 100)
-		    VAR MinFontSize = 12 VAR MaxFontSize = 60
+		    VAR MinFontSize = 19 VAR MaxFontSize = 40
 		    VAR MinFreq = MINX(WordFrequencyTable, [__Frequency])
 		    VAR MaxFreq = MAXX(WordFrequencyTable, [__Frequency])
-		    VAR Colors = DATATABLE("ID",INTEGER,"Color",STRING,{{1,"#1f77b4"},{2,"#ff7f0e"},{3,"#2ca02c"},{4,"#d62728"},{5,"#9467bd"},{6,"#8c564b"},{7,"#e377c2"},{8,"#7f7f7f"},{9,"#bcbd22"},{10,"#17becf"}})
+		    VAR Colors = DATATABLE("ID", INTEGER, "Color", STRING, {
+		        {1, "rgb(31, 119, 180)"}, {2, "rgb(255, 127, 14)"}, {3, "rgb(44, 160, 44)"}, 
+		        {4, "rgb(214, 39, 40)"}, {5, "rgb(148, 103, 189)"}, {6, "rgb(140, 86, 75)"}, 
+		        {7, "rgb(227, 119, 194)"}, {8, "rgb(127, 127, 127)"}, {9, "rgb(188, 189, 34)"}, {10, "rgb(23, 190, 207)"}
+		    })
 		    VAR ColorCount = COUNTROWS(Colors)
 		    VAR WordsWithFormatting = TOPN(WordLimit, ADDCOLUMNS(WordFrequencyTable,
-		                "__FontSize", VAR FreqRange = MaxFreq-MinFreq RETURN IF(FreqRange=0, 15, MinFontSize+(([__Frequency]-MinFreq)/FreqRange)*(MaxFontSize-MinFontSize)),
-		                "__Color", MAXX(FILTER(Colors, [ID] = MOD(RANKX(WordFrequencyTable, [__Frequency]), ColorCount)+1), [Color])
+		                "__FontSize", VAR FreqRange = MaxFreq - MinFreq 
+		                              RETURN IF(FreqRange = 0, 24, MinFontSize + (([__Frequency] - MinFreq) / FreqRange) * (MaxFontSize - MinFontSize)),
+		                "__Color", MAXX(FILTER(Colors, [ID] = MOD(RANKX(WordFrequencyTable, [__Frequency]), ColorCount) + 1), [Color])
 		            ), [__Frequency], DESC)
-		    VAR WordsHTML = CONCATENATEX(WordsWithFormatting, "<span style='font-size:"&[__FontSize]&"px;color:"&[__Color]&";'> "&[__Word]&" </span>")
-		    VAR SVG_String = "data:image/svg+xml;utf8," & "<svg width='800' height='400' xmlns='http://www.w3.org/2000/svg'><foreignObject width='100%' height='100%'><div xmlns='http://www.w3.org/1999/xhtml' style='font-family:Impact,sans-serif;text-align:justify;line-height:1.5;'>" & WordsHTML & "</div></foreignObject></svg>"
+		    VAR WordsHTML = CONCATENATEX(
+		        WordsWithFormatting, 
+		        "<span style='font-size:" & [__FontSize] & "px;color:" & [__Color] & ";font-weight:bold;white-space:nowrap;padding:2px 8px;display:inline-block;'>" & [__Word] & "</span>",
+		        "",
+		        [__Frequency], DESC
+		    )
+		    VAR SVG_String = "data:image/svg+xml;utf8," & 
+		        "<svg width='1140' height='260' viewBox='0 0 1140 260' xmlns='http://www.w3.org/2000/svg'>" & 
+		        "<foreignObject width='100%' height='100%'>" & 
+		        "<div xmlns='http://www.w3.org/1999/xhtml' style='font-family:Segoe UI,sans-serif;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;align-content:center;height:100%;gap:6px 12px;box-sizing:border-box;'>" & 
+		        WordsHTML & 
+		        "</div></foreignObject></svg>"
 		    RETURN SVG_String
 		)
 	```
