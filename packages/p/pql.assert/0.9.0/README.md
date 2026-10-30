@@ -239,6 +239,14 @@ These check data age (ODCS `latency`) when pointed at a load or ingestion timest
 
 These three functions take `tableName` as a text string, not a table reference. For example: `PQL.Assert.Tbl.ShouldHaveColumns("Sales has key columns", "Sales", "OrderID,Amount")`.
 
+**Passing a table name with `NAMEOF`.** Functions that check model metadata take the table name as text (`Tbl.ShouldExist`, `Tbl.ShouldHaveColumns`, `Tbl.LastRefreshShouldBeWithinHours`, `Col.ShouldExist`, the `OLS.` and `Partitions.` functions). That way a missing table is reported as one failing test instead of an error: a reference to a table that doesn't exist fails the whole query. To get a real table reference instead, which rename fix-up and IntelliSense can see, pass the name with `NAMEOF`:
+
+```dax
+PQL.Assert.Tbl.LastRefreshShouldBeWithinHours("Orders refreshed within 26 hours", NAMEOF('Orders', FULL, UNESCAPED), 26)
+```
+
+`FULL, UNESCAPED` returns the bare name, such as `Orders`, without quotes. The trade-off is the reference's: if the table is missing, or hidden from the test's role by object-level security, the whole suite errors instead of that test failing. Keep a plain string for `Tbl.ShouldExist`, `Col.ShouldExist` and the `OLS.` functions, whose job is to report a missing or hidden table.
+
 #### Refresh Recency
 
 - `PQL.Assert.Tbl.LastRefreshShouldBeWithinHours(testName, tableName, maxAgeHours)` - Asserts the table's newest partition refresh is at most `maxAgeHours` hours before `UTCNOW()`. Checks that the refresh ran (ODCS `frequency`), not that the data is fresh. `Actual` is `Last refresh N hour(s) ago`, `TABLE NOT FOUND`, `DIRECTQUERY (no refresh)` or `NEVER REFRESHED`; the last three fail. A partition that has never been refreshed reports `RefreshedTime` 1699-12-31, which counts as never refreshed. A DirectQuery table (every partition `Mode` 1) is never refreshed, so check data age on it with `Col.MaxDateShouldBeWithinHours` instead. On Direct Lake (`Mode` 5), `RefreshedTime` moves when the table reframes, including automatic updates. An automatic update reframes only the tables whose Delta table changed, so a table that rarely changes (a holiday list, say) keeps an old time and can fail while the model is up to date. A refresh (**Refresh now**) reframes every table, unchanged ones included. So either point the check at a table that changes on every load, or refresh the model on a schedule. `RefreshedTime` is UTC in Power BI Desktop and the service, so it compares directly with `UTCNOW()`. An empty table that refreshed passes (use `Tbl.ShouldHaveRows` for rows). With incremental refresh, only recent partitions refresh, and the newest one counts. Takes `tableName` as text and reads `INFO.TABLES()` and `INFO.PARTITIONS()`, like the [Partition Assertions](#partition-assertions)
