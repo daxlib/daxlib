@@ -8,17 +8,19 @@ It is especially useful for creating highly customized text and number layouts i
 
 ## Features
 
-- Format text with custom fonts, colors, weights, and styles
-- Dynamically calculate column widths
-- Calculate widths for formatted numbers
 - Designed for Power BI Matrix visuals
-- Return SVG directly from DAX measures
+- Format text with custom fonts, colors, weights, and styles
 - Support indentation, positioning, and custom dimensions
-- Support Previous / Actual / Forecast color conventions
-- Automatically calculate text width when possible
+- Support [IBCS](https://www.ibcs.com/) color conventions for previous, actual, and forecast 
 - Add lines above and below text
 - Control text alignment independently for text and numbers
 - Customize SVG background and line colors
+- Dynamically calculate column widths
+- Return SVG directly from DAX measures
+
+## Best practice
+
+Best practice is to build a wrapper function (e. g. `Local.Formatting.FormatText`) in your semantic model which presets most of the available parametes (e. g. font size and font type) and only exposes those parameters to the caller, which you want to use in a flexible way (e. g. text, font color, font style and font weight).
 
 ## Functions
 
@@ -79,13 +81,20 @@ SavoryData.Formatting.FormatText(
 
 ### Font Colors
 
-The following IBSC-conform color codes are also supported:
+You have several choice of defining the color:
+
+- Color keywords (e. g. "red") as listed at at [Wiki Commons](https://commons.wikimedia.org/wiki/File:SVG_Recognized_color_keyword_names.svg)
+- Hexcode (e. g. "#FF0000") 
+- One of the following IBSC-conform color codes are also supported in this implementation:
 
 | Code | Description | Hex |
 |---|---|---|
 | `Previous` | Neutral gray for historical comparison | `#6e6e6e` |
 | `Actual` | Dark color for the primary value | `#404040` |
 | `Forecast` | Light gray for planned/expected values | `#b0b0b0` |
+
+Leave the parameter blank for the default font color.
+
 
 ### Font Style
 
@@ -124,6 +133,8 @@ You can explicitly specify a width when the automatically calculated width does 
 `pHeight` controls the height of the SVG in pixels.
 
 If left blank, `auto` is used, which falls back to the height setting of the Power BI Matrix visual.
+
+If you see extra headspace or if the text is cut-off at the top, make sure to increase the height setting of the Power BI Matrix visual. This can oly be done with a hard coded value. Therefore, this library does not provide a function to dynamically calculate the optimal height.
 
 ### Indentation
 
@@ -197,7 +208,7 @@ This right-aligns the value.
 
 `pBackgroundColor` controls the background color of the SVG.
 
-The default is:
+The default is white:
 
 ```text
 #ffffff
@@ -207,7 +218,7 @@ The default is:
 
 `pLineColor` controls the color of lines added above or below the text.
 
-The default is:
+The default is grey:
 
 ```text
 #888888
@@ -233,7 +244,7 @@ This is useful when the column needs to be wide enough to accommodate the longes
 
 `WidthMeasure` is a specialized version of `Width` designed to calculate the width of formatted numbers.
 
-It accepts a format string and removes filters before calculating the width of the formatted number.
+It accepts a format string and removes filters before calculating the width of the formatted number in order to determine the **maximum possible width of the text column**.
 
 This is particularly useful for numeric Matrix columns.
 
@@ -398,7 +409,7 @@ set the **Data Category** of the measure to:
 
 This tells Power BI to interpret the SVG returned by the measure as an image.
 
-Without this setting, Power BI will not render the SVG as an image in the Matrix.
+Without this setting, Power BI will not render the SVG as an image in the Matrix and you will see the plain-text version of the SVG. This can be useful for debugging scenarios.
 
 ### 2. Configure Matrix Image Size
 
@@ -406,7 +417,7 @@ In the Power BI Matrix visual:
 
 1. Open the **Format** pane.
 2. Go to **Image size**.
-3. Set **Width** to `512px`.
+3. Set **Width** to `512px` (which is the maximum possible value).
 4. Set **Height** to approximately **2× the font size**.
 
 For example, for an 18px font, start with:
@@ -429,21 +440,6 @@ Then use the corresponding measure under:
 > **Layout → Column width**
 
 This allows the Matrix column width to be calculated dynamically.
-
----
-
-## Recommended Matrix Configuration
-
-The following settings are recommended as a starting point:
-
-| Setting | Recommended value |
-|---|---|
-| Data Category | `Image URL` |
-| Image width | `512px` |
-| Image height | Approximately `2 × font size` |
-| Column width | Use measures to calculate the width |
-
-The exact image height may need to be adjusted depending on the font family and font size.
 
 ---
 
