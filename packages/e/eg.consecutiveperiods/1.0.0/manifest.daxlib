@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.ConsecutivePeriods",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Counts the consecutive periods in which a condition is TRUE, ending at the period in context. A single function replaces measures such as days in a row with sales, days in a row without sales, consecutive days worked or consecutive absences.",
+  "tags": "DAX,Streak,Consecutive,Time Intelligence,Periods",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
