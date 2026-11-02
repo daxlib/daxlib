@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.TopBottomN",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Builds a TopN + BottomN table in a single visual: the top N items, two placeholder rows and the bottom N items, without any visual-level filter. The same function returns the values, the placeholders and the rank.",
+  "tags": "DAX,Ranking,TopN,BottomN,Table Visual",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}

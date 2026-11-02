@@ -1,0 +1,32 @@
+function 'EG.TopBottomN.Display' =
+	    (
+	        entityKey : COLUMNREF,
+	        rankExpr : EXPR,
+	        valueExpr : EXPR,
+	        topBottomN : NUMERIC VAL = 10,
+	        placeholder : SCALAR VAL = UNICHAR ( 8942 ),
+	        returnRank : BOOLEAN VAL = FALSE ()
+	    ) =>
+	    VAR _Points =
+	        CALCULATETABLE (
+	            SUMMARIZECOLUMNS ( entityKey, "@Value", rankExpr ),
+	            REMOVEFILTERS ( entityKey )
+	        )
+	    VAR _Rank =
+	        RANK ( _Points, ORDERBY ( [@Value], DESC, entityKey, ASC ) )
+	    VAR _IsPlaceholder = _Rank IN { topBottomN + 1, topBottomN + 2 }
+	    VAR _IsVisible =
+	        NOT ISBLANK ( _Rank )
+	            && ( _Rank <= topBottomN + 2 || _Rank > COUNTROWS ( _Points ) - topBottomN )
+	    RETURN
+	        SWITCH (
+	            TRUE (),
+	            NOT _IsVisible, BLANK (),
+	            returnRank, _Rank,
+	            _IsPlaceholder, placeholder,
+	            valueExpr
+	        )
+
+	annotation DAXLIB_PackageId = EG.TopBottomN
+
+	annotation DAXLIB_PackageVersion = 1.0.0
