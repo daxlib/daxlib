@@ -1,0 +1,35 @@
+/// Number of consecutive periods in which conditionExpr is TRUE, ending at the period in context; with several periods in context (total, month) it ends at the last of them that meets the condition. Blank when the condition is not met. The count starts at the first period selected in the report; every other filter is kept, so conditionExpr must clear row-level attributes that do not define the series. periodColumn must be a gapless sequence (a date, or a sequential month/week index).
+function 'EG.ConsecutivePeriods.Count' =
+	    (
+	        periodColumn : COLUMNREF,
+	        conditionExpr : SCALAR BOOLEAN EXPR
+	    ) =>
+	    VAR _RefPeriod =
+	        IF (
+	            HASONEVALUE ( periodColumn ),
+	            MAX ( periodColumn ),
+	            -- several periods in context (total, month): the streak ends at the last one that meets the condition
+	            MAXX ( FILTER ( VALUES ( periodColumn ), CALCULATE ( conditionExpr ) ), periodColumn )
+	        )
+	    VAR _Selected =
+	        CALCULATETABLE ( VALUES ( periodColumn ), ALLSELECTED ( TABLEOF ( periodColumn ) ) )
+	    -- does not depend on the visual row, so the engine computes it once per query
+	    VAR _Breaks =
+	        CALCULATETABLE (
+	            FILTER ( _Selected, NOT CALCULATE ( conditionExpr ) ),
+	            REMOVEFILTERS ( TABLEOF ( periodColumn ) )
+	        )
+	    VAR _LastBreak =
+	        COALESCE (
+	            MAXX ( FILTER ( _Breaks, periodColumn <= _RefPeriod ), periodColumn ),
+	            MINX ( _Selected, periodColumn ) - 1
+	        )
+	    -- a difference instead of counting rows: counting scanned every period on every row
+	    VAR _Result =
+	        INT ( _RefPeriod - _LastBreak )
+	    RETURN
+	        IF ( _Result > 0, _Result )
+
+	annotation DAXLIB_PackageId = EG.ConsecutivePeriods
+
+	annotation DAXLIB_PackageVersion = 1.0.0
