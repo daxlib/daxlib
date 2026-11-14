@@ -1,0 +1,38 @@
+/// Visual calculation only. Ranks the current row among its siblings (rows of the same level under the same parent) by a value, without referencing any axis column.
+/// @param {scalar} valueExpr – Value used to order the rank, e.g. [Sales Amount]
+/// @param {anyref} ties – SKIP or DENSE. Ignored when breakTies is TRUE
+/// @param {anyref} [sortOrder] – DESC or 0 (default), ASC or 1
+/// @param {boolean} [breakTies] – TRUE returns unique positions (ROWNUMBER), default FALSE
+/// @param {anyref} [visualAxis] – ROWS (default) or COLUMNS: the axis holding the hierarchy to rank
+/// @param {anyref} [resetLevel] – LOWESTPARENT (default), HIGHESTPARENT or NONE: the group in which the rank restarts
+/// @returns Integer position, or BLANK when valueExpr is blank. Example: EG.RankInLevel.Compute ( [Sales Amount], SKIP )
+function 'EG.RankInLevel.Compute' =
+	    (
+	        valueExpr : SCALAR NUMERIC EXPR,
+	        ties : ANYREF,
+	        sortOrder : ANYREF = 0,
+	        breakTies : BOOLEAN = FALSE (),
+	        visualAxis : ANYREF = ROWS,
+	        resetLevel : ANYREF = LOWESTPARENT
+	    ) =>
+	    VAR _ParentLevelRows = COLLAPSE ( COUNTROWS ( WINDOW ( 1, ABS, -1, ABS, visualAxis, NONE ) ), visualAxis )
+	    VAR _Rank =
+	        IF (
+	            breakTies,
+	            IF.EAGER (
+	                _ParentLevelRows = 1,
+	                ROWNUMBER ( visualAxis, ORDERBY ( valueExpr, sortOrder ) ),
+	                ROWNUMBER ( WINDOW ( 1, ABS, -1, ABS, visualAxis, resetLevel ), ORDERBY ( valueExpr, sortOrder ) )
+	            ),
+	            IF.EAGER (
+	                _ParentLevelRows = 1,
+	                RANK ( ties, visualAxis, ORDERBY ( valueExpr, sortOrder ) ),
+	                RANK ( ties, WINDOW ( 1, ABS, -1, ABS, visualAxis, resetLevel ), ORDERBY ( valueExpr, sortOrder ) )
+	            )
+	        )
+	    RETURN
+	        IF ( NOT ISBLANK ( valueExpr ), _Rank )
+
+	annotation DAXLIB_PackageId = EG.RankInLevel
+
+	annotation DAXLIB_PackageVersion = 1.0.0
