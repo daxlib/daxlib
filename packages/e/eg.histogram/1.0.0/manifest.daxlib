@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.Histogram",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Builds histograms in DAX: equal-width bins as a calculated table, with fixed or data-driven edges, and the frequency of items per bin.",
+  "tags": "DAX,Histogram,Statistics,Distribution,Bins,Frequency",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
