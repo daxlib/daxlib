@@ -1,0 +1,61 @@
+/// Calculated table. Returns a table of equal-width bins between minValue and maxValue.
+/// @param {double} minValue – Lower edge of the first bin
+/// @param {double} maxValue – Upper edge of the last bin
+/// @param {integer} binCount – Number of bins
+/// @param {string} [formatString] – Format for the Label column, default "General Number"
+/// @returns A table with columns Bin, Lower, Upper and Label. Example: EG.Histogram.Bins ( 3.43, 3.60, 17, "0.00" )
+function 'EG.Histogram.Bins' =
+		(
+		    minValue : DOUBLE VAL,
+		    maxValue : DOUBLE VAL,
+		    binCount : INT64 VAL,
+		    formatString : STRING VAL = "General Number"
+		) =>
+		    VAR _Width = DIVIDE ( maxValue - minValue, binCount )
+		    RETURN
+		        SELECTCOLUMNS (
+		            ADDCOLUMNS (
+		                GENERATESERIES ( 1, binCount, 1 ),
+		                "@lo", ROUND ( minValue + ( [Value] - 1 ) * _Width, 9 ),
+		                "@hi", ROUND ( minValue + [Value] * _Width, 9 )
+		            ),
+		            "Bin", [Value],
+		            "Lower", [@lo],
+		            "Upper", [@hi],
+		            "Label", FORMAT ( [@lo], formatString ) & " to " & FORMAT ( [@hi], formatString )
+		        )
+
+	annotation DAXLIB_PackageId = EG.Histogram
+	annotation DAXLIB_PackageVersion = 1.0.0
+
+/// Measure. Counts the items whose value falls between the Lower and Upper columns of a fixed bins table.
+/// Bins are half-open [Lower, Upper); the last bin is closed.
+/// @param {table} itemsTable – The items to count, e.g. Parts or VALUES ( Customer[Key] )
+/// @param {scalar} valueExpr – Value of each item, evaluated in the row context of itemsTable: a column, a measure, or an expression over columns. Wrap a bare aggregation such as SUM in CALCULATE
+/// @param {columnref} lowerColumn – Lower edge column of the bins table
+/// @param {columnref} upperColumn – Upper edge column of the bins table
+/// @returns Number of items in the current bin (0 when none)
+function 'EG.Histogram.FrequencyInRange' =
+		(
+		    itemsTable : TABLE EXPR,
+		    valueExpr : SCALAR EXPR,
+		    lowerColumn : ANYREF,
+		    upperColumn : ANYREF
+		) =>
+		    VAR _Lo = MIN ( lowerColumn )
+		    VAR _Hi = MAX ( upperColumn )
+		    VAR _IsLast = _Hi >= MAXX ( ALL ( upperColumn ), upperColumn )
+		    VAR _Dist =
+		        GROUPBY (
+		            ADDCOLUMNS ( itemsTable, "@v", CONVERT ( valueExpr, DOUBLE ) ),
+		            [@v],
+		            "@c", SUMX ( CURRENTGROUP (), 1 )
+		        )
+		    RETURN
+		        SUMX (
+		            FILTER ( _Dist, NOT ISBLANK ( [@v] ) && [@v] >= _Lo && ( [@v] < _Hi || ( _IsLast && [@v] <= _Hi ) ) ),
+		            [@c]
+		        ) + 0
+
+	annotation DAXLIB_PackageId = EG.Histogram
+	annotation DAXLIB_PackageVersion = 1.0.0
