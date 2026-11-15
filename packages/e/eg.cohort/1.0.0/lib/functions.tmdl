@@ -1,0 +1,82 @@
+/// Cohort analysis. Groups customers by the period of their first order and evaluates valueExpr for the cohort N periods later, or over its whole lifetime when periodsAfter is blank. The first order is found at query time (no calculated column), ignoring only the date filters. The cohort of each cell comes from the periods of periodColumn in the filter context of the visual. periodColumn must be a consecutive integer (+1 is the next period).
+/// @param {scalar} valueExpr – Measure or expression evaluated for the cohort, e.g. [Sales Amount] or DISTINCTCOUNT ( Sales[CustomerKey] )
+/// @param {columnref} customerColumn – Customer column in the fact table, e.g. Sales[CustomerKey]
+/// @param {columnref} orderDateColumn – Order date column in the fact table, e.g. Sales[Order Date]
+/// @param {columnref} periodColumn – Consecutive integer period column in the date table, e.g. 'Date'[Year Month Number]. Defines the grain
+/// @param {int64} [periodsAfter] – Periods after the first order. 0 is the cohort period itself. Blank (default) evaluates the whole lifetime of the cohort
+/// @param {boolean} [shareOfFirstPeriod] – TRUE returns the value divided by the value of period 0 (retention when counting customers), default FALSE
+/// @returns Value of valueExpr for the cohort in the requested period, or BLANK when there is no data. Example: EG.Cohort.Compute ( DISTINCTCOUNT ( Sales[CustomerKey] ), Sales[CustomerKey], Sales[Order Date], 'Date'[Year Month Number], SELECTEDVALUE ( MonthsAfter[Value] ), TRUE () )
+function 'EG.Cohort.Compute' =
+	    (
+	        valueExpr : SCALAR EXPR,
+	        customerColumn : COLUMNREF,
+	        orderDateColumn : COLUMNREF,
+	        periodColumn : COLUMNREF,
+	        periodsAfter : INT64 = BLANK (),
+	        shareOfFirstPeriod : BOOLEAN = FALSE ()
+	    ) =>
+	    VAR _CohortStart = MIN ( periodColumn )
+	    VAR _CohortEnd = MAX ( periodColumn )
+	    VAR _CohortFirstDate = MIN ( orderDateColumn )
+	    VAR _CohortLastDate = MAX ( orderDateColumn )
+	    VAR _VisibleFirstDate = CALCULATE ( MIN ( orderDateColumn ), ALLSELECTED ( TABLEOF ( periodColumn ) ) )
+	    VAR _VisibleLastDate = CALCULATE ( MAX ( orderDateColumn ), ALLSELECTED ( TABLEOF ( periodColumn ) ) )
+	    -- first order date of every customer, ignoring only the date filters
+	    VAR _FirstDates =
+	        CALCULATETABLE (
+	            SUMMARIZECOLUMNS ( customerColumn, "@First", CALCULATE ( MIN ( orderDateColumn ) ) ),
+	            REMOVEFILTERS ( TABLEOF ( periodColumn ) )
+	        )
+	    -- customers whose first order falls in the periods shown by the visual
+	    VAR _NewCustomers =
+	        FILTER ( _FirstDates, [@First] >= _VisibleFirstDate && [@First] <= _VisibleLastDate )
+	    VAR _CohortCustomers =
+	        SELECTCOLUMNS (
+	            FILTER ( _NewCustomers, [@First] >= _CohortFirstDate && [@First] <= _CohortLastDate ),
+	            customerColumn
+	        )
+	    RETURN
+	        IF (
+	            _CohortStart = _CohortEnd && NOT ISBLANK ( periodsAfter ),
+	            -- one cohort period: one row per period, built once per cohort and looked up by every cell
+	            VAR _CohortData =
+	                CALCULATETABLE (
+	                    ADDCOLUMNS ( ALL ( periodColumn ), "@Value", CALCULATE ( valueExpr ) ),
+	                    REMOVEFILTERS ( TABLEOF ( periodColumn ) ),
+	                    TREATAS ( _CohortCustomers, customerColumn )
+	                )
+	            VAR _Value = MAXX ( FILTER ( _CohortData, periodColumn = _CohortStart + periodsAfter ), [@Value] )
+	            RETURN
+	                IF (
+	                    shareOfFirstPeriod,
+	                    DIVIDE ( _Value, MAXX ( FILTER ( _CohortData, periodColumn = _CohortStart ), [@Value] ) ),
+	                    _Value
+	                ),
+	            -- subtotals and lifetime: direct calculation
+	            VAR _Value =
+	                CALCULATE (
+	                    valueExpr,
+	                    TREATAS ( _CohortCustomers, customerColumn ),
+	                    REMOVEFILTERS ( TABLEOF ( periodColumn ) ),
+	                    periodColumn >= _CohortStart + periodsAfter
+	                        && periodColumn <= IF ( ISBLANK ( periodsAfter ), 999999, _CohortEnd + periodsAfter )
+	                )
+	            RETURN
+	                IF (
+	                    shareOfFirstPeriod,
+	                    DIVIDE (
+	                        _Value,
+	                        CALCULATE (
+	                            valueExpr,
+	                            TREATAS ( _CohortCustomers, customerColumn ),
+	                            REMOVEFILTERS ( TABLEOF ( periodColumn ) ),
+	                            periodColumn >= _CohortStart && periodColumn <= _CohortEnd
+	                        )
+	                    ),
+	                    _Value
+	                )
+	        )
+
+	annotation DAXLIB_PackageId = EG.Cohort
+
+	annotation DAXLIB_PackageVersion = 1.0.0
