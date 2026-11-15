@@ -1,0 +1,82 @@
+/// Cross-sell (market basket) analysis: for the product(s) selected in the product dimension, returns how strongly each product on the rows of the visual is bought together with them. The rows come from a disconnected copy of the product table. A basket is any column that groups sales, e.g. an order number or a customer. Blank on the rows of the selected products themselves and on products never bought together with them. Every other report filter applies to both sides of the analysis.
+/// @param {columnref} basketColumn – Fact column that identifies the basket, e.g. Sales[Order Key] (orders) or Sales[CustomerKey] (customers who bought A also bought B)
+/// @param {columnref} factProductColumn – Product column in the fact table, e.g. Sales[ProductKey]
+/// @param {columnref} selectedProductColumn – Key of the product dimension related to the fact table, where the user selects the product(s), e.g. Product[ProductKey]
+/// @param {columnref} rowProductColumn – Key of the disconnected copy of the product table used on the rows of the visual, with the same values as factProductColumn, e.g. auxProduct[ProductKey]
+/// @param {string} [metric] – "COUNT" (default) = baskets with both products; "SHARE" = fraction of the baskets with the selected product(s) that also have the row product (confidence); "LIFT" = SHARE divided by the fraction of all baskets that have the row product
+/// @returns The metric for the product (or group of products) on the row. Example: EG.CrossSell.Compute ( Sales[Order Key], Sales[ProductKey], Product[ProductKey], auxProduct[ProductKey], "LIFT" )
+function 'EG.CrossSell.Compute' =
+	    (
+	        basketColumn : COLUMNREF,
+	        factProductColumn : COLUMNREF,
+	        selectedProductColumn : COLUMNREF,
+	        rowProductColumn : COLUMNREF,
+	        metric : STRING = "COUNT"
+	    ) =>
+	    VAR _SelectedBaskets = VALUES ( basketColumn )
+	    VAR _SelectedProducts = VALUES ( factProductColumn )
+	    VAR _RowProduct = SELECTEDVALUE ( rowProductColumn )
+	    VAR _IsSingle = NOT ISBLANK ( _RowProduct )
+	    RETURN
+	        IF (
+	            _IsSingle,
+	            -- one row per product bought in the selected baskets: the same table for every row of the visual;
+	            -- the selected products are left out, so they are not shown as their own cross-sell
+	            VAR _CoCounts =
+	                FILTER (
+	                    CALCULATETABLE (
+	                        ADDCOLUMNS ( VALUES ( factProductColumn ), "@Baskets", CALCULATE ( DISTINCTCOUNT ( basketColumn ) ) ),
+	                        REMOVEFILTERS ( TABLEOF ( selectedProductColumn ) ),
+	                        _SelectedBaskets
+	                    ),
+	                    NOT factProductColumn IN _SelectedProducts
+	                )
+	            VAR _Both = MAXX ( FILTER ( _CoCounts, factProductColumn = _RowProduct ), [@Baskets] )
+	            RETURN
+	                SWITCH (
+	                    metric,
+	                    "COUNT", _Both,
+	                    "SHARE", DIVIDE ( _Both, COUNTROWS ( _SelectedBaskets ) ),
+	                    "LIFT",
+	                        -- all baskets of each co-bought product, ignoring the product selection
+	                        VAR _WithAll =
+	                            ADDCOLUMNS (
+	                                _CoCounts,
+	                                "@All", CALCULATE ( DISTINCTCOUNT ( basketColumn ), REMOVEFILTERS ( TABLEOF ( selectedProductColumn ) ) )
+	                            )
+	                        VAR _RowBaskets = MAXX ( FILTER ( _WithAll, factProductColumn = _RowProduct ), [@All] )
+	                        VAR _AllBaskets = CALCULATE ( DISTINCTCOUNT ( basketColumn ), REMOVEFILTERS ( TABLEOF ( selectedProductColumn ) ) )
+	                        RETURN
+	                            DIVIDE ( DIVIDE ( _Both, COUNTROWS ( _SelectedBaskets ) ) * _AllBaskets, _RowBaskets ),
+	                    ERROR ( "EG.CrossSell.Compute: metric must be ""COUNT"", ""SHARE"" or ""LIFT""." )
+	                ),
+	            -- several products in the row (subtotal, category): direct calculation
+	            VAR _Both =
+	                CALCULATE (
+	                    DISTINCTCOUNT ( basketColumn ),
+	                    REMOVEFILTERS ( TABLEOF ( selectedProductColumn ) ),
+	                    TREATAS ( VALUES ( rowProductColumn ), factProductColumn ),
+	                    _SelectedBaskets
+	                )
+	            RETURN
+	                SWITCH (
+	                    metric,
+	                    "COUNT", _Both,
+	                    "SHARE", DIVIDE ( _Both, COUNTROWS ( _SelectedBaskets ) ),
+	                    "LIFT",
+	                        VAR _AllBaskets = CALCULATE ( DISTINCTCOUNT ( basketColumn ), REMOVEFILTERS ( TABLEOF ( selectedProductColumn ) ) )
+	                        VAR _RowBaskets =
+	                            CALCULATE (
+	                                DISTINCTCOUNT ( basketColumn ),
+	                                REMOVEFILTERS ( TABLEOF ( selectedProductColumn ) ),
+	                                TREATAS ( VALUES ( rowProductColumn ), factProductColumn )
+	                            )
+	                        RETURN
+	                            DIVIDE ( DIVIDE ( _Both, COUNTROWS ( _SelectedBaskets ) ) * _AllBaskets, _RowBaskets ),
+	                    ERROR ( "EG.CrossSell.Compute: metric must be ""COUNT"", ""SHARE"" or ""LIFT""." )
+	                )
+	        )
+
+	annotation DAXLIB_PackageId = EG.CrossSell
+
+	annotation DAXLIB_PackageVersion = 1.0.0

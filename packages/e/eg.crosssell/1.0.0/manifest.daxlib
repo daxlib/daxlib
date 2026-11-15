@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.CrossSell",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Cross-sell (market basket) analysis: for the product selected in a slicer, shows which other products are bought together with it and how strongly, as the number of baskets, the share of baskets (confidence) or the lift. Works with orders or customers as the basket, and with products, categories or brands on the rows.",
+  "tags": "DAX,Cross-Sell,Market Basket,Association Rules,Lift,Retail",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
