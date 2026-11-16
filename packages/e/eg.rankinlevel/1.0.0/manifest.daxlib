@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.RankInLevel",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Visual calculation that ranks each row among its siblings (same level, same parent) by a value, without referencing any axis column, so it keeps working with field parameters, drill-down and expand/collapse.",
+  "tags": "DAX,Ranking,RANK,Visual Calculations,Hierarchy,WINDOW",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
