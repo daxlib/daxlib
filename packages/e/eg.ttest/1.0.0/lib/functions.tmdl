@@ -1,0 +1,49 @@
+/// Two-sample Student's t-test between two values of groupColumn: returns the two-tailed p-value of the difference between the means of valueExpr in each group. Each row of sampleTable is one sample. Welch test by default; pooled test when equalVariance is TRUE. Fractional degrees of freedom are kept exactly.
+/// @param {table} sampleTable – Table iterated to get the samples, one sample per row, e.g. Sales or FILTER ( Sales, Sales[Net Price] > 0 )
+/// @param {numeric expr} valueExpr – Value of each sample, evaluated row by row in sampleTable, e.g. Sales[Net Price] or LN ( Sales[Net Price] )
+/// @param {columnref} groupColumn – Column that separates the groups, in sampleTable or in a related table, e.g. Customer[Gender]
+/// @param {anyval} group1 – Value of groupColumn for the first group, e.g. "Male"
+/// @param {anyval} group2 – Value of groupColumn for the second group, e.g. "Female"
+/// @param {boolean} [equalVariance] – FALSE (default) = Welch test, unequal variances (Excel T.TEST type 3); TRUE = pooled test, equal variances (type 2)
+/// @returns Two-tailed p-value between 0 and 1, or BLANK when a group has fewer than 2 samples or both groups have no variation. Example: EG.TTest.PValue ( Sales, Sales[Net Price], Customer[Gender], "Male", "Female" )
+function 'EG.TTest.PValue' =
+	    (
+	        sampleTable : TABLE EXPR,
+	        valueExpr : SCALAR NUMERIC EXPR,
+	        groupColumn : COLUMNREF,
+	        group1 : ANYVAL,
+	        group2 : ANYVAL,
+	        equalVariance : BOOLEAN = FALSE ()
+	    ) =>
+	    -- one row per group; DOUBLE avoids the 4-decimal rounding of Currency columns
+	    VAR _Stats =
+	        ADDCOLUMNS (
+	            TREATAS ( { group1, group2 }, groupColumn ),
+	            "@N", CALCULATE ( COUNTX ( sampleTable, valueExpr ) ),
+	            "@Mean", CALCULATE ( AVERAGEX ( sampleTable, CONVERT ( valueExpr, DOUBLE ) ) ),
+	            "@Var", CALCULATE ( VARX.S ( sampleTable, CONVERT ( valueExpr, DOUBLE ) ) )
+	        )
+	    VAR _G1 = FILTER ( _Stats, groupColumn = group1 )
+	    VAR _G2 = FILTER ( _Stats, groupColumn = group2 )
+	    VAR _N1 = MAXX ( _G1, [@N] )
+	    VAR _N2 = MAXX ( _G2, [@N] )
+	    VAR _Var1 = MAXX ( _G1, [@Var] )
+	    VAR _Var2 = MAXX ( _G2, [@Var] )
+	    VAR _A = _Var1 / _N1
+	    VAR _B = _Var2 / _N2
+	    VAR _StdErr =
+	        IF (
+	            equalVariance,
+	            SQRT ( ( ( _N1 - 1 ) * _Var1 + ( _N2 - 1 ) * _Var2 ) / ( _N1 + _N2 - 2 ) * ( 1 / _N1 + 1 / _N2 ) ),
+	            SQRT ( _A + _B )
+	        )
+	    -- Welch degrees of freedom are fractional
+	    VAR _Df = IF ( equalVariance, _N1 + _N2 - 2, ( _A + _B ) ^ 2 / ( _A ^ 2 / ( _N1 - 1 ) + _B ^ 2 / ( _N2 - 1 ) ) )
+	    VAR _T = ( MAXX ( _G1, [@Mean] ) - MAXX ( _G2, [@Mean] ) ) / _StdErr
+	    RETURN
+	        -- two-tailed p-value; BETA.DIST keeps fractional degrees of freedom, T.DIST.2T rounds them
+	        IF ( _N1 >= 2 && _N2 >= 2 && _StdErr > 0, BETA.DIST ( _Df / ( _Df + _T ^ 2 ), _Df / 2, 0.5, TRUE ) )
+
+	annotation DAXLIB_PackageId = EG.TTest
+
+	annotation DAXLIB_PackageVersion = 1.0.0
