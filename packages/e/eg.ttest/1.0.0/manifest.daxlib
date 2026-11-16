@@ -3,7 +3,7 @@
   "id": "EG.TTest",
   "version": "1.0.0",
   "authors": "ErickOliverG",
-  "description": "Two-sample Student's t-test returning the two-tailed p-value, to tell whether the difference between the means of two groups is real or could be due to chance. Supports Welch (unequal variances, default) and pooled (equal variances) tests, with exact fractional degrees of freedom, e.g., credit card vs. bank slip, online vs. physical store, men vs. women.",
+  "description": "Two-sample Student's t-test returning the two-tailed p-value, to tell whether the difference between the means of two groups is real or could be due to chance. Supports Welch (unequal variances, default) and pooled (equal variances) tests, with exact fractional degrees of freedom.",
   "tags": "DAX,Statistics,TTest,Hypothesis,PValue,Welch",
   "releaseNotes": "Initial release.",
   "projectUrl": "https://github.com/ErickOliverG/daxlib",
