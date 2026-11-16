@@ -1,0 +1,54 @@
+/// Total duration of the union of the intervals [startColumn, endColumn) visible in the filter context, merged per value of groupColumn: overlapping or touching intervals are counted only once. Intervals with a blank end or an end not after the start are ignored. Precision of one second.
+/// @param {columnref} startColumn – Start of the interval (date/time), e.g. Downtime[Start]
+/// @param {columnref} endColumn – End of the interval (date/time), e.g. Downtime[End]
+/// @param {columnref} groupColumn – Intervals are merged only within the same value of this column, e.g. Downtime[Machine]
+/// @param {double} [unitsPerDay] – Unit of the result: 24 hours (default), 1440 minutes, 86400 seconds, 1 days
+/// @returns Total duration of the union of the intervals, summed over all groups, or BLANK when there are no valid intervals. Example: EG.MergedIntervals.Duration ( Downtime[Start], Downtime[End], Downtime[Machine] )
+function 'EG.MergedIntervals.Duration' =
+	    (
+	        startColumn : COLUMNREF,
+	        endColumn : COLUMNREF,
+	        groupColumn : COLUMNREF,
+	        unitsPerDay : DOUBLE = 24
+	    ) =>
+	    -- one row per group and distinct start: only the longest interval starting there matters
+	    VAR _Intervals =
+	        FILTER (
+	            SUMMARIZECOLUMNS ( groupColumn, startColumn, "@End", MAX ( endColumn ) ),
+	            [@End] > startColumn
+	        )
+	    VAR _Anchor = MINX ( _Intervals, startColumn )
+	    VAR _Span = INT ( MAXX ( _Intervals, [@End] ) - _Anchor ) + 1
+	    -- every group gets its own range of keys, so one ordering serves all groups at once
+	    VAR _Groups = SUMMARIZE ( _Intervals, groupColumn )
+	    VAR _Offsets = ADDCOLUMNS ( _Groups, "@Offset", RANKX ( _Groups, groupColumn, , ASC, DENSE ) * _Span )
+	    VAR _Keyed =
+	        ADDCOLUMNS (
+	            NATURALINNERJOIN ( _Intervals, _Offsets ),
+	            "@StartKey", [@Offset] + ( startColumn - _Anchor ),
+	            "@EndKey", [@Offset] + ( [@End] - _Anchor )
+	        )
+	    VAR _StartKeys = SELECTCOLUMNS ( _Keyed, "@Key", [@StartKey] )
+	    VAR _EndKeys = SELECTCOLUMNS ( _Keyed, "@Key", [@EndKey] )
+	    -- a start opens a block when as many intervals started before it as ended before it
+	    VAR _BlockStarts =
+	        FILTER (
+	            _Keyed,
+	            RANKX ( _StartKeys, [@Key], [@StartKey], ASC, SKIP ) = RANKX ( _EndKeys, [@Key], [@StartKey], ASC, SKIP )
+	        )
+	    -- an end closes a block when as many intervals start after it as end after it
+	    VAR _BlockEnds =
+	        FILTER (
+	            _Keyed,
+	            RANKX ( _StartKeys, [@Key], [@EndKey], DESC, SKIP ) = RANKX ( _EndKeys, [@Key], [@EndKey], DESC, SKIP )
+	        )
+	    -- whole seconds from the anchor keep the sum exact
+	    VAR _Seconds =
+	        SUMX ( DISTINCT ( SELECTCOLUMNS ( _BlockEnds, "@Key", [@EndKey], "@End", [@End] ) ), ROUND ( ( [@End] - _Anchor ) * 86400, 0 ) )
+	            - SUMX ( _BlockStarts, ROUND ( ( startColumn - _Anchor ) * 86400, 0 ) )
+	    RETURN
+	        IF ( NOT ISEMPTY ( _Intervals ), _Seconds / 86400 * unitsPerDay )
+
+	annotation DAXLIB_PackageId = EG.MergedIntervals
+
+	annotation DAXLIB_PackageVersion = 1.0.0

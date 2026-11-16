@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.MergedIntervals",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Total duration of overlapping time intervals per group, counting overlapped time only once (union of intervals). Merges overlapping and touching intervals with no calculated columns and no row-by-row iteration, e.g., machine downtime, hours worked or incident time.",
+  "tags": "DAX,Intervals,Overlap,Duration,Time,Downtime",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
