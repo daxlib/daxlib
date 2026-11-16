@@ -1,0 +1,24 @@
+/// Fills blanks of a value with the nearest non-blank value before (fill down) or after (fill up) the current row, within the rows of the visual.
+/// @param {scalar} valueExpr – Value to fill: a measure, e.g. [Sales Amount], or a column through an aggregation, e.g. MAX ( Sales[Region] )
+/// @param {columnref} orderColumn – Column that defines the order, e.g. 'Date'[Date] or Sales[Index]. Must be on the rows of the visual
+/// @param {anyref} [direction] – 0 or DESC (default): fill down; 1 or ASC: fill up
+/// @returns The row value, or the filled value. BLANK before the first value (down), after the last value (up) and on totals. Example: EG.Fill.Compute ( [Sales Amount], 'Date'[Date] )
+function 'EG.Fill.Compute' =
+	    (
+	        valueExpr : SCALAR EXPR,
+	        orderColumn : COLUMNREF,
+	        direction : ANYREF = 0
+	    ) =>
+	    -- rows of the visual with a value: SUMMARIZECOLUMNS drops the blank ones; the same table for every row
+	    VAR _Points = CALCULATETABLE ( SUMMARIZECOLUMNS ( orderColumn, "@Value", valueExpr ), ALLSELECTED ( orderColumn ) )
+	    -- DESC: 1 + points after the row, so the 1st point at or before it; ASC: the 1st point at or after it
+	    VAR _Position = RANKX ( _Points, orderColumn, SELECTEDVALUE ( orderColumn ), direction, SKIP )
+	    RETURN
+	        IF (
+	            ISINSCOPE ( orderColumn ),
+	            MAXX ( INDEX ( _Position, _Points, ORDERBY ( orderColumn, direction ) ), [@Value] )
+	        )
+
+	annotation DAXLIB_PackageId = EG.Fill
+
+	annotation DAXLIB_PackageVersion = 1.0.0

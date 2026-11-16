@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.Fill",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Fill down and fill up in a measure: on rows of the visual where a value is blank, returns the nearest non-blank value before or after the row, in the order of a sort column. Works with measures and aggregated columns, respecting report filters.",
+  "tags": "DAX,Fill Down,Fill Up,Last Known Value,RANKX,INDEX",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
