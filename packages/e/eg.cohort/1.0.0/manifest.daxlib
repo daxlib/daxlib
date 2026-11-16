@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.Cohort",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Cohort analysis without calculated columns: groups customers by the period of their first order and evaluates any measure N periods later (customers, retention, sales, LTV). Works with any grain: month, quarter, week.",
+  "tags": "DAX,Cohort,Retention,Customers,LTV,Time Intelligence",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
