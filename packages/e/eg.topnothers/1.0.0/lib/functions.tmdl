@@ -1,0 +1,39 @@
+/// Value of valueExpr for the top N items of itemColumn and of all the remaining items together on the othersLabel row; blank for the other items and valueExpr unchanged on totals. With returnPosition, the position of the row: 1 to N for the items, N + 1 for the othersLabel row. helperColumn is the column of a disconnected table with the item names plus othersLabel, placed on the visual.
+function 'EG.TopNOthers.Compute' =
+	    (
+	        valueExpr : SCALAR EXPR,
+	        itemColumn : COLUMNREF,
+	        helperColumn : COLUMNREF,
+	        n : INT64 VAL,
+	        othersLabel : STRING VAL = "Others",
+	        sortOrder : ANYREF = 0,
+	        returnPosition : BOOLEAN VAL = FALSE
+	    ) =>
+	    VAR _Helper = SELECTEDVALUE ( helperColumn )
+	    VAR _Items = CALCULATETABLE ( SUMMARIZECOLUMNS ( itemColumn, "@Value", valueExpr ), REMOVEFILTERS ( helperColumn ) )
+	    VAR _Top = TOPN ( n, _Items, [@Value], sortOrder, itemColumn, ASC )
+	    VAR _TopValue = MAXX ( FILTER ( _Top, itemColumn = _Helper ), [@Value] )
+	    RETURN
+	        IF (
+	            returnPosition,
+	            IF.EAGER (
+	                _Helper = othersLabel,
+	                IF ( COUNTROWS ( _Items ) > COUNTROWS ( _Top ), COUNTROWS ( _Top ) + 1 ),
+	                IF ( NOT ISBLANK ( _TopValue ), RANKX ( _Top, [@Value], _TopValue, sortOrder, SKIP ) )
+	            ),
+	            IF.EAGER (
+	                NOT HASONEVALUE ( helperColumn ),
+	                valueExpr,
+	                IF.EAGER (
+	                    _Helper = othersLabel,
+	                    VAR _TopItems = SELECTCOLUMNS ( _Top, itemColumn )
+	                    RETURN
+	                        CALCULATE ( valueExpr, KEEPFILTERS ( NOT itemColumn IN _TopItems ) ),
+	                    _TopValue
+	                )
+	            )
+	        )
+
+	annotation DAXLIB_PackageId = EG.TopNOthers
+
+	annotation DAXLIB_PackageVersion = 1.0.0

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.TopNOthers",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Shows the top N items plus one Others row that groups all the remaining items, with a dynamic N and respecting slicers. The Others row is computed over the remaining items as a set, so it stays correct for non-additive measures. The same function returns the position to sort the visual.",
+  "tags": "DAX,Ranking,TopN,Others,Table Visual",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
