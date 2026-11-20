@@ -1,0 +1,33 @@
+/// Value of valueExpr over the window immediately before the visible dates, with the same length; with alignToMonths, whole months shift by months (March returns February). dates is a date column or a calendar of calendar-based time intelligence. periods sets how many windows to go back: a negative number goes forward, 0 returns the visible window. Blank when no date is visible.
+function 'EG.PreviousPeriod.Compute' =
+	    (
+	        valueExpr : SCALAR EXPR,
+	        dates : ANYREF,
+	        periods : INT64 VAL = 1,
+	        alignToMonths : BOOLEAN VAL = TRUE
+	    ) =>
+	    VAR _Selected = DATEADD ( dates, 0, DAY )
+	    VAR _Days = COUNTROWS ( _Selected )
+	    VAR _WholeMonths = alignToMonths && _Days = COUNTROWS ( PARALLELPERIOD ( dates, 0, MONTH ) )
+	    VAR _Months =
+	        IF.EAGER (
+	            _WholeMonths,
+	            MINX (
+	                FILTER (
+	                    GENERATESERIES ( MAX ( 1, ROUNDUP ( _Days / 35, 0 ) ), MAX ( 1, ROUNDDOWN ( _Days / 28, 0 ) ) ),
+	                    ISEMPTY ( INTERSECT ( DATEADD ( dates, - [Value], MONTH ), _Selected ) )
+	                ),
+	                [Value]
+	            )
+	        )
+	    VAR _DayShift = IF.EAGER ( ISBLANK ( _Months ), - _Days * periods, 0 )
+	    VAR _MonthShift = IF.EAGER ( ISBLANK ( _Months ), 0, - _Months * periods )
+	    RETURN
+	        CALCULATE (
+	            CALCULATE ( valueExpr, DATEADD ( dates, _MonthShift, MONTH ) ),
+	            DATEADD ( dates, _DayShift, DAY )
+	        )
+
+	annotation DAXLIB_PackageId = EG.PreviousPeriod
+
+	annotation DAXLIB_PackageVersion = 1.0.0

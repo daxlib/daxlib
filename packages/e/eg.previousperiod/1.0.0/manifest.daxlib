@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.PreviousPeriod",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Computes a value over the window immediately before the visible dates, with the same length: the 14 days before a 14-day selection, the previous month for a whole month. Works with a date column or with a calendar of calendar-based time intelligence, including fiscal and 4-4-5 calendars.",
+  "tags": "DAX,Time Intelligence,Previous Period,Period Comparison,Calendar",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
