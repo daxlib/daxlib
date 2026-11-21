@@ -1,0 +1,30 @@
+/// Date that is days business days after startDate (before it, when days is negative), like WORKDAY and WORKDAY.INTL in Excel: startDate is not counted and 0 returns startDate. weekend uses the same codes as NETWORKDAYS and holidays is a single-column table of dates. Dates between 1900 and 2199; blank when startDate is blank or the result falls outside that range.
+function 'EG.Workday.Compute' =
+	    (
+	        startDate : DATETIME VAL,
+	        days : INT64 VAL,
+	        weekend : INT64 VAL = 1,
+	        holidays : TABLE EXPR = FILTER ( { DATE ( 1900, 1, 1 ) }, FALSE () )
+	    ) =>
+	    VAR _Workdays =
+	        FILTER (
+	            CALENDAR ( DATE ( 1900, 1, 1 ), DATE ( 2199, 12, 31 ) ),
+	            NETWORKDAYS ( [Date], [Date], weekend, holidays ) = 1
+	        )
+	    VAR _Count = COUNTROWS ( _Workdays )
+	    VAR _Start = CONVERT ( INT ( startDate ), DATETIME )
+	    VAR _Position =
+	        IF (
+	            days > 0,
+	            _Count + 1 - RANKX ( _Workdays, [Date], _Start, DESC, SKIP ),
+	            RANKX ( _Workdays, [Date], _Start, ASC, SKIP )
+	        ) + days
+	    RETURN
+	        IF (
+	            NOT ISBLANK ( startDate ),
+	            IF ( days = 0, _Start, SELECTCOLUMNS ( INDEX ( _Position, _Workdays, ORDERBY ( [Date], ASC ) ), [Date] ) )
+	        )
+
+	annotation DAXLIB_PackageId = EG.Workday
+
+	annotation DAXLIB_PackageVersion = 1.0.0
