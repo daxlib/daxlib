@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.EventsInProgress",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Counts or sums the events that are in progress on a date, from a start date and an end date: open orders, headcount, active contracts, pending tickets. Works with the active relationship on the start date and offers closing, opening, overlapping and daily average modes.",
+  "tags": "DAX,Events,Open Orders,Headcount,Snapshot",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}

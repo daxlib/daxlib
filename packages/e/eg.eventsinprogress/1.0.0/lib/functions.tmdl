@@ -1,0 +1,80 @@
+/// Value of valueExpr over the events in progress (started on or before the date and not yet ended; a blank endColumn means still open) on the dates of the current filter context. mode: "END" (default) last visible date, "START" first visible date, "ANY" at any moment of the visible period, "AVG" daily average of "END". additive = TRUE is valid only for counts and sums. Blank when there are no events in progress or when mode is not valid.
+function 'EG.EventsInProgress.Compute' =
+	    (
+	        valueExpr : SCALAR EXPR,
+	        startColumn : COLUMNREF,
+	        endColumn : COLUMNREF,
+	        dateColumn : COLUMNREF,
+	        mode : STRING VAL = "END",
+	        additive : BOOLEAN VAL = FALSE,
+	        endInclusive : BOOLEAN VAL = FALSE
+	    ) =>
+	    VAR _First = MIN ( dateColumn )
+	    VAR _Last = MAX ( dateColumn )
+	    VAR _StartLimit = IF ( mode = "START", _First, _Last )
+	    VAR _EndLimit = IF ( mode = "END", _Last, _First )
+	    VAR _Result =
+	        SWITCH (
+	            TRUE (),
+	            additive,
+	                VAR _ByStart =
+	                    CALCULATETABLE (
+	                        SUMMARIZECOLUMNS ( startColumn, "@Value", valueExpr ),
+	                        REMOVEFILTERS ( TABLEOF ( dateColumn ) )
+	                    )
+	                VAR _ByEnd =
+	                    CALCULATETABLE (
+	                        SUMMARIZECOLUMNS ( endColumn, "@Value", valueExpr ),
+	                        REMOVEFILTERS ( TABLEOF ( dateColumn ) ),
+	                        NOT ISBLANK ( endColumn )
+	                    )
+	                VAR _Net =
+	                    IF (
+	                        mode = "AVG",
+	                        VAR _Dates = FILTER ( VALUES ( dateColumn ), NOT ISBLANK ( dateColumn ) )
+	                        RETURN
+	                            DIVIDE (
+	                                SUMX (
+	                                    _Dates,
+	                                    VAR _Date = dateColumn
+	                                    RETURN
+	                                        SUMX ( FILTER ( _ByStart, startColumn <= _Date ), [@Value] )
+	                                            - SUMX ( FILTER ( _ByEnd, endColumn < _Date || ( NOT endInclusive && endColumn = _Date ) ), [@Value] )
+	                                ),
+	                                COUNTROWS ( _Dates )
+	                            ),
+	                        SUMX ( FILTER ( _ByStart, startColumn <= _StartLimit ), [@Value] )
+	                            - SUMX ( FILTER ( _ByEnd, endColumn < _EndLimit || ( NOT endInclusive && endColumn = _EndLimit ) ), [@Value] )
+	                    )
+	                RETURN
+	                    IF ( _Net <> 0, _Net ),
+	            mode = "AVG",
+	                VAR _Dates = FILTER ( VALUES ( dateColumn ), NOT ISBLANK ( dateColumn ) )
+	                RETURN
+	                    DIVIDE (
+	                        SUMX (
+	                            _Dates,
+	                            VAR _Date = dateColumn
+	                            RETURN
+	                                CALCULATE (
+	                                    valueExpr,
+	                                    REMOVEFILTERS ( TABLEOF ( dateColumn ) ),
+	                                    startColumn <= _Date,
+	                                    endColumn > _Date || ( endInclusive && endColumn = _Date ) || ISBLANK ( endColumn )
+	                                )
+	                        ),
+	                        COUNTROWS ( _Dates )
+	                    ),
+	            CALCULATE (
+	                valueExpr,
+	                REMOVEFILTERS ( TABLEOF ( dateColumn ) ),
+	                startColumn <= _StartLimit,
+	                endColumn > _EndLimit || ( endInclusive && endColumn = _EndLimit ) || ISBLANK ( endColumn )
+	            )
+	        )
+	    RETURN
+	        IF ( mode IN { "END", "START", "ANY", "AVG" }, _Result )
+
+	annotation DAXLIB_PackageId = EG.EventsInProgress
+
+	annotation DAXLIB_PackageVersion = 1.0.0
