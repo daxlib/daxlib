@@ -1,0 +1,35 @@
+/// Decimal business hours between startDateTime and endDateTime, counting only the hours between openTime and closeTime on business days; weekend uses the same codes as NETWORKDAYS and holidays is a single-column table of dates. A closeTime of 00:00 means midnight at the end of the day. Blank when a date is blank or the end is before the start.
+function 'EG.BusinessHours.Compute' =
+	    (
+	        startDateTime : DATETIME VAL,
+	        endDateTime : DATETIME VAL,
+	        openTime : DATETIME VAL,
+	        closeTime : DATETIME VAL,
+	        weekend : INT64 VAL = 1,
+	        holidays : TABLE EXPR = FILTER ( { DATE ( 1900, 1, 1 ) }, FALSE () )
+	    ) =>
+	    VAR _StartDate = CONVERT ( INT ( startDateTime ), DATETIME )
+	    VAR _EndDate = CONVERT ( INT ( endDateTime ), DATETIME )
+	    VAR _Open = openTime - INT ( openTime )
+	    VAR _Close = closeTime - INT ( closeTime )
+	    VAR _DayLength = IF ( _Close = 0, 1, _Close ) - _Open
+	    VAR _Workdays = NETWORKDAYS ( _StartDate, _EndDate, weekend, holidays )
+	    VAR _CutStart =
+	        IF (
+	            NETWORKDAYS ( _StartDate, _StartDate, weekend, holidays ) = 1,
+	            MIN ( MAX ( startDateTime - _StartDate - _Open, 0 ), _DayLength )
+	        )
+	    VAR _CutEnd =
+	        IF (
+	            NETWORKDAYS ( _EndDate, _EndDate, weekend, holidays ) = 1,
+	            MIN ( MAX ( _Open + _DayLength - ( endDateTime - _EndDate ), 0 ), _DayLength )
+	        )
+	    RETURN
+	        IF (
+	            NOT ISBLANK ( startDateTime ) && NOT ISBLANK ( endDateTime ) && endDateTime >= startDateTime,
+	            ( _Workdays * _DayLength - _CutStart - _CutEnd ) * 24
+	        )
+
+	annotation DAXLIB_PackageId = EG.BusinessHours
+
+	annotation DAXLIB_PackageVersion = 1.0.0
