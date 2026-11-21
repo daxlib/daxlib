@@ -1,0 +1,41 @@
+/// Value of valueExpr only over the entities of entityColumn that are active (existsExpr not blank) in every period of periodColumn selected in the report and, when comparisonFilter is given, also in every period of the comparison. Activity is measured over whole periods and ignores the filters of the report, so the same set of entities is used in all the cells of the visual. With returnComparison, the value of the comparison period for the same entities. Blank when no entity is comparable.
+function 'EG.LikeForLike.Compute' =
+	    (
+	        valueExpr : SCALAR EXPR,
+	        entityColumn : COLUMNREF,
+	        periodColumn : COLUMNREF,
+	        existsExpr : SCALAR EXPR,
+	        comparisonFilter : TABLE EXPR = FILTER ( { 1 }, FALSE () ),
+	        returnComparison : BOOLEAN VAL = FALSE
+	    ) =>
+	    VAR _Periods =
+	        CALCULATETABLE (
+	            VAR _Comparison = comparisonFilter
+	            RETURN
+	                DISTINCT ( UNION ( VALUES ( periodColumn ), CALCULATETABLE ( VALUES ( periodColumn ), _Comparison ) ) ),
+	            ALLSELECTED ( TABLEOF ( periodColumn ) )
+	        )
+	    VAR _Entities =
+	        CALCULATETABLE (
+	            VAR _Active = FILTER ( _Periods, NOT ISBLANK ( CALCULATE ( existsExpr ) ) )
+	            VAR _Count = COUNTROWS ( _Active )
+	            VAR _Pairs = FILTER ( CROSSJOIN ( VALUES ( entityColumn ), _Active ), NOT ISBLANK ( CALCULATE ( existsExpr ) ) )
+	            RETURN
+	                SELECTCOLUMNS (
+	                    FILTER ( GROUPBY ( _Pairs, entityColumn, "@Periods", SUMX ( CURRENTGROUP (), 1 ) ), [@Periods] = _Count ),
+	                    entityColumn
+	                ),
+	            REMOVEFILTERS ()
+	        )
+	    RETURN
+	        IF (
+	            returnComparison,
+	            VAR _CellComparison = comparisonFilter
+	            RETURN
+	                IF ( NOT ISEMPTY ( _CellComparison ), CALCULATE ( valueExpr, _CellComparison, KEEPFILTERS ( _Entities ) ) ),
+	            CALCULATE ( valueExpr, KEEPFILTERS ( _Entities ) )
+	        )
+
+	annotation DAXLIB_PackageId = EG.LikeForLike
+
+	annotation DAXLIB_PackageVersion = 1.0.0
