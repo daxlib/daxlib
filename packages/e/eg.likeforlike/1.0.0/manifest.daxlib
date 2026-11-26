@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.LikeForLike",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Computes a value only over the entities active in all the compared periods, such as same-store sales, so that stores opened or closed in between do not distort the growth. Works across the selected periods or against a comparison period such as last year, for any entity and period grain.",
+  "tags": "DAX,Like for Like,Same Store Sales,Period Comparison,Retail",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
