@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.BusinessHours",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Computes the business hours between two date/times, counting only the opening hours of business days and skipping weekends and holidays. A single function for ticket SLA, time to first response and order lead time, with any opening hours and weekend days.",
+  "tags": "DAX,Business Hours,SLA,Workdays,Date",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
