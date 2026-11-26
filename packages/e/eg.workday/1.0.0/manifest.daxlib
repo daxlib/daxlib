@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/daxlib/daxlib/refs/heads/main/schemas/manifest/1.0.0/manifest.1.0.0.schema.json",
+  "id": "EG.Workday",
+  "version": "1.0.0",
+  "authors": "ErickOliverG",
+  "description": "Returns the date that is a number of business days after or before a date, like WORKDAY and WORKDAY.INTL in Excel, with weekend codes and a holidays table. A single function for due dates, delivery promises and SLA deadlines.",
+  "tags": "DAX,Workday,Business Days,Due Date,Date",
+  "releaseNotes": "Initial release.",
+  "projectUrl": "https://github.com/ErickOliverG/daxlib",
+  "readme": "/README.md"
+}
